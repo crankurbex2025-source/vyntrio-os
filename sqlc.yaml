@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    queries: "internal/infrastructure/persistence/sql/queries"
+    schema: "internal/infrastructure/persistence/sql/schema.sql"
+    gen:
+      go:
+        package: "sqlcgen"
+        out: "internal/infrastructure/persistence/sqlite/sqlcgen"
+        sql_package: "database/sql"
+        emit_interface: true
+        emit_empty_slices: true

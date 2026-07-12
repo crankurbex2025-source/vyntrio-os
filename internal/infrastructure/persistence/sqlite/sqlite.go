@@ -53,6 +53,11 @@ func (s *Store) Ping(ctx context.Context) error {
 	return s.db.PingContext(ctx)
 }
 
+// DB returns the underlying database handle for repository adapters.
+func (s *Store) DB() *sql.DB {
+	return s.db
+}
+
 // Path returns the database file path.
 func (s *Store) Path() string {
 	return s.path

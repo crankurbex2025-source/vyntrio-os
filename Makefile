@@ -3,7 +3,7 @@ ROOT := $(shell pwd)
 GO ?= go
 NPM ?= npm
 
-.PHONY: help bootstrap verify fmt lint test test-go test-frontend build run-api docs-check clean
+.PHONY: help bootstrap verify fmt lint test test-go test-frontend build run-api docs-check clean sqlc-generate generate
 
 help:
 	@echo "Vyntrio OS — development commands"
@@ -18,6 +18,8 @@ help:
 	@echo "  make build         Build Go binaries (foundation stubs)"
 	@echo "  make run-api       Run API server (cmd/api)"
 	@echo "  make docs-check    Validate documentation structure"
+	@echo "  make sqlc-generate Regenerate sqlc query code"
+	@echo "  make generate      Alias for sqlc-generate"
 	@echo "  make clean         Remove build artifacts"
 
 bootstrap:
@@ -58,3 +60,9 @@ clean:
 	@rm -rf bin dist coverage.out coverage.html
 	@rm -rf frontend/dist frontend/build frontend/.next
 	@echo "Clean complete."
+
+sqlc-generate:
+	@command -v sqlc >/dev/null 2>&1 || { echo "sqlc not installed; install from https://docs.sqlc.dev/en/latest/overview/install.html" >&2; exit 1; }
+	@sqlc generate
+
+generate: sqlc-generate
