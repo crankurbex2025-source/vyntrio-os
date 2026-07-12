@@ -1,0 +1,15 @@
+{
+  "name": "@vyntrio-os/frontend",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vyntrio OS frontend workspace (foundation scaffold — no application code yet)",
+  "scripts": {
+    "fmt": "echo \"No formatter configured yet — see docs/04_TECH_STACK.md\"",
+    "lint": "echo \"No linter configured yet — see docs/04_TECH_STACK.md\"",
+    "test": "echo \"No tests yet — see docs/18_TESTING.md\"",
+    "build": "echo \"No build target yet — see docs/20_TASKS.md\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

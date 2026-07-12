@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: UNLICENSED
+
+# TODO(LEGAL): Choose and record the official license for Vyntrio OS.
+#
+# This repository currently has NO finalized license. Do not treat this file as
+# granting any rights until the project owner selects one of:
+#
+#   - Proprietary / All Rights Reserved (private product)
+#   - Apache-2.0
+#   - MIT
+#   - GPL-3.0-or-later
+#   - Other (document in an ADR)
+#
+# Action required before public or external contribution:
+#   1. Decide license with project/legal owner
+#   2. Replace this file with the chosen LICENSE text
+#   3. Update README.md license section
+#   4. Record decision in adr/0001-license-choice.md (create when decided)
+#
+# Until then: all content is © project owner, all rights reserved.
+
+Copyright (c) 2026 Vyntrio OS contributors. All rights reserved.
