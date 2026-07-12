@@ -43,10 +43,7 @@ func main() {
 		logger.Error("system settings load failed", "error", err)
 		os.Exit(1)
 	}
-	logger.Info("system settings loaded",
-		"timezone", sysSettings.Timezone,
-		"hostname", sysSettings.Hostname,
-	)
+	logger = appsettings.LoggerWithSystemSettings(logger, sysSettings, strings.EqualFold(cfg.LogLevel, "debug"))
 
 	readiness := health.NewReadiness(store)
 	srv := httpapi.NewServer(cfg, logger, readiness)
