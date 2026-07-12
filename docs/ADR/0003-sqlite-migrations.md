@@ -18,6 +18,7 @@ Slice 1 provides HTTP health endpoints with process-only readiness. Roadmap **0.
 4. **Queries (Slice 2):** `database/sql` ping only
 5. **Queries (Slice 2b.1+):** [sqlc](https://sqlc.dev/) for typed settings queries; generated code in `internal/infrastructure/persistence/sqlite/sqlcgen/`
 6. **Settings (Slice 2b.1):** Internal repository only — no public HTTP settings API
+7. **Settings (Slice 2c):** Internal read-only consumer in `cmd/api` — load and validate at startup, log only
 
 ## Rationale
 
@@ -68,6 +69,7 @@ Full entities (Users, Roles, …) remain deferred.
 ### Follow-up
 
 - [x] Slice 2b.1: sqlc + settings schema (internal repository)
+- [x] Slice 2c: internal read-only settings consumer in `cmd/api`
 - [ ] Public settings API (after auth/RBAC stub)
 - [ ] Graceful shutdown with DB close (already in `cmd/api`; review for worker)
 - [ ] PostgreSQL ADR when Enterprise path is scheduled

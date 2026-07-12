@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
+	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
@@ -35,6 +36,17 @@ func main() {
 	}()
 
 	logger.Info("database ready", "path", store.Path())
+
+	settingsRepo := sqlite.NewSettingsRepository(store.DB())
+	sysSettings, err := appsettings.NewReader(settingsRepo).LoadSystemSettings(ctx)
+	if err != nil {
+		logger.Error("system settings load failed", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("system settings loaded",
+		"timezone", sysSettings.Timezone,
+		"hostname", sysSettings.Hostname,
+	)
 
 	readiness := health.NewReadiness(store)
 	srv := httpapi.NewServer(cfg, logger, readiness)
