@@ -1,0 +1,93 @@
+openapi: 3.0.3
+info:
+  title: Vyntrio OS API
+  version: 0.2.0-dev
+  description: |
+    Slice 1 stub — health and version endpoints only.
+    Full spec grows with Platform Core (see docs/09_API.md).
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: Local development
+
+paths:
+  /healthz:
+    get:
+      summary: Liveness probe
+      operationId: getHealthz
+      tags: [Health]
+      responses:
+        "200":
+          description: Process is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /readyz:
+    get:
+      summary: Readiness probe (process-only in Slice 1)
+      operationId: getReadyz
+      tags: [Health]
+      responses:
+        "200":
+          description: Process is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, checks]
+                properties:
+                  status:
+                    type: string
+                    example: ready
+                  checks:
+                    type: object
+                    properties:
+                      process:
+                        type: string
+                        example: ok
+
+  /api/v1/version:
+    get:
+      summary: API build version
+      operationId: getVersion
+      tags: [System]
+      responses:
+        "200":
+          description: Version metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, commit]
+                properties:
+                  version:
+                    type: string
+                    example: 0.2.0-dev
+                  commit:
+                    type: string
+                    example: unknown
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              example: NOT_FOUND
+            message:
+              type: string
+            request_id:
+              type: string

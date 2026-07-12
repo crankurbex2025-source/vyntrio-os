@@ -3,7 +3,7 @@ ROOT := $(shell pwd)
 GO ?= go
 NPM ?= npm
 
-.PHONY: help bootstrap verify fmt lint test test-go test-frontend build docs-check clean
+.PHONY: help bootstrap verify fmt lint test test-go test-frontend build run-api docs-check clean
 
 help:
 	@echo "Vyntrio OS — development commands"
@@ -16,6 +16,7 @@ help:
 	@echo "  make test-go       Run Go tests"
 	@echo "  make test-frontend Run frontend tests"
 	@echo "  make build         Build Go binaries (foundation stubs)"
+	@echo "  make run-api       Run API server (cmd/api)"
 	@echo "  make docs-check    Validate documentation structure"
 	@echo "  make clean         Remove build artifacts"
 
@@ -46,6 +47,9 @@ build:
 	@$(GO) build -o bin/vyntrio-worker ./cmd/worker
 	@$(GO) build -o bin/vyntrio-installer ./cmd/installer
 	@$(GO) build -o bin/vyntrio-update-agent ./cmd/update-agent
+
+run-api:
+	@$(GO) run ./cmd/api
 
 docs-check:
 	@./scripts/docs-check.sh

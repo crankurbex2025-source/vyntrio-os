@@ -7,11 +7,11 @@
 - GRUB, initramfs
 
 ## Backend
-- Go
-- chi oder gin für HTTP Layer
-- sqlc oder GORM-freier Query-Layer bevorzugt
-- WebSocket Support
-- Structured Logging
+- Go 1.24+
+- **chi** (`go-chi/chi/v5`) für HTTP Layer — see `docs/ADR/0002-use-chi-router.md`
+- **log/slog** (stdlib) für Structured Logging — see `docs/API_CONVENTIONS.md`
+- sqlc oder GORM-freier Query-Layer bevorzugt (Slice 2+)
+- WebSocket Support (later)
 
 ## Frontend
 - React

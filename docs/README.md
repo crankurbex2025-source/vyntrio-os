@@ -38,6 +38,7 @@ Read in this order for onboarding.
 |-----|-------|
 | [20_TASKS.md](20_TASKS.md) | Development backlog |
 | [21_CURSOR_REPO_SETUP.md](21_CURSOR_REPO_SETUP.md) | GitHub, SSH, Cursor setup |
+| [API_CONVENTIONS.md](API_CONVENTIONS.md) | HTTP errors, env vars, logging |
 | [ADR/](ADR/) | Architecture decision records |
 | [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md) | Phase 0 audit |
 | [PHASE_1_FOUNDATION_STATUS.md](PHASE_1_FOUNDATION_STATUS.md) | Phase 1 status |

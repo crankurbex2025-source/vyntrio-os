@@ -9,6 +9,7 @@ Governance: see `docs/01_MASTERPLAN.md` — ADR required for irreversible techno
 | ADR | Status | Title |
 |-----|--------|-------|
 | [0001](0001-use-clean-architecture.md) | **Accepted** | Use Clean Architecture |
+| [0002](0002-use-chi-router.md) | **Accepted** | Use chi for HTTP routing |
 | [Template](ADR_TEMPLATE.md) | Template | ADR template |
 
 ## Process

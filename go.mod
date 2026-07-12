@@ -4,3 +4,5 @@ go 1.24
 
 // Application dependencies are added in Phase 2+ (Platform Core).
 // See docs/04_TECH_STACK.md and docs/ADR/0001-use-clean-architecture.md.
+
+require github.com/go-chi/chi/v5 v5.3.1

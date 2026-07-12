@@ -1,0 +1,53 @@
+package httpapi
+
+import (
+	"fmt"
+	"log/slog"
+	"net/http"
+
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
+)
+
+// Server wraps the HTTP server for cmd/api.
+type Server struct {
+	cfg    config.Config
+	logger *slog.Logger
+	http   *http.Server
+}
+
+// NewServer creates an configured HTTP server (not started).
+func NewServer(cfg config.Config, logger *slog.Logger) *Server {
+	handler := NewRouter(cfg, logger)
+	return &Server{
+		cfg:    cfg,
+		logger: logger,
+		http: &http.Server{
+			Addr:         cfg.Addr(),
+			Handler:      handler,
+			ReadTimeout:  cfg.ReadTimeout,
+			WriteTimeout: cfg.WriteTimeout,
+			IdleTimeout:  cfg.IdleTimeout,
+		},
+	}
+}
+
+// ListenAndServe starts the HTTP server.
+func (s *Server) ListenAndServe() error {
+	s.logger.Info("api server listening", "addr", s.cfg.Addr(), "env", s.cfg.Env)
+	return s.http.ListenAndServe()
+}
+
+// Handler returns the root handler (for tests).
+func (s *Server) Handler() http.Handler {
+	return s.http.Handler
+}
+
+// Addr returns the listen address.
+func (s *Server) Addr() string {
+	return s.cfg.Addr()
+}
+
+// Close is a placeholder for graceful shutdown (Slice 2+).
+func (s *Server) Close() error {
+	return fmt.Errorf("graceful shutdown not implemented")
+}
