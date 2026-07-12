@@ -1,0 +1,50 @@
+name: Security
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: Dependency review (PRs only)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        continue-on-error: true
+
+  secret-scan:
+    name: Secret scanning baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for common secret patterns
+        run: |
+          ! grep -rEn '(ghp_[a-zA-Z0-9]{20,}|github_pat_[a-zA-Z0-9_]{20,}|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' \
+            --exclude-dir=.git --exclude='*.md' . || \
+            (echo "Possible secret detected — remove before merge"; exit 1)
+
+  go-vuln:
+    name: Go vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+        continue-on-error: true
+
+  # Full SAST (golangci-lint security, npm audit, Trivy) — enable in Phase 2 when deps exist.

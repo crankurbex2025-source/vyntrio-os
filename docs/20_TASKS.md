@@ -1,62 +1,1071 @@
-# 20 — Tasks
+# TASKS
 
-Phase-gated task list. **Only work on tasks in the active phase** unless explicitly approved.
+Entwicklungs-Backlog für Vyntrio OS.
 
-## Active phase: Phase 0
+## Active phase: Phase 1 — Foundation Hardening
 
-### Phase 0 — Repository audit and foundation hardening
+Tracked in [PHASE_1_FOUNDATION_STATUS.md](PHASE_1_FOUNDATION_STATUS.md).
 
-| ID | Task | Status | Owner |
-|----|------|--------|-------|
-| P0-1 | Audit repository against expected monorepo layout | Done | Agent |
-| P0-2 | Create foundation files (Makefile, CI, .gitignore, etc.) | Done | Agent |
-| P0-3 | Create documentation scaffolds and index | Done | Agent |
-| P0-4 | Write `docs/AUDIT_FOUNDATION.md` | Done | Agent |
-| P0-5 | **Human:** Author `docs/00_PROJECT.md` (replace TODOs) | **Blocked** | Project owner |
-| P0-6 | **Human:** Author `docs/01_MASTERPLAN.md` | **Blocked** | Project owner |
-| P0-7 | **Human:** Decide LICENSE (see `LICENSE`) | **Blocked** | Legal / owner |
-| P0-8 | Mark Phase 0 complete in roadmap | Pending | After P0-5–P0-7 |
+| ID | Task | Status |
+|----|------|--------|
+| P1-01 | Merge canonical repo structure from source bundle | Done |
+| P1-02 | Root `go.mod`, `cmd/` stubs (no demo output) | Done |
+| P1-03 | Module READMEs (`cmd/`, `internal/`, `frontend/`, `packages/`, `tests/`) | Done |
+| P1-04 | `docs/ADR/0001-use-clean-architecture.md` | Done |
+| P1-05 | Bootstrap + verify scripts, improved Makefile | Done |
+| P1-06 | CI workflows (honest: build, vet, test, docs) | Done |
+| P1-07 | GitHub PR/issue templates, CONTRIBUTING | Done |
+| P1-08 | `docs/21_CURSOR_REPO_SETUP.md` SSH/GitHub/Cursor guide | Done |
+| P1-09 | Remove source zip from repo; add `*.zip` to `.gitignore` | Done |
+| P1-10 | **Human:** Finalize LICENSE | Open |
+| P1-11 | **Human:** Enable GitHub branch protection on `main` | Open |
 
-**Phase 0 exit criteria:**
+**Phase 1 exit:** `make bootstrap && make verify && make test && make build` pass; CI green; no placeholder demo services.
 
-- [x] Monorepo skeleton exists
-- [x] CI runs foundation checks
-- [x] Audit report published
-- [ ] Core project docs authored (not just scaffolds)
-- [ ] License decision recorded
-
----
-
-## Next phase: Phase 1 (planned — do not start until exit criteria met)
-
-See [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md) for the recommended first implementation slice.
-
-### Phase 1 — Documentation baseline + platform skeleton
-
-| ID | Task | Status | Depends on |
-|----|------|--------|------------|
-| P1-1 | Finalize `02_ARCHITECTURE.md` | Pending | P0-5, P0-6 |
-| P1-2 | ADR: frontend framework + toolchain | Pending | P1-1 |
-| P1-3 | ADR: persistence layer (if needed) | Pending | P1-1 |
-| P1-4 | Backend: `cmd/` health service (`/healthz`, `/readyz`) | Pending | P1-1 |
-| P1-5 | Frontend: initialize chosen toolchain (no feature UI) | Pending | P1-2 |
-| P1-6 | Wire local dev: `make dev` (backend + frontend) | Pending | P1-4, P1-5 |
-| P1-7 | Add `package-lock.json`, golangci-lint config | Pending | P1-4, P1-5 |
-| P1-8 | Expand CI: lint + coverage reporting | Pending | P1-7 |
-| P1-9 | Update README with runnable bootstrap | Pending | P1-6 |
+**Next phase:** Phase 2 — Platform Core (see [PHASE_1_FOUNDATION_STATUS.md](PHASE_1_FOUNDATION_STATUS.md)).
 
 ---
 
-## Backlog (unscheduled)
+## Backlog template — Foundation (T0001–T0100)
 
-- Dependabot configuration
-- CODEOWNERS
-- Container images
-- Staging environment
-- Full threat model in `17_SECURITY.md`
+> Generic placeholders — replace with concrete tasks when scheduling work.
 
-## Related documents
+## Foundation
+Fokus: repo, standards, ci, local setup, docs backbone.
 
-- [03_ROADMAP.md](03_ROADMAP.md)
-- [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md)
-- [21_CURSOR_REPO_SETUP.md](21_CURSOR_REPO_SETUP.md)
+- [ ] T0001 Foundation: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0002 Foundation: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0003 Foundation: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0004 Foundation: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0005 Foundation: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0006 Foundation: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0007 Foundation: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0008 Foundation: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0009 Foundation: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0010 Foundation: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0011 Foundation: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0012 Foundation: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0013 Foundation: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0014 Foundation: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0015 Foundation: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0016 Foundation: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0017 Foundation: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0018 Foundation: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0019 Foundation: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0020 Foundation: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0021 Foundation: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0022 Foundation: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0023 Foundation: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0024 Foundation: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0025 Foundation: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0026 Foundation: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0027 Foundation: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0028 Foundation: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0029 Foundation: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0030 Foundation: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0031 Foundation: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0032 Foundation: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0033 Foundation: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0034 Foundation: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0035 Foundation: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0036 Foundation: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0037 Foundation: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0038 Foundation: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0039 Foundation: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0040 Foundation: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0041 Foundation: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0042 Foundation: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0043 Foundation: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0044 Foundation: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0045 Foundation: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0046 Foundation: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0047 Foundation: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0048 Foundation: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0049 Foundation: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0050 Foundation: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0051 Foundation: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0052 Foundation: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0053 Foundation: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0054 Foundation: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0055 Foundation: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0056 Foundation: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0057 Foundation: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0058 Foundation: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0059 Foundation: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0060 Foundation: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0061 Foundation: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0062 Foundation: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0063 Foundation: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0064 Foundation: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0065 Foundation: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0066 Foundation: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0067 Foundation: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0068 Foundation: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0069 Foundation: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0070 Foundation: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0071 Foundation: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0072 Foundation: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0073 Foundation: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0074 Foundation: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0075 Foundation: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0076 Foundation: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0077 Foundation: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0078 Foundation: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0079 Foundation: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0080 Foundation: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0081 Foundation: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0082 Foundation: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0083 Foundation: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0084 Foundation: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0085 Foundation: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0086 Foundation: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0087 Foundation: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0088 Foundation: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0089 Foundation: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0090 Foundation: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0091 Foundation: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0092 Foundation: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0093 Foundation: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0094 Foundation: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0095 Foundation: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0096 Foundation: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0097 Foundation: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0098 Foundation: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0099 Foundation: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0100 Foundation: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Linux Base
+Fokus: iso, installer, boot, hardware, init.
+
+- [ ] T0101 Linux Base: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0102 Linux Base: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0103 Linux Base: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0104 Linux Base: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0105 Linux Base: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0106 Linux Base: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0107 Linux Base: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0108 Linux Base: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0109 Linux Base: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0110 Linux Base: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0111 Linux Base: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0112 Linux Base: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0113 Linux Base: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0114 Linux Base: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0115 Linux Base: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0116 Linux Base: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0117 Linux Base: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0118 Linux Base: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0119 Linux Base: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0120 Linux Base: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0121 Linux Base: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0122 Linux Base: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0123 Linux Base: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0124 Linux Base: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0125 Linux Base: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0126 Linux Base: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0127 Linux Base: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0128 Linux Base: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0129 Linux Base: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0130 Linux Base: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0131 Linux Base: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0132 Linux Base: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0133 Linux Base: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0134 Linux Base: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0135 Linux Base: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0136 Linux Base: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0137 Linux Base: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0138 Linux Base: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0139 Linux Base: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0140 Linux Base: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0141 Linux Base: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0142 Linux Base: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0143 Linux Base: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0144 Linux Base: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0145 Linux Base: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0146 Linux Base: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0147 Linux Base: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0148 Linux Base: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0149 Linux Base: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0150 Linux Base: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0151 Linux Base: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0152 Linux Base: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0153 Linux Base: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0154 Linux Base: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0155 Linux Base: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0156 Linux Base: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0157 Linux Base: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0158 Linux Base: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0159 Linux Base: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0160 Linux Base: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0161 Linux Base: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0162 Linux Base: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0163 Linux Base: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0164 Linux Base: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0165 Linux Base: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0166 Linux Base: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0167 Linux Base: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0168 Linux Base: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0169 Linux Base: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0170 Linux Base: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0171 Linux Base: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0172 Linux Base: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0173 Linux Base: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0174 Linux Base: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0175 Linux Base: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0176 Linux Base: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0177 Linux Base: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0178 Linux Base: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0179 Linux Base: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0180 Linux Base: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0181 Linux Base: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0182 Linux Base: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0183 Linux Base: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0184 Linux Base: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0185 Linux Base: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0186 Linux Base: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0187 Linux Base: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0188 Linux Base: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0189 Linux Base: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0190 Linux Base: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0191 Linux Base: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0192 Linux Base: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0193 Linux Base: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0194 Linux Base: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0195 Linux Base: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0196 Linux Base: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0197 Linux Base: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0198 Linux Base: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0199 Linux Base: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0200 Linux Base: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Backend Core
+Fokus: api, auth, db, jobs, notifications.
+
+- [ ] T0201 Backend Core: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0202 Backend Core: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0203 Backend Core: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0204 Backend Core: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0205 Backend Core: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0206 Backend Core: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0207 Backend Core: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0208 Backend Core: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0209 Backend Core: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0210 Backend Core: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0211 Backend Core: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0212 Backend Core: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0213 Backend Core: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0214 Backend Core: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0215 Backend Core: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0216 Backend Core: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0217 Backend Core: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0218 Backend Core: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0219 Backend Core: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0220 Backend Core: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0221 Backend Core: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0222 Backend Core: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0223 Backend Core: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0224 Backend Core: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0225 Backend Core: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0226 Backend Core: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0227 Backend Core: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0228 Backend Core: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0229 Backend Core: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0230 Backend Core: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0231 Backend Core: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0232 Backend Core: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0233 Backend Core: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0234 Backend Core: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0235 Backend Core: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0236 Backend Core: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0237 Backend Core: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0238 Backend Core: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0239 Backend Core: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0240 Backend Core: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0241 Backend Core: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0242 Backend Core: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0243 Backend Core: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0244 Backend Core: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0245 Backend Core: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0246 Backend Core: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0247 Backend Core: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0248 Backend Core: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0249 Backend Core: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0250 Backend Core: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0251 Backend Core: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0252 Backend Core: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0253 Backend Core: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0254 Backend Core: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0255 Backend Core: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0256 Backend Core: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0257 Backend Core: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0258 Backend Core: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0259 Backend Core: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0260 Backend Core: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0261 Backend Core: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0262 Backend Core: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0263 Backend Core: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0264 Backend Core: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0265 Backend Core: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0266 Backend Core: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0267 Backend Core: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0268 Backend Core: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0269 Backend Core: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0270 Backend Core: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0271 Backend Core: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0272 Backend Core: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0273 Backend Core: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0274 Backend Core: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0275 Backend Core: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0276 Backend Core: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0277 Backend Core: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0278 Backend Core: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0279 Backend Core: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0280 Backend Core: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0281 Backend Core: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0282 Backend Core: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0283 Backend Core: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0284 Backend Core: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0285 Backend Core: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0286 Backend Core: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0287 Backend Core: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0288 Backend Core: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0289 Backend Core: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0290 Backend Core: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0291 Backend Core: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0292 Backend Core: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0293 Backend Core: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0294 Backend Core: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0295 Backend Core: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0296 Backend Core: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0297 Backend Core: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0298 Backend Core: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0299 Backend Core: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0300 Backend Core: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Dashboard
+Fokus: layout, widgets, state, live status.
+
+- [ ] T0301 Dashboard: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0302 Dashboard: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0303 Dashboard: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0304 Dashboard: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0305 Dashboard: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0306 Dashboard: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0307 Dashboard: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0308 Dashboard: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0309 Dashboard: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0310 Dashboard: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0311 Dashboard: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0312 Dashboard: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0313 Dashboard: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0314 Dashboard: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0315 Dashboard: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0316 Dashboard: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0317 Dashboard: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0318 Dashboard: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0319 Dashboard: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0320 Dashboard: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0321 Dashboard: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0322 Dashboard: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0323 Dashboard: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0324 Dashboard: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0325 Dashboard: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0326 Dashboard: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0327 Dashboard: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0328 Dashboard: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0329 Dashboard: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0330 Dashboard: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0331 Dashboard: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0332 Dashboard: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0333 Dashboard: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0334 Dashboard: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0335 Dashboard: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0336 Dashboard: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0337 Dashboard: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0338 Dashboard: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0339 Dashboard: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0340 Dashboard: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0341 Dashboard: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0342 Dashboard: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0343 Dashboard: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0344 Dashboard: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0345 Dashboard: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0346 Dashboard: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0347 Dashboard: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0348 Dashboard: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0349 Dashboard: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0350 Dashboard: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0351 Dashboard: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0352 Dashboard: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0353 Dashboard: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0354 Dashboard: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0355 Dashboard: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0356 Dashboard: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0357 Dashboard: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0358 Dashboard: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0359 Dashboard: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0360 Dashboard: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0361 Dashboard: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0362 Dashboard: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0363 Dashboard: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0364 Dashboard: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0365 Dashboard: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0366 Dashboard: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0367 Dashboard: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0368 Dashboard: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0369 Dashboard: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0370 Dashboard: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0371 Dashboard: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0372 Dashboard: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0373 Dashboard: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0374 Dashboard: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0375 Dashboard: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0376 Dashboard: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0377 Dashboard: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0378 Dashboard: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0379 Dashboard: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0380 Dashboard: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0381 Dashboard: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0382 Dashboard: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0383 Dashboard: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0384 Dashboard: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0385 Dashboard: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0386 Dashboard: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0387 Dashboard: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0388 Dashboard: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0389 Dashboard: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0390 Dashboard: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0391 Dashboard: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0392 Dashboard: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0393 Dashboard: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0394 Dashboard: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0395 Dashboard: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0396 Dashboard: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0397 Dashboard: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0398 Dashboard: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0399 Dashboard: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0400 Dashboard: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Storage
+Fokus: disks, pools, shares, snapshots, restore.
+
+- [ ] T0401 Storage: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0402 Storage: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0403 Storage: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0404 Storage: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0405 Storage: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0406 Storage: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0407 Storage: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0408 Storage: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0409 Storage: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0410 Storage: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0411 Storage: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0412 Storage: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0413 Storage: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0414 Storage: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0415 Storage: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0416 Storage: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0417 Storage: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0418 Storage: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0419 Storage: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0420 Storage: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0421 Storage: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0422 Storage: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0423 Storage: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0424 Storage: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0425 Storage: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0426 Storage: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0427 Storage: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0428 Storage: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0429 Storage: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0430 Storage: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0431 Storage: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0432 Storage: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0433 Storage: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0434 Storage: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0435 Storage: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0436 Storage: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0437 Storage: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0438 Storage: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0439 Storage: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0440 Storage: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0441 Storage: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0442 Storage: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0443 Storage: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0444 Storage: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0445 Storage: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0446 Storage: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0447 Storage: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0448 Storage: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0449 Storage: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0450 Storage: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0451 Storage: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0452 Storage: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0453 Storage: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0454 Storage: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0455 Storage: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0456 Storage: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0457 Storage: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0458 Storage: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0459 Storage: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0460 Storage: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0461 Storage: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0462 Storage: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0463 Storage: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0464 Storage: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0465 Storage: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0466 Storage: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0467 Storage: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0468 Storage: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0469 Storage: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0470 Storage: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0471 Storage: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0472 Storage: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0473 Storage: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0474 Storage: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0475 Storage: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0476 Storage: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0477 Storage: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0478 Storage: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0479 Storage: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0480 Storage: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0481 Storage: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0482 Storage: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0483 Storage: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0484 Storage: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0485 Storage: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0486 Storage: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0487 Storage: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0488 Storage: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0489 Storage: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0490 Storage: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0491 Storage: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0492 Storage: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0493 Storage: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0494 Storage: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0495 Storage: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0496 Storage: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0497 Storage: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0498 Storage: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0499 Storage: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0500 Storage: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Containers
+Fokus: docker, compose, templates, backups.
+
+- [ ] T0501 Containers: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0502 Containers: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0503 Containers: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0504 Containers: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0505 Containers: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0506 Containers: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0507 Containers: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0508 Containers: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0509 Containers: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0510 Containers: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0511 Containers: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0512 Containers: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0513 Containers: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0514 Containers: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0515 Containers: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0516 Containers: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0517 Containers: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0518 Containers: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0519 Containers: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0520 Containers: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0521 Containers: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0522 Containers: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0523 Containers: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0524 Containers: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0525 Containers: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0526 Containers: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0527 Containers: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0528 Containers: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0529 Containers: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0530 Containers: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0531 Containers: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0532 Containers: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0533 Containers: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0534 Containers: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0535 Containers: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0536 Containers: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0537 Containers: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0538 Containers: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0539 Containers: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0540 Containers: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0541 Containers: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0542 Containers: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0543 Containers: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0544 Containers: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0545 Containers: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0546 Containers: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0547 Containers: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0548 Containers: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0549 Containers: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0550 Containers: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0551 Containers: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0552 Containers: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0553 Containers: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0554 Containers: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0555 Containers: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0556 Containers: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0557 Containers: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0558 Containers: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0559 Containers: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0560 Containers: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0561 Containers: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0562 Containers: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0563 Containers: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0564 Containers: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0565 Containers: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0566 Containers: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0567 Containers: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0568 Containers: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0569 Containers: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0570 Containers: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0571 Containers: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0572 Containers: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0573 Containers: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0574 Containers: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0575 Containers: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0576 Containers: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0577 Containers: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0578 Containers: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0579 Containers: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0580 Containers: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0581 Containers: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0582 Containers: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0583 Containers: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0584 Containers: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0585 Containers: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0586 Containers: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0587 Containers: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0588 Containers: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0589 Containers: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0590 Containers: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0591 Containers: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0592 Containers: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0593 Containers: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0594 Containers: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0595 Containers: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0596 Containers: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0597 Containers: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0598 Containers: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0599 Containers: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0600 Containers: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Virtualization
+Fokus: kvm, qemu, libvirt, console, media.
+
+- [ ] T0601 Virtualization: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0602 Virtualization: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0603 Virtualization: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0604 Virtualization: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0605 Virtualization: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0606 Virtualization: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0607 Virtualization: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0608 Virtualization: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0609 Virtualization: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0610 Virtualization: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0611 Virtualization: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0612 Virtualization: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0613 Virtualization: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0614 Virtualization: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0615 Virtualization: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0616 Virtualization: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0617 Virtualization: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0618 Virtualization: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0619 Virtualization: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0620 Virtualization: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0621 Virtualization: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0622 Virtualization: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0623 Virtualization: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0624 Virtualization: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0625 Virtualization: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0626 Virtualization: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0627 Virtualization: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0628 Virtualization: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0629 Virtualization: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0630 Virtualization: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0631 Virtualization: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0632 Virtualization: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0633 Virtualization: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0634 Virtualization: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0635 Virtualization: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0636 Virtualization: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0637 Virtualization: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0638 Virtualization: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0639 Virtualization: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0640 Virtualization: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0641 Virtualization: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0642 Virtualization: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0643 Virtualization: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0644 Virtualization: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0645 Virtualization: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0646 Virtualization: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0647 Virtualization: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0648 Virtualization: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0649 Virtualization: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0650 Virtualization: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0651 Virtualization: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0652 Virtualization: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0653 Virtualization: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0654 Virtualization: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0655 Virtualization: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0656 Virtualization: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0657 Virtualization: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0658 Virtualization: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0659 Virtualization: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0660 Virtualization: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0661 Virtualization: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0662 Virtualization: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0663 Virtualization: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0664 Virtualization: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0665 Virtualization: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0666 Virtualization: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0667 Virtualization: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0668 Virtualization: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0669 Virtualization: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0670 Virtualization: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0671 Virtualization: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0672 Virtualization: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0673 Virtualization: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0674 Virtualization: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0675 Virtualization: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0676 Virtualization: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0677 Virtualization: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0678 Virtualization: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0679 Virtualization: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0680 Virtualization: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0681 Virtualization: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0682 Virtualization: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0683 Virtualization: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0684 Virtualization: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0685 Virtualization: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0686 Virtualization: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0687 Virtualization: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0688 Virtualization: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0689 Virtualization: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0690 Virtualization: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0691 Virtualization: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0692 Virtualization: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0693 Virtualization: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0694 Virtualization: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0695 Virtualization: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0696 Virtualization: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0697 Virtualization: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0698 Virtualization: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0699 Virtualization: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0700 Virtualization: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Marketplace
+Fokus: apps, plugins, sdk, signing.
+
+- [ ] T0701 Marketplace: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0702 Marketplace: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0703 Marketplace: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0704 Marketplace: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0705 Marketplace: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0706 Marketplace: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0707 Marketplace: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0708 Marketplace: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0709 Marketplace: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0710 Marketplace: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0711 Marketplace: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0712 Marketplace: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0713 Marketplace: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0714 Marketplace: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0715 Marketplace: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0716 Marketplace: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0717 Marketplace: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0718 Marketplace: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0719 Marketplace: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0720 Marketplace: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0721 Marketplace: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0722 Marketplace: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0723 Marketplace: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0724 Marketplace: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0725 Marketplace: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0726 Marketplace: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0727 Marketplace: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0728 Marketplace: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0729 Marketplace: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0730 Marketplace: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0731 Marketplace: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0732 Marketplace: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0733 Marketplace: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0734 Marketplace: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0735 Marketplace: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0736 Marketplace: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0737 Marketplace: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0738 Marketplace: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0739 Marketplace: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0740 Marketplace: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0741 Marketplace: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0742 Marketplace: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0743 Marketplace: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0744 Marketplace: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0745 Marketplace: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0746 Marketplace: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0747 Marketplace: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0748 Marketplace: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0749 Marketplace: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0750 Marketplace: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0751 Marketplace: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0752 Marketplace: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0753 Marketplace: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0754 Marketplace: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0755 Marketplace: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0756 Marketplace: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0757 Marketplace: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0758 Marketplace: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0759 Marketplace: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0760 Marketplace: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0761 Marketplace: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0762 Marketplace: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0763 Marketplace: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0764 Marketplace: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0765 Marketplace: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0766 Marketplace: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0767 Marketplace: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0768 Marketplace: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0769 Marketplace: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0770 Marketplace: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0771 Marketplace: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0772 Marketplace: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0773 Marketplace: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0774 Marketplace: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0775 Marketplace: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0776 Marketplace: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0777 Marketplace: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0778 Marketplace: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0779 Marketplace: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0780 Marketplace: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0781 Marketplace: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0782 Marketplace: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0783 Marketplace: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0784 Marketplace: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0785 Marketplace: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0786 Marketplace: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0787 Marketplace: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0788 Marketplace: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0789 Marketplace: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0790 Marketplace: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0791 Marketplace: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0792 Marketplace: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0793 Marketplace: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0794 Marketplace: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0795 Marketplace: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0796 Marketplace: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0797 Marketplace: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0798 Marketplace: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0799 Marketplace: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0800 Marketplace: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Licensing
+Fokus: editions, activation, signatures, portal.
+
+- [ ] T0801 Licensing: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0802 Licensing: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0803 Licensing: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0804 Licensing: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0805 Licensing: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0806 Licensing: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0807 Licensing: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0808 Licensing: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0809 Licensing: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0810 Licensing: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0811 Licensing: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0812 Licensing: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0813 Licensing: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0814 Licensing: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0815 Licensing: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0816 Licensing: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0817 Licensing: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0818 Licensing: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0819 Licensing: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0820 Licensing: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0821 Licensing: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0822 Licensing: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0823 Licensing: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0824 Licensing: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0825 Licensing: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0826 Licensing: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0827 Licensing: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0828 Licensing: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0829 Licensing: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0830 Licensing: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0831 Licensing: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0832 Licensing: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0833 Licensing: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0834 Licensing: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0835 Licensing: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0836 Licensing: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0837 Licensing: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0838 Licensing: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0839 Licensing: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0840 Licensing: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0841 Licensing: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0842 Licensing: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0843 Licensing: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0844 Licensing: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0845 Licensing: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0846 Licensing: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0847 Licensing: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0848 Licensing: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0849 Licensing: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0850 Licensing: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0851 Licensing: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0852 Licensing: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0853 Licensing: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0854 Licensing: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0855 Licensing: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0856 Licensing: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0857 Licensing: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0858 Licensing: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0859 Licensing: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0860 Licensing: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0861 Licensing: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0862 Licensing: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0863 Licensing: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0864 Licensing: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0865 Licensing: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0866 Licensing: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0867 Licensing: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0868 Licensing: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0869 Licensing: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0870 Licensing: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0871 Licensing: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0872 Licensing: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0873 Licensing: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0874 Licensing: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0875 Licensing: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0876 Licensing: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0877 Licensing: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0878 Licensing: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0879 Licensing: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0880 Licensing: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0881 Licensing: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0882 Licensing: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0883 Licensing: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0884 Licensing: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0885 Licensing: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0886 Licensing: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0887 Licensing: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0888 Licensing: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0889 Licensing: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0890 Licensing: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0891 Licensing: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0892 Licensing: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0893 Licensing: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0894 Licensing: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0895 Licensing: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0896 Licensing: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0897 Licensing: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0898 Licensing: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0899 Licensing: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0900 Licensing: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.
+
+## Updates
+Fokus: channels, signing, rollback, compatibility.
+
+- [ ] T0901 Updates: Aufgabe 1 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0902 Updates: Aufgabe 2 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0903 Updates: Aufgabe 3 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0904 Updates: Aufgabe 4 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0905 Updates: Aufgabe 5 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0906 Updates: Aufgabe 6 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0907 Updates: Aufgabe 7 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0908 Updates: Aufgabe 8 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0909 Updates: Aufgabe 9 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0910 Updates: Aufgabe 10 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0911 Updates: Aufgabe 11 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0912 Updates: Aufgabe 12 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0913 Updates: Aufgabe 13 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0914 Updates: Aufgabe 14 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0915 Updates: Aufgabe 15 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0916 Updates: Aufgabe 16 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0917 Updates: Aufgabe 17 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0918 Updates: Aufgabe 18 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0919 Updates: Aufgabe 19 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0920 Updates: Aufgabe 20 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0921 Updates: Aufgabe 21 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0922 Updates: Aufgabe 22 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0923 Updates: Aufgabe 23 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0924 Updates: Aufgabe 24 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0925 Updates: Aufgabe 25 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0926 Updates: Aufgabe 26 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0927 Updates: Aufgabe 27 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0928 Updates: Aufgabe 28 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0929 Updates: Aufgabe 29 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0930 Updates: Aufgabe 30 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0931 Updates: Aufgabe 31 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0932 Updates: Aufgabe 32 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0933 Updates: Aufgabe 33 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0934 Updates: Aufgabe 34 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0935 Updates: Aufgabe 35 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0936 Updates: Aufgabe 36 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0937 Updates: Aufgabe 37 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0938 Updates: Aufgabe 38 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0939 Updates: Aufgabe 39 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0940 Updates: Aufgabe 40 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0941 Updates: Aufgabe 41 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0942 Updates: Aufgabe 42 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0943 Updates: Aufgabe 43 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0944 Updates: Aufgabe 44 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0945 Updates: Aufgabe 45 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0946 Updates: Aufgabe 46 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0947 Updates: Aufgabe 47 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0948 Updates: Aufgabe 48 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0949 Updates: Aufgabe 49 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0950 Updates: Aufgabe 50 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0951 Updates: Aufgabe 51 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0952 Updates: Aufgabe 52 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0953 Updates: Aufgabe 53 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0954 Updates: Aufgabe 54 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0955 Updates: Aufgabe 55 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0956 Updates: Aufgabe 56 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0957 Updates: Aufgabe 57 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0958 Updates: Aufgabe 58 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0959 Updates: Aufgabe 59 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0960 Updates: Aufgabe 60 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0961 Updates: Aufgabe 61 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0962 Updates: Aufgabe 62 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0963 Updates: Aufgabe 63 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0964 Updates: Aufgabe 64 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0965 Updates: Aufgabe 65 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0966 Updates: Aufgabe 66 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0967 Updates: Aufgabe 67 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0968 Updates: Aufgabe 68 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0969 Updates: Aufgabe 69 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0970 Updates: Aufgabe 70 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0971 Updates: Aufgabe 71 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0972 Updates: Aufgabe 72 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0973 Updates: Aufgabe 73 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0974 Updates: Aufgabe 74 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0975 Updates: Aufgabe 75 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0976 Updates: Aufgabe 76 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0977 Updates: Aufgabe 77 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0978 Updates: Aufgabe 78 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0979 Updates: Aufgabe 79 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0980 Updates: Aufgabe 80 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0981 Updates: Aufgabe 81 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0982 Updates: Aufgabe 82 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0983 Updates: Aufgabe 83 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0984 Updates: Aufgabe 84 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0985 Updates: Aufgabe 85 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0986 Updates: Aufgabe 86 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0987 Updates: Aufgabe 87 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0988 Updates: Aufgabe 88 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0989 Updates: Aufgabe 89 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0990 Updates: Aufgabe 90 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0991 Updates: Aufgabe 91 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0992 Updates: Aufgabe 92 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0993 Updates: Aufgabe 93 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0994 Updates: Aufgabe 94 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0995 Updates: Aufgabe 95 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0996 Updates: Aufgabe 96 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0997 Updates: Aufgabe 97 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0998 Updates: Aufgabe 98 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T0999 Updates: Aufgabe 99 spezifizieren, implementieren, testen und dokumentieren.
+- [ ] T1000 Updates: Aufgabe 100 spezifizieren, implementieren, testen und dokumentieren.

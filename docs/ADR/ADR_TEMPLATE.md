@@ -1,4 +1,4 @@
-# ADR-0000: [Short title]
+# ADR-NNNN: [Short title]
 
 - **Status:** Proposed | Accepted | Deprecated | Superseded by ADR-XXXX
 - **Date:** YYYY-MM-DD
@@ -6,7 +6,7 @@
 
 ## Context
 
-What problem or force motivates this decision? What constraints apply?
+What problem or constraint motivates this decision?
 
 ## Decision
 
@@ -24,8 +24,7 @@ What is the change we are making?
 
 ### Follow-up
 
-- [ ] Update docs: …
-- [ ] Implementation task in `docs/20_TASKS.md`: …
+- [ ] …
 
 ## Alternatives considered
 
@@ -36,4 +35,3 @@ What is the change we are making?
 ## References
 
 - `docs/…`
-- External links

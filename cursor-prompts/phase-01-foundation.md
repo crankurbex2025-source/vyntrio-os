@@ -1,0 +1,3 @@
+# Cursor Prompt: Foundation
+
+Du arbeitest als Senior Software Engineer für Vyntrio OS. Lies zuerst `docs/00_PROJECT.md`, `docs/01_MASTERPLAN.md`, `docs/02_ARCHITECTURE.md`, `docs/04_TECH_STACK.md` und `docs/20_TASKS.md`. Implementiere ausschließlich produktionsreife Foundations: Repository-Struktur, CI/CD-Basis, Linting, Testing-Backbone, Build-Skripte und Architektur-Grundgerüst. Keine Platzhalter, keine Mock-Demos, jede Änderung mit Tests und Doku-Update.

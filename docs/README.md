@@ -1,35 +1,56 @@
 # Vyntrio OS — Documentation Index
 
-Central index for project documentation. Read in order for onboarding.
+Read in this order for onboarding.
 
-## Start here
+## Product & strategy
 
-| Doc | Purpose | Status |
-|-----|---------|--------|
-| [00_PROJECT.md](00_PROJECT.md) | Vision, goals, scope | **Draft — content required** |
-| [01_MASTERPLAN.md](01_MASTERPLAN.md) | Strategic plan and principles | **Draft — content required** |
-| [02_ARCHITECTURE.md](02_ARCHITECTURE.md) | System architecture | **Draft — content required** |
-| [03_ROADMAP.md](03_ROADMAP.md) | Phased delivery roadmap | **Draft — content required** |
-| [04_TECH_STACK.md](04_TECH_STACK.md) | Technology choices | **Draft — proposed baseline** |
-| [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md) | Phase 0 audit report | **Current** |
+| Doc | Topic |
+|-----|-------|
+| [00_PROJECT.md](00_PROJECT.md) | Vision, goals, positioning |
+| [01_MASTERPLAN.md](01_MASTERPLAN.md) | Phases, governance, delivery |
+| [02_ARCHITECTURE.md](02_ARCHITECTURE.md) | Clean Architecture, modules |
+| [03_ROADMAP.md](03_ROADMAP.md) | Version roadmap (0.1 → 1.0) |
+| [04_TECH_STACK.md](04_TECH_STACK.md) | Technology choices |
 
-## Engineering
+## Domain specifications (future phases — read before implementing)
 
-| Doc | Purpose | Status |
-|-----|---------|--------|
-| [17_SECURITY.md](17_SECURITY.md) | Security requirements and practices | **Draft — content required** |
-| [18_TESTING.md](18_TESTING.md) | Testing strategy | **Draft — content required** |
-| [20_TASKS.md](20_TASKS.md) | Phase-gated task list | **Active** |
-| [21_CURSOR_REPO_SETUP.md](21_CURSOR_REPO_SETUP.md) | Repo bootstrap for Cursor/GitHub | **Current** |
+| Doc | Topic | Phase |
+|-----|-------|-------|
+| [05_STORAGE.md](05_STORAGE.md) | Storage | 0.5 |
+| [06_DASHBOARD.md](06_DASHBOARD.md) | Dashboard UX | 0.4 |
+| [07_BACKEND.md](07_BACKEND.md) | Backend services | 0.3 |
+| [08_FRONTEND.md](08_FRONTEND.md) | Frontend | 0.4 |
+| [09_API.md](09_API.md) | REST/WebSocket API | 0.3 |
+| [10_DATABASE.md](10_DATABASE.md) | Persistence | 0.3 |
+| [11_AUTH.md](11_AUTH.md) | Authentication | 0.3 |
+| [12_NETWORK.md](12_NETWORK.md) | Networking | Later |
+| [13_DOCKER.md](13_DOCKER.md) | Containers | 0.6 |
+| [14_VM.md](14_VM.md) | Virtualization | 0.7 |
+| [15_LICENSE.md](15_LICENSE.md) | Licensing | 0.9 |
+| [16_UPDATE.md](16_UPDATE.md) | Updates | Later |
+| [17_SECURITY.md](17_SECURITY.md) | Security program |
+| [18_TESTING.md](18_TESTING.md) | Test strategy |
+| [19_RELEASE.md](19_RELEASE.md) | Release engineering |
 
-## Other
+## Engineering & process
 
-- [../CONTRIBUTING.md](../CONTRIBUTING.md) — contribution workflow
-- [../adr/README.md](../adr/README.md) — architecture decision records
-- [../README.md](../README.md) — repository overview
+| Doc | Topic |
+|-----|-------|
+| [20_TASKS.md](20_TASKS.md) | Development backlog |
+| [21_CURSOR_REPO_SETUP.md](21_CURSOR_REPO_SETUP.md) | GitHub, SSH, Cursor setup |
+| [ADR/](ADR/) | Architecture decision records |
+| [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md) | Phase 0 audit |
+| [PHASE_1_FOUNDATION_STATUS.md](PHASE_1_FOUNDATION_STATUS.md) | Phase 1 status |
+
+## Root-level references
+
+- [../README.md](../README.md)
+- [../REPOSITORY_STRUCTURE.md](../REPOSITORY_STRUCTURE.md)
+- [../CONTRIBUTING.md](../CONTRIBUTING.md)
+- [../cursor-prompts/](../cursor-prompts/) — phase prompts for Cursor agents
 
 ## Conventions
 
-- Numbered docs (`00_`, `01_`, …) are canonical references
-- Do not implement features not covered by the active phase in `20_TASKS.md`
-- Update this index when adding or renaming documents
+- Numbered docs (`00_`–`21_`) are canonical
+- Do not implement features outside the active phase
+- ADR required for irreversible tech decisions (`docs/ADR/`)

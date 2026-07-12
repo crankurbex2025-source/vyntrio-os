@@ -1,18 +1,30 @@
-# Frontend
+# frontend
 
-Web UI workspace for Vyntrio OS.
+React + TypeScript web dashboard for Vyntrio OS administration.
+
+## Planned stack
+
+See `docs/04_TECH_STACK.md` and `docs/08_FRONTEND.md`:
+
+- React, TypeScript, TailwindCSS
+- TanStack Query, Zustand (or Redux Toolkit)
+- Vite (toolchain selection in Phase 2)
 
 ## Status
 
-Foundation only — framework and application code are not selected or implemented yet. Do not add demo UI until `docs/04_TECH_STACK.md` and `docs/02_ARCHITECTURE.md` are finalized.
+Foundation only — no application UI in Phase 1. Toolchain initialization is Phase 2.
 
-## Commands
-
-From repository root:
+## Local setup (after Phase 2)
 
 ```bash
-make bootstrap
-make test-frontend
+cd frontend
+cp .env.example .env.local   # when applicable
+npm install
+npm run dev
 ```
 
-See `docs/04_TECH_STACK.md` and `docs/18_TESTING.md`.
+## Rules
+
+- No secrets in frontend bundles.
+- API calls go through typed client modules (Phase 2+).
+- No product dashboards until Phase 0.4 (Dashboard).

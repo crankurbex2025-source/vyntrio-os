@@ -15,7 +15,10 @@ REQUIRED_DOCS=(
   "docs/18_TESTING.md"
   "docs/20_TASKS.md"
   "docs/21_CURSOR_REPO_SETUP.md"
+  "docs/ADR/0001-use-clean-architecture.md"
+  "docs/ADR/ADR_TEMPLATE.md"
   "docs/AUDIT_FOUNDATION.md"
+  "docs/PHASE_1_FOUNDATION_STATUS.md"
 )
 
 missing=0

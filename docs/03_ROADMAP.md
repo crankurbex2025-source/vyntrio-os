@@ -1,57 +1,31 @@
-# 03 — Roadmap
+# Roadmap
 
-> **Status:** DRAFT — roadmap skeleton. Dates and scope require owner input.
+## 0.1 Foundation
+Repository, Coding Standards, CI, Build, lokale Dev-Umgebung, Basis-Doku, API-Konventionen.
 
-## Roadmap principles
+## 0.2 Installer & Base OS
+ISO-Build, unattended Install, Disk-Layout, UEFI/BIOS, First-Boot-Assistent.
 
-- Documentation and foundation before features
-- Each phase has explicit entry/exit criteria
-- No phase skipping without ADR
+## 0.3 Core Platform
+Auth, RBAC, Settings, Notifications, Logs, Job-System, Health Endpoints.
 
-## Phases (proposed)
+## 0.4 Dashboard
+Navigation, Widgets, Systemübersicht, Live-Status, Theme, Layout-System.
 
-### Phase 0 — Repository audit and foundation hardening
+## 0.5 Storage
+Disks, SMART, Pools, Shares, Snapshots, Scrub, Restore, Backup Policies.
 
-**Status:** In progress
+## 0.6 Containers
+Docker Host Integration, Compose Stacks, Volumes, Logs, Templates, App Deployments.
 
-- Monorepo skeleton
-- CI foundation
-- Documentation scaffolds
-- Audit report
+## 0.7 Virtualization
+VM Creation Wizard, ISO Library, Snapshots, Console, Passthrough-Basis.
 
-**Exit criteria:** See [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md)
+## 0.8 Vyntrio Hub
+Marketplace, Kategorien, Paketsignaturen, Ratings, Plugin Lifecycle.
 
-### Phase 1 — Core platform slice (TBD)
+## 0.9 Commercial
+Lizenzportal, Aktivierungen, Offline-Files, Edition-Gates, Billing Hooks.
 
-**Status:** Planned — see [20_TASKS.md](20_TASKS.md) and [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md)
-
-TODO: Define exact scope after Phase 0 docs are completed.
-
-Proposed themes (subject to change):
-
-- Authoritative project docs (`00`–`04`, `17`, `18`)
-- Backend health/service skeleton
-- Frontend toolchain selection (ADR required)
-- Local dev bootstrap end-to-end
-
-### Phase 2 — TODO
-
-TODO: First user-visible capability.
-
-### Phase 3 — TODO
-
-TODO: Hardening, security review, expanded test coverage.
-
-## Milestones
-
-| Milestone | Target | Depends on |
-|-----------|--------|------------|
-| M0: Foundation audit complete | Phase 0 | — |
-| M1: Docs baseline accepted | Phase 1 entry | M0 |
-| M2: First runnable vertical slice | Phase 1 exit | M1 |
-| TODO | | |
-
-## Related documents
-
-- [20_TASKS.md](20_TASKS.md)
-- [AUDIT_FOUNDATION.md](AUDIT_FOUNDATION.md)
+## 1.0 Release
+Stabilitätsphase, Beta-Programm, Security Hardening, Upgrade-Tests, Launch-Doku.

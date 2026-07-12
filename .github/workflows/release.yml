@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version tag (e.g. v0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Pre-release validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Foundation checks
+        run: |
+          ./scripts/docs-check.sh
+          ./scripts/verify-layout.sh
+          go test ./...
+          make build
+
+  # ISO build, artifact signing, and GitHub Release upload — Phase 0.2+ / docs/19_RELEASE.md
+  placeholder:
+    name: Release artifacts (not configured)
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - run: |
+          echo "Release workflow validates foundation only in Phase 1."
+          echo "Requested version: ${{ github.event.inputs.version }}"
+          echo "ISO/signing/publish — see docs/19_RELEASE.md and ops/release-checklist.md"

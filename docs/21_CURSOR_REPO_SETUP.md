@@ -1,78 +1,112 @@
-# 21 — Cursor / GitHub Repository Setup
+# Cursor / GitHub Repository Setup
 
-Bootstrap instructions for developers using Cursor IDE and GitHub.
+Setup for GitHub, SSH, Cursor IDE, and the project server.
 
 ## Prerequisites
 
-| Tool | Minimum version | Verify |
-|------|-----------------|--------|
+| Tool | Version | Verify |
+|------|---------|--------|
 | Git | 2.30+ | `git --version` |
-| Go | 1.22+ | `go version` |
+| Go | 1.24+ | `go version` |
 | Node.js | 20+ | `node --version` |
 | npm | 10+ | `npm --version` |
 | Make | any | `make --version` |
-| GitHub CLI (optional) | 2.40+ | `gh --version` |
 
-## Clone the repository
+Optional: [GitHub CLI](https://cli.github.com/) (`gh`), SSH key for GitHub.
+
+## Clone (HTTPS)
 
 ```bash
-# HTTPS (recommended for first setup)
 git clone https://github.com/crankurbex2025-source/vyntrio-os.git
 cd vyntrio-os
-
-# SSH (after SSH key is configured on GitHub)
-# git clone git@github.com:crankurbex2025-source/vyntrio-os.git
+make bootstrap
 ```
 
-**Common mistake:** Do not mix SSH and HTTPS syntax:
+## Clone (SSH — recommended for daily development)
+
+### 1. Generate SSH key (if needed)
+
+```bash
+ssh-keygen -t ed25519 -C "your@email.com" -f ~/.ssh/id_ed25519_github
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519_github
+```
+
+Add the public key (`~/.ssh/id_ed25519_github.pub`) to GitHub → **Settings → SSH and GPG keys**.
+
+### 2. Test SSH
+
+```bash
+ssh -T git@github.com
+```
+
+### 3. Clone
+
+```bash
+git clone git@github.com:crankurbex2025-source/vyntrio-os.git
+cd vyntrio-os
+```
+
+**Common mistake — do not mix SSH and HTTPS:**
 
 ```bash
 # WRONG
 git clone git@https://github.com/crankurbex2025-source/vyntrio-os
 
 # CORRECT
-git clone https://github.com/crankurbex2025-source/vyntrio-os.git
 git clone git@github.com:crankurbex2025-source/vyntrio-os.git
 ```
 
-## Server deployment path
+## Server deployment
 
-On the project server, the repository lives at:
+Production/development server path:
 
 ```text
 /opt/vyntrio-os
 ```
 
+After clone or pull on the server:
+
+```bash
+cd /opt/vyntrio-os
+make bootstrap
+make verify
+```
+
 ## Open in Cursor
 
 1. **File → Open Folder**
-2. Select the repository root (`vyntrio-os/`, not `backend/` alone)
-3. Confirm the root contains `docs/`, `backend/`, `frontend/`, and `Makefile`
+2. Select repository **root** (`vyntrio-os/`)
+3. Confirm presence of `docs/`, `cmd/`, `internal/`, `Makefile`
 
-## Initial bootstrap
+### Cursor agent rules
+
+- Read `docs/20_TASKS.md` for the active phase
+- Read `docs/PHASE_1_FOUNDATION_STATUS.md` for current foundation state
+- Use prompts in `cursor-prompts/` for phase-specific work
+- No demo features, no phase skipping
+
+## Local configuration
 
 ```bash
-cp .env.example .env   # edit as needed; never commit .env
-make bootstrap
-make verify
-make docs-check
-make test
+cp .env.example .env              # root — optional for Phase 1
+cp frontend/.env.example frontend/.env.local   # when frontend is active
 ```
 
-Expected Phase 0 result:
+Never commit `.env` files. See `docs/17_SECURITY.md`.
 
-- All doc checks pass
-- Go tests pass (no packages yet)
-- Frontend test script runs (placeholder message)
+## GitHub authentication (HTTPS)
 
-## GitHub authentication
+If not using SSH:
 
-For HTTPS push/pull, use one of:
+```bash
+gh auth login
+gh auth setup-git
+```
 
-- `gh auth login` then `gh auth setup-git`
-- Personal Access Token with `repo` scope (classic) or **Contents: Read and write** (fine-grained)
+Or use a Personal Access Token with **repo** scope (classic) or **Contents: Read and write** (fine-grained).
 
-**Never paste tokens into chat or commit them.** Revoke any exposed token immediately.
+**Never paste tokens in chat or commit them.**
 
 ## Branch workflow
 
@@ -80,41 +114,34 @@ For HTTPS push/pull, use one of:
 git checkout main
 git pull origin main
 git checkout -b feature/short-description
-# ... work ...
 make verify && make test
 git push -u origin feature/short-description
-# Open PR on GitHub
 ```
 
-## Cursor agent guidelines
+Enable branch protection on `main` (GitHub → Settings → Branches):
 
-When using Cursor Agent on this repo:
+- Require PR before merge
+- Require status checks: `CI / Foundation validation`, `CI / Go build & test`
 
-1. Read `docs/20_TASKS.md` for the active phase
-2. Do not build unplanned features or demo code
-3. Update docs when changing structure or behavior
-4. Run `make verify` before finishing
+## CI overview
 
-## CI
-
-Pull requests to `main` trigger `.github/workflows/ci.yml`:
-
-- Required docs presence
-- Monorepo layout verification
-- Go vet/test
-- Frontend npm test
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | push/PR to `main` | Docs, layout, Go build/test, frontend scripts |
+| `security.yml` | weekly + manual | Secret scan, govulncheck |
+| `release.yml` | manual | Pre-release validation (artifacts in later phases) |
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| `fatal: not a git repository` | `cd` to repo root; ensure `.git` exists |
-| `Permission denied (403)` on push | Token lacks write scope; use classic `repo` or fine-grained Contents write |
-| `go: command not found` | Install Go 1.22+ |
-| `docs-check failed` | Missing doc file; see `scripts/docs-check.sh` list |
-| Wrong directory opened in Cursor | Open repo root, not subdirectory |
+| Problem | Solution |
+|---------|----------|
+| `fatal: not a git repository` | `cd` to repo root |
+| `Permission denied (403)` | Token lacks write scope; use SSH or new token |
+| `go: command not found` | Install Go 1.24+ |
+| `docs-check failed` | Missing doc — see `scripts/docs-check.sh` |
+| Opened subfolder in Cursor | Re-open repo root |
 
-## Related documents
+## Related
 
 - [../README.md](../README.md)
 - [20_TASKS.md](20_TASKS.md)

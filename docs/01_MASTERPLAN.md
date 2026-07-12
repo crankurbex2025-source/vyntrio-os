@@ -1,51 +1,25 @@
-# 01 — Masterplan
+# Masterplan
 
-> **Status:** DRAFT — strategic masterplan not yet authored.
->
-> Phase 0 finding: this document did not exist at audit time.
+## Gesamtstrategie
+Die Entwicklung von Vyntrio OS erfolgt in klar abgegrenzten Produkt- und Plattformphasen. Jede Phase liefert ein testbares, dokumentiertes und releasefähiges Zwischenziel.
 
-## Purpose
+## Phasen
+1. Foundation: Repository, Build-System, CI/CD, Dokumentations-Backbone.
+2. Linux-Basis: Debian-Image, Installer, Bootkette, Hardware-Erkennung.
+3. Platform Core: API, Auth, Settings, Jobs, Events, Telemetrie-Basis.
+4. Dashboard: UX-Framework, Navigation, Widgets, Live-Status.
+5. Storage: Disks, Pools, Shares, Snapshots, Health.
+6. Container: Docker-Engine, Compose, Templates, Logs, Backups.
+7. Virtualisierung: KVM/QEMU/libvirt, VM-Lifecycle, Media, Passthrough.
+8. Hub & Plugins: Marketplace, Signaturen, SDK, Rechte.
+9. Commercial Core: Lizenzierung, Aktivierung, Edition-Gates, Update-Server.
+10. Beta & GA: Hardening, QA, Migrations, Release Engineering.
 
-This document defines how Vyntrio OS is built and governed over time.
+## Lieferprinzip
+Jede Phase endet mit: aktualisierter Doku, Tests, Architektur-Review, Sicherheits-Review, Demo-Szenario, Risiko-Update und Backlog-Repriorisierung.
 
-## Guiding principles
-
-TODO: Define 5–10 principles. Example categories:
-
-- Documentation before code
-- Security by design
-- Testability
-- Operability
-- Incremental delivery
-
-## Product pillars
-
-TODO: Core pillars that every feature must align with.
-
-## Delivery model
-
-TODO:
-
-- Phase-gated development (see [03_ROADMAP.md](03_ROADMAP.md))
-- Release cadence
-- Quality gates
-
-## Decision authority
-
-TODO: Who approves architecture, security, and scope changes?
-
-## Risk register (top-level)
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| TODO | | |
-
-## Dependencies
-
-TODO: External systems, teams, legal/compliance dependencies.
-
-## Related documents
-
-- [00_PROJECT.md](00_PROJECT.md)
-- [03_ROADMAP.md](03_ROADMAP.md)
-- [20_TASKS.md](20_TASKS.md)
+## Governance
+- RFC-Pflicht für Architekturänderungen.
+- ADR-Pflicht für irreversible Technologieentscheidungen.
+- Security Review vor jedem externen Release.
+- Definition of Done umfasst Code, Tests, Doku, Monitoring und Upgrade-Pfad.

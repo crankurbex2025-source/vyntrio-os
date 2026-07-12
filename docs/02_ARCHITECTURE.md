@@ -1,77 +1,54 @@
-# 02 — Architecture
+# Architektur
 
-> **Status:** DRAFT — system architecture not yet defined.
->
-> Phase 0 finding: this document did not exist at audit time.
-> Do not implement services until this document is reviewed and marked **Accepted**.
+## Architekturziel
+Vyntrio OS verwendet eine modulare Clean Architecture mit klarer Trennung zwischen Domain, Application, Infrastructure und Interfaces. Das System wird als lokales Appliance-OS mit integriertem Control Plane konzipiert.
 
-## Overview
+## Schichten
+### Domain
+Enthält die Geschäftslogik für Benutzer, Storage, Container, VMs, Netzwerk, Updates, Lizenzen und Plugins. Keine Framework-Abhängigkeiten.
 
-TODO: High-level description of Vyntrio OS as a system.
+### Application
+Orchestriert Use Cases, Policies, Jobs, Validierung, Event-Publishing und Berechtigungsprüfungen.
 
-## Architectural goals
+### Infrastructure
+Adapter für SQLite/PostgreSQL, Docker, libvirt, systemd, nftables, SMART, Update-Signing, Dateisystem-Tools und Lizenzsignaturen.
 
-TODO:
+### Interfaces
+REST-API, WebSocket-Streams, CLI-Service-Wrappers, Installer-UI und React-Frontend.
 
-- Modularity
-- Security boundaries
-- Scalability assumptions
-- Deployment model
+## Kernmodule
+- Identity & Access
+- System Inventory
+- Storage Service
+- Network Service
+- Container Service
+- VM Service
+- Backup Service
+- Notification Service
+- License Service
+- Update Service
+- Marketplace/Plugin Service
 
-## Context diagram
+## Kommunikationsmodell
+- Synchronous: REST für CRUD, Konfiguration und Admin-Aktionen.
+- Real-time: WebSocket für Status, Logs, Progress, Alerts.
+- Internal: Event Bus für Domain Events und Long-Running Jobs.
 
-TODO: Add diagram (C4 Level 1 or equivalent).
+## Persistenz
+Start mit SQLite für Appliance-Einfachheit; PostgreSQL als spätere Option für größere Installationen und Enterprise-Szenarien.
 
-```text
-[ User ] --> [ Vyntrio OS ] --> [ External systems ]
-```
+## Sicherheitsarchitektur
+- TLS-gesicherte Oberfläche.
+- Argon2 für Passwort-Hashes.
+- Signierte Updates und Plugin-Pakete.
+- RBAC mit auditierbaren Admin-Aktionen.
+- Secrets niemals im Frontend.
 
-## Monorepo structure
+## Deployment-Modell
+Control Plane läuft lokal auf dem Host. Systemnahe Services werden über systemd verwaltet. API und Worker laufen als getrennte Go-Binaries oder Prozesse, das Frontend wird als statisches Web-Bundle ausgeliefert.
 
-Current foundation layout (Phase 0):
-
-```text
-vyntrio-os/
-├── backend/     # Go services and libraries
-├── frontend/    # Web UI workspace
-├── docs/        # Canonical documentation
-├── adr/         # Architecture decision records
-├── scripts/     # Repo automation
-└── .github/     # CI workflows
-```
-
-TODO: Finalize package boundaries inside `backend/` and `frontend/`.
-
-## Core components
-
-TODO: List major components and responsibilities.
-
-| Component | Responsibility | Owner doc |
-|-----------|----------------|-----------|
-| TODO | | |
-
-## Data architecture
-
-TODO: Data stores, schemas, migration strategy.
-
-## API boundaries
-
-TODO: Internal vs external APIs, versioning, auth model.
-
-## Security architecture
-
-See [17_SECURITY.md](17_SECURITY.md). TODO: Link threat model here.
-
-## Observability
-
-TODO: Logging, metrics, tracing approach.
-
-## Deployment topology
-
-TODO: Environments (dev/staging/prod), container strategy, infra.
-
-## Related documents
-
-- [04_TECH_STACK.md](04_TECH_STACK.md)
-- [17_SECURITY.md](17_SECURITY.md)
-- [../adr/README.md](../adr/README.md)
+## Architekturregeln
+- Keine Domain-Abhängigkeit auf Infrastrukturpakete.
+- Jede externe Integration bekommt ein Interface und mindestens einen Adapter.
+- Long-Running Operations laufen als Jobs mit Statusmodell.
+- Breaking Changes benötigen ADR und Migrationskonzept.

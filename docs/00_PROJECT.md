@@ -1,61 +1,34 @@
-# 00 — Project
+# Vyntrio OS
 
-> **Status:** DRAFT — authoritative project definition not yet written.
->
-> Phase 0 finding: this document did not exist in the repository at audit time.
-> Replace all `TODO` sections before Phase 1 implementation.
+## Produktüberblick
+Vyntrio OS ist ein kommerzielles, Linux-basiertes Home-Server- und Private-Cloud-Betriebssystem für Privatanwender, Power User und kleine Unternehmen. Die Plattform kombiniert Storage, Container, Virtualisierung, Netzwerk, Backup, Monitoring, Automatisierung, App Marketplace und ein kommerzielles Lizenzmodell in einem einheitlichen Produkt.
 
-## One-line summary
+## Produktziele
+- Einfache Administration über ein modernes Web-Dashboard.
+- Produktionsreife Architektur für x86_64 mit späterer ARM-Erweiterung.
+- Modularer Unterbau in Go nach Clean-Architecture-Prinzipien.
+- Sichere Update-, Lizenz- und Plugin-Mechanismen.
+- Klare Trennung zwischen Community, Pro und Enterprise.
 
-TODO: Describe Vyntrio OS in one sentence.
+## Positionierung
+Vyntrio OS positioniert sich zwischen Consumer-NAS-Lösungen, Self-Hosting-Plattformen und kleinen On-Prem-Infrastrukturlösungen. Das Produkt soll einfacher als klassische Linux-Server, flexibler als typische NAS-Oberflächen und kontrollierbarer als reine SaaS-Angebote sein.
 
-## Problem statement
+## Leitprinzipien
+1. Sicherheit vor Bequemlichkeit.
+2. UX vor Linux-Komplexität.
+3. Module statt Monolith ohne Grenzen.
+4. Offline-fähige Kernfunktionen.
+5. Kommerzielle Tragfähigkeit durch Editionen und Ökosystem.
 
-TODO:
+## Nicht-Ziele für Version 1.0
+- Kein ARM-First-Release.
+- Kein Kubernetes im Kernprodukt.
+- Kein Multi-Tenant-Hyperscaler-Ansatz.
+- Kein vollwertiger Groupware-Stack im Core.
 
-- What problem does Vyntrio OS solve?
-- Who experiences this problem?
-- Why now?
-
-## Vision
-
-TODO: What does success look like in 12–24 months?
-
-## Goals (measurable)
-
-TODO: List 3–5 measurable goals.
-
-Example format:
-
-- G1: …
-- G2: …
-
-## Non-goals
-
-TODO: Explicitly list what Vyntrio OS is **not** trying to be.
-
-## Target users
-
-TODO: Primary and secondary user personas.
-
-## Scope boundaries
-
-TODO:
-
-- In scope for v1
-- Out of scope for v1
-- Future considerations
-
-## Success criteria
-
-TODO: How do we know v1 is done?
-
-## Stakeholders
-
-TODO: Owner, contributors, reviewers.
-
-## Related documents
-
-- [01_MASTERPLAN.md](01_MASTERPLAN.md)
-- [02_ARCHITECTURE.md](02_ARCHITECTURE.md)
-- [03_ROADMAP.md](03_ROADMAP.md)
+## Erfolgskriterien
+- Installierbare ISO mit stabilem First-Run-Setup.
+- Funktionsfähige Storage-, Container- und VM-Verwaltung.
+- Signierte Updates mit Rollback.
+- Lizenzierbare Pro-/Enterprise-Funktionen.
+- Dokumentierte APIs, Teststrategie und Release-Prozess.

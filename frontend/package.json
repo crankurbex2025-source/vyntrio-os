@@ -1,13 +1,13 @@
 {
   "name": "@vyntrio-os/frontend",
-  "version": "0.0.0",
   "private": true,
-  "description": "Vyntrio OS frontend workspace (foundation scaffold — no application code yet)",
+  "version": "0.1.0",
+  "description": "Vyntrio OS web dashboard — toolchain initialized in Phase 2",
   "scripts": {
-    "fmt": "echo \"No formatter configured yet — see docs/04_TECH_STACK.md\"",
-    "lint": "echo \"No linter configured yet — see docs/04_TECH_STACK.md\"",
-    "test": "echo \"No tests yet — see docs/18_TESTING.md\"",
-    "build": "echo \"No build target yet — see docs/20_TASKS.md\""
+    "dev": "node -e \"console.error('Frontend dev server not configured yet — see docs/08_FRONTEND.md'); process.exit(1)\"",
+    "build": "node -e \"console.error('Frontend build not configured yet — see docs/08_FRONTEND.md'); process.exit(1)\"",
+    "lint": "node -e \"console.log('No ESLint config yet — Phase 2'); process.exit(0)\"",
+    "test": "node -e \"console.log('No frontend tests yet — Phase 2'); process.exit(0)\""
   },
   "engines": {
     "node": ">=20"
