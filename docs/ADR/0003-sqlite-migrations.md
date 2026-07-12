@@ -20,6 +20,7 @@ Slice 1 provides HTTP health endpoints with process-only readiness. Roadmap **0.
 6. **Settings (Slice 2b.1):** Internal repository only — no public HTTP settings API
 7. **Settings (Slice 2c):** Internal read-only consumer in `cmd/api` — load and validate at startup, log only
 8. **Settings (Slice 2d):** Propagate validated settings to structured logging (`hostname`; `timezone` at debug only)
+9. **Settings (Slice 2e):** One-time read-only persistence verification against startup snapshot
 
 ## Rationale
 
@@ -72,6 +73,7 @@ Full entities (Users, Roles, …) remain deferred.
 - [x] Slice 2b.1: sqlc + settings schema (internal repository)
 - [x] Slice 2c: internal read-only settings consumer in `cmd/api`
 - [x] Slice 2d: internal settings propagation to structured logging
+- [x] Slice 2e: internal startup persistence verification (read-only)
 - [ ] Public settings API (after auth/RBAC stub)
 - [ ] Graceful shutdown with DB close (already in `cmd/api`; review for worker)
 - [ ] PostgreSQL ADR when Enterprise path is scheduled

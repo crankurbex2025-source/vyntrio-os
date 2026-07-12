@@ -45,6 +45,12 @@ func main() {
 	}
 	logger = appsettings.LoggerWithSystemSettings(logger, sysSettings, strings.EqualFold(cfg.LogLevel, "debug"))
 
+	snapshot := appsettings.NewSnapshot(sysSettings)
+	if err := appsettings.VerifyPersisted(ctx, settingsRepo, snapshot); err != nil {
+		logger.Error("system settings persistence verification failed", "error", err)
+		os.Exit(1)
+	}
+
 	readiness := health.NewReadiness(store)
 	srv := httpapi.NewServer(cfg, logger, readiness)
 
