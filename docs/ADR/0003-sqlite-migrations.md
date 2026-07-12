@@ -75,7 +75,7 @@ Full entities (Users, Roles, …) remain deferred.
 - [x] Slice 2d: internal settings propagation to structured logging
 - [x] Slice 2e: internal startup persistence verification (read-only)
 - [ ] Public settings API (after auth/RBAC stub)
-- [ ] Graceful shutdown with DB close (already in `cmd/api`; review for worker)
+- [x] Graceful shutdown with DB close (Slice 3.1 — `cmd/api`)
 - [ ] PostgreSQL ADR when Enterprise path is scheduled
 
 ## References

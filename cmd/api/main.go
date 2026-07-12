@@ -3,10 +3,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
@@ -29,17 +33,13 @@ func main() {
 		logger.Error("database startup failed", "error", err, "data_dir", cfg.DataDir)
 		os.Exit(1)
 	}
-	defer func() {
-		if err := store.Close(); err != nil {
-			logger.Error("database close failed", "error", err)
-		}
-	}()
 
 	logger.Info("database ready", "path", store.Path())
 
 	settingsRepo := sqlite.NewSettingsRepository(store.DB())
 	sysSettings, err := appsettings.NewReader(settingsRepo).LoadSystemSettings(ctx)
 	if err != nil {
+		_ = store.Close()
 		logger.Error("system settings load failed", "error", err)
 		os.Exit(1)
 	}
@@ -47,6 +47,7 @@ func main() {
 
 	snapshot := appsettings.NewSnapshot(sysSettings)
 	if err := appsettings.VerifyPersisted(ctx, settingsRepo, snapshot); err != nil {
+		_ = store.Close()
 		logger.Error("system settings persistence verification failed", "error", err)
 		os.Exit(1)
 	}
@@ -54,10 +55,40 @@ func main() {
 	readiness := health.NewReadiness(store)
 	srv := httpapi.NewServer(cfg, logger, readiness)
 
-	if err := srv.ListenAndServe(); err != nil {
-		logger.Error("server stopped", "error", err)
+	errCh := make(chan error, 1)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- err
+		}
+	}()
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case sig := <-sigCh:
+		logger.Info("shutdown signal received", "signal", sig.String())
+	case err := <-errCh:
+		_ = store.Close()
+		logger.Error("server failed", "error", err)
 		os.Exit(1)
 	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		_ = store.Close()
+		logger.Error("http shutdown failed", "error", err)
+		os.Exit(1)
+	}
+
+	if err := store.Close(); err != nil {
+		logger.Error("database close failed", "error", err)
+		os.Exit(1)
+	}
+
+	logger.Info("shutdown complete")
 }
 
 func newLogger(cfg config.Config) *slog.Logger {

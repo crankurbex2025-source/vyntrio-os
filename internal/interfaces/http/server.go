@@ -1,7 +1,7 @@
 package httpapi
 
 import (
-	"fmt"
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -48,7 +48,7 @@ func (s *Server) Addr() string {
 	return s.cfg.Addr()
 }
 
-// Close is a placeholder for graceful shutdown (Slice 2+).
-func (s *Server) Close() error {
-	return fmt.Errorf("graceful shutdown not implemented")
+// Shutdown gracefully stops the HTTP server and waits for in-flight requests.
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.http.Shutdown(ctx)
 }

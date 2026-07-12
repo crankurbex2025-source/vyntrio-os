@@ -27,6 +27,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.ReadTimeout != 15*time.Second {
 		t.Errorf("ReadTimeout = %v, want 15s", cfg.ReadTimeout)
 	}
+	if cfg.ShutdownTimeout != 15*time.Second {
+		t.Errorf("ShutdownTimeout = %v, want 15s", cfg.ShutdownTimeout)
+	}
 	if cfg.Version != "0.2.0-dev" {
 		t.Errorf("Version = %q, want 0.2.0-dev", cfg.Version)
 	}

@@ -15,9 +15,10 @@ type Config struct {
 	LogLevel     string
 	APIHost      string
 	APIPort      int
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	IdleTimeout  time.Duration
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	IdleTimeout     time.Duration
+	ShutdownTimeout time.Duration
 	Version      string
 	BuildCommit  string
 	DataDir      string
@@ -45,14 +46,20 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("VYNTRIO_API_IDLE_TIMEOUT: %w", err)
 	}
 
+	shutdownTimeout, err := time.ParseDuration(getEnv("VYNTRIO_API_SHUTDOWN_TIMEOUT", "15s"))
+	if err != nil {
+		return Config{}, fmt.Errorf("VYNTRIO_API_SHUTDOWN_TIMEOUT: %w", err)
+	}
+
 	cfg := Config{
-		Env:          getEnv("VYNTRIO_ENV", "development"),
-		LogLevel:     getEnv("VYNTRIO_LOG_LEVEL", "info"),
-		APIHost:      getEnv("VYNTRIO_API_HOST", "127.0.0.1"),
-		APIPort:      port,
-		ReadTimeout:  readTimeout,
-		WriteTimeout: writeTimeout,
-		IdleTimeout:  idleTimeout,
+		Env:             getEnv("VYNTRIO_ENV", "development"),
+		LogLevel:        getEnv("VYNTRIO_LOG_LEVEL", "info"),
+		APIHost:         getEnv("VYNTRIO_API_HOST", "127.0.0.1"),
+		APIPort:         port,
+		ReadTimeout:     readTimeout,
+		WriteTimeout:    writeTimeout,
+		IdleTimeout:     idleTimeout,
+		ShutdownTimeout: shutdownTimeout,
 		Version:      getEnv("VYNTRIO_VERSION", "0.2.0-dev"),
 		BuildCommit:  getEnv("VYNTRIO_BUILD_COMMIT", "unknown"),
 		DataDir:      getEnv("VYNTRIO_DATA_DIR", "./data"),
