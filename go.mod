@@ -10,6 +10,7 @@ toolchain go1.24.4
 require (
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
+	golang.org/x/crypto v0.45.0
 	modernc.org/sqlite v1.46.1
 )
 
