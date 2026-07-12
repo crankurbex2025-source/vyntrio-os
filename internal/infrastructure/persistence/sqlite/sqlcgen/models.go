@@ -4,10 +4,40 @@
 
 package sqlcgen
 
+import (
+	"database/sql"
+)
+
 type SchemaMetum struct {
 	Key       string
 	Value     string
 	UpdatedAt string
+}
+
+type SecurityAuditEvent struct {
+	ID            string
+	OccurredAt    string
+	ActorUserID   sql.NullString
+	SubjectUserID sql.NullString
+	EventType     string
+	Result        string
+	IpHash        sql.NullString
+	UserAgentHash sql.NullString
+	MetadataJson  sql.NullString
+}
+
+type Session struct {
+	ID               string
+	SessionTokenHash string
+	UserID           string
+	CsrfTokenHash    string
+	CreatedAt        string
+	ExpiresAt        string
+	IdleExpiresAt    string
+	LastSeenAt       string
+	RevokedAt        sql.NullString
+	UserAgentHash    sql.NullString
+	IpHash           sql.NullString
 }
 
 type Setting struct {
@@ -16,4 +46,17 @@ type Setting struct {
 	Value     string
 	ValueType string
 	UpdatedAt string
+}
+
+type User struct {
+	ID                 string
+	Username           string
+	DisplayName        sql.NullString
+	PasswordHash       string
+	Role               string
+	Status             string
+	MustChangePassword int64
+	CreatedAt          string
+	UpdatedAt          string
+	LastLoginAt        sql.NullString
 }

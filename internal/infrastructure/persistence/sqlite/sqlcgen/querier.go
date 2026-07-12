@@ -9,8 +9,24 @@ import (
 )
 
 type Querier interface {
+	AppendSecurityAuditEvent(ctx context.Context, arg AppendSecurityAuditEventParams) error
+	CountUsers(ctx context.Context) (int64, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) error
+	CreateUser(ctx context.Context, arg CreateUserParams) error
+	DeleteExpiredSessions(ctx context.Context) (int64, error)
+	GetSessionByTokenHash(ctx context.Context, sessionTokenHash string) (GetSessionByTokenHashRow, error)
 	GetSetting(ctx context.Context, arg GetSettingParams) (Setting, error)
+	GetUserByID(ctx context.Context, id string) (GetUserByIDRow, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
+	ListSecurityAuditEvents(ctx context.Context, arg ListSecurityAuditEventsParams) ([]SecurityAuditEvent, error)
 	ListSettingsByNamespace(ctx context.Context, namespace string) ([]Setting, error)
+	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
+	RevokeAllSessionsForUser(ctx context.Context, arg RevokeAllSessionsForUserParams) error
+	RevokeSessionByID(ctx context.Context, arg RevokeSessionByIDParams) error
+	SetUserStatus(ctx context.Context, arg SetUserStatusParams) error
+	TouchSession(ctx context.Context, arg TouchSessionParams) error
+	UpdateUserLastLoginAt(ctx context.Context, arg UpdateUserLastLoginAtParams) error
+	UpdateUserPasswordHash(ctx context.Context, arg UpdateUserPasswordHashParams) error
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) error
 }
 
