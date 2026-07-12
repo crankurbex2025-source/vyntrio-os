@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 func TestLoadDefaults(t *testing.T) {
 	t.Setenv("VYNTRIO_API_PORT", "")
 	t.Setenv("VYNTRIO_API_HOST", "")
+	t.Setenv("VYNTRIO_DATA_DIR", "")
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -27,6 +29,12 @@ func TestLoadDefaults(t *testing.T) {
 	}
 	if cfg.Version != "0.2.0-dev" {
 		t.Errorf("Version = %q, want 0.2.0-dev", cfg.Version)
+	}
+	if cfg.DataDir != "./data" {
+		t.Errorf("DataDir = %q, want ./data", cfg.DataDir)
+	}
+	if cfg.DatabasePath() != filepath.Join(".", "data", "vyntrio.db") {
+		t.Errorf("DatabasePath() = %q", cfg.DatabasePath())
 	}
 }
 

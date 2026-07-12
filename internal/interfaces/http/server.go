@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 )
 
@@ -16,8 +17,8 @@ type Server struct {
 }
 
 // NewServer creates an configured HTTP server (not started).
-func NewServer(cfg config.Config, logger *slog.Logger) *Server {
-	handler := NewRouter(cfg, logger)
+func NewServer(cfg config.Config, logger *slog.Logger, readiness *health.Readiness) *Server {
+	handler := NewRouter(cfg, logger, readiness)
 	return &Server{
 		cfg:    cfg,
 		logger: logger,

@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -8,9 +9,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/middleware"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 )
+
+type stubDB struct{}
+
+func (stubDB) Ping(_ context.Context) error { return nil }
 
 func testRouter(t *testing.T) http.Handler {
 	t.Helper()
@@ -20,7 +26,8 @@ func testRouter(t *testing.T) http.Handler {
 		ReadTimeout: 15 * time.Second,
 	}
 	logger := slog.Default()
-	return NewRouter(cfg, logger)
+	readiness := health.NewReadiness(stubDB{})
+	return NewRouter(cfg, logger, readiness)
 }
 
 func TestRouterHealthz(t *testing.T) {

@@ -10,7 +10,8 @@
 - Go 1.24+
 - **chi** (`go-chi/chi/v5`) für HTTP Layer — see `docs/ADR/0002-use-chi-router.md`
 - **log/slog** (stdlib) für Structured Logging — see `docs/API_CONVENTIONS.md`
-- sqlc oder GORM-freier Query-Layer bevorzugt (Slice 2+)
+- **SQLite** via `modernc.org/sqlite` + **golang-migrate** — see `docs/ADR/0003-sqlite-migrations.md`
+- sqlc (Slice 2b+) für typisierte Queries
 - WebSocket Support (later)
 
 ## Frontend

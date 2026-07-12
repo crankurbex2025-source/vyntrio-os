@@ -31,12 +31,12 @@ paths:
 
   /readyz:
     get:
-      summary: Readiness probe (process-only in Slice 1)
+      summary: Readiness probe (process + database)
       operationId: getReadyz
       tags: [Health]
       responses:
         "200":
-          description: Process is ready
+          description: Process and database are ready
           content:
             application/json:
               schema:
@@ -52,6 +52,29 @@ paths:
                       process:
                         type: string
                         example: ok
+                      database:
+                        type: string
+                        example: ok
+        "503":
+          description: Not ready (database unavailable)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, checks]
+                properties:
+                  status:
+                    type: string
+                    example: not_ready
+                  checks:
+                    type: object
+                    properties:
+                      process:
+                        type: string
+                        example: ok
+                      database:
+                        type: string
+                        example: error
 
   /api/v1/version:
     get:

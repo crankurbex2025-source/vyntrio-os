@@ -1,14 +1,26 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 )
 
+type pingOK struct{}
+
+func (pingOK) Ping(_ context.Context) error { return nil }
+
+type pingFail struct{}
+
+func (pingFail) Ping(_ context.Context) error { return errors.New("unavailable") }
+
 func TestHealthLive(t *testing.T) {
-	h := NewHealth()
+	h := NewHealth(health.NewReadiness(nil))
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
 
@@ -27,8 +39,8 @@ func TestHealthLive(t *testing.T) {
 	}
 }
 
-func TestHealthReady(t *testing.T) {
-	h := NewHealth()
+func TestHealthReadyDatabaseOK(t *testing.T) {
+	h := NewHealth(health.NewReadiness(pingOK{}))
 	req := httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	rec := httptest.NewRecorder()
 
@@ -45,30 +57,30 @@ func TestHealthReady(t *testing.T) {
 	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if body.Status != "ready" {
-		t.Errorf("status = %q, want ready", body.Status)
-	}
-	if body.Checks["process"] != "ok" {
-		t.Errorf("checks.process = %q, want ok", body.Checks["process"])
+	if body.Status != "ready" || body.Checks["database"] != "ok" {
+		t.Errorf("body = %+v", body)
 	}
 }
 
-func TestVersion(t *testing.T) {
-	v := NewVersion("0.2.0-dev", "abc123")
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/version", nil)
+func TestHealthReadyDatabaseError(t *testing.T) {
+	h := NewHealth(health.NewReadiness(pingFail{}))
+	req := httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	rec := httptest.NewRecorder()
 
-	v.ServeHTTP(rec, req)
+	h.Ready(rec, req)
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want 200", rec.Code)
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want 503", rec.Code)
 	}
 
-	var body map[string]string
+	var body struct {
+		Status string            `json:"status"`
+		Checks map[string]string `json:"checks"`
+	}
 	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
 		t.Fatalf("decode: %v", err)
 	}
-	if body["version"] != "0.2.0-dev" || body["commit"] != "abc123" {
-		t.Errorf("body = %#v", body)
+	if body.Status != "not_ready" || body.Checks["database"] != "error" {
+		t.Errorf("body = %+v", body)
 	}
 }

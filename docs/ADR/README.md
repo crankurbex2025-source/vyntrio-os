@@ -10,6 +10,7 @@ Governance: see `docs/01_MASTERPLAN.md` — ADR required for irreversible techno
 |-----|--------|-------|
 | [0001](0001-use-clean-architecture.md) | **Accepted** | Use Clean Architecture |
 | [0002](0002-use-chi-router.md) | **Accepted** | Use chi for HTTP routing |
+| [0003](0003-sqlite-migrations.md) | **Accepted** | SQLite with golang-migrate (sqlc deferred) |
 | [Template](ADR_TEMPLATE.md) | Template | ADR template |
 
 ## Process

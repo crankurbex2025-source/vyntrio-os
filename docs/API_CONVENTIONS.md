@@ -31,8 +31,14 @@ JSON object bodies. Examples (Slice 1):
 ```
 
 ```json
-{"status":"ready","checks":{"process":"ok"}}
+{"status":"ready","checks":{"process":"ok","database":"ok"}}
 ```
+
+```json
+{"status":"not_ready","checks":{"process":"ok","database":"error"}}
+```
+
+(Slice 2: `/readyz` returns **503** when `database` is `error`.)
 
 ```json
 {"version":"0.2.0-dev","commit":"unknown"}
@@ -82,5 +88,6 @@ All non-2xx JSON errors use this shape:
 | `VYNTRIO_API_IDLE_TIMEOUT` | no | `60s` | Server idle timeout |
 | `VYNTRIO_VERSION` | no | `0.2.0-dev` | Reported API version |
 | `VYNTRIO_BUILD_COMMIT` | no | `unknown` | Git commit for `/api/v1/version` |
+| `VYNTRIO_DATA_DIR` | no | `./data` | SQLite data directory (`{dir}/vyntrio.db`) |
 
-Copy from `.env.example`. Never commit `.env`.
+Copy from `.env.example`. Never commit `.env` or `data/` contents.

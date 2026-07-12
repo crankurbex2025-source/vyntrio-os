@@ -2,11 +2,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"log/slog"
 	"os"
 	"strings"
 
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 )
@@ -18,7 +21,23 @@ func main() {
 	}
 
 	logger := newLogger(cfg)
-	srv := httpapi.NewServer(cfg, logger)
+
+	ctx := context.Background()
+	store, err := sqlite.Open(ctx, cfg.DataDir)
+	if err != nil {
+		logger.Error("database startup failed", "error", err, "data_dir", cfg.DataDir)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := store.Close(); err != nil {
+			logger.Error("database close failed", "error", err)
+		}
+	}()
+
+	logger.Info("database ready", "path", store.Path())
+
+	readiness := health.NewReadiness(store)
+	srv := httpapi.NewServer(cfg, logger, readiness)
 
 	if err := srv.ListenAndServe(); err != nil {
 		logger.Error("server stopped", "error", err)

@@ -4,6 +4,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -19,6 +20,7 @@ type Config struct {
 	IdleTimeout  time.Duration
 	Version      string
 	BuildCommit  string
+	DataDir      string
 }
 
 // Load reads configuration from environment variables with documented defaults.
@@ -53,6 +55,7 @@ func Load() (Config, error) {
 		IdleTimeout:  idleTimeout,
 		Version:      getEnv("VYNTRIO_VERSION", "0.2.0-dev"),
 		BuildCommit:  getEnv("VYNTRIO_BUILD_COMMIT", "unknown"),
+		DataDir:      getEnv("VYNTRIO_DATA_DIR", "./data"),
 	}
 
 	if cfg.APIPort < 1 || cfg.APIPort > 65535 {
@@ -60,6 +63,11 @@ func Load() (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+// DatabasePath returns the SQLite database file path.
+func (c Config) DatabasePath() string {
+	return filepath.Join(c.DataDir, "vyntrio.db")
 }
 
 // Addr returns the host:port listen address.

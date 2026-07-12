@@ -52,6 +52,9 @@ distro/output/
 # Archives (do not commit source bundles)
 *.zip
 
+data/
+*.db
+
 # Logs and temp
 *.log
 tmp/
