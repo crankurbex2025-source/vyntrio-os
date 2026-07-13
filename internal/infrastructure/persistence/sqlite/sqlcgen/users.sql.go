@@ -54,6 +54,50 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	return err
 }
 
+const createUserIfNoUsersExist = `-- name: CreateUserIfNoUsersExist :execrows
+INSERT INTO users (
+    id, username, display_name, password_hash, role, status, must_change_password,
+    created_at, updated_at
+)
+SELECT
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    datetime('now'),
+    datetime('now')
+WHERE (SELECT COUNT(*) FROM users) = 0
+`
+
+type CreateUserIfNoUsersExistParams struct {
+	ID                 string
+	Username           string
+	DisplayName        sql.NullString
+	PasswordHash       string
+	Role               string
+	Status             string
+	MustChangePassword int64
+}
+
+func (q *Queries) CreateUserIfNoUsersExist(ctx context.Context, arg CreateUserIfNoUsersExistParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, createUserIfNoUsersExist,
+		arg.ID,
+		arg.Username,
+		arg.DisplayName,
+		arg.PasswordHash,
+		arg.Role,
+		arg.Status,
+		arg.MustChangePassword,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT
     id, username, display_name, role, status, must_change_password,

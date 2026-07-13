@@ -50,3 +50,20 @@ LIMIT sqlc.arg(row_limit);
 -- name: CountUsers :one
 SELECT COUNT(*) AS count
 FROM users;
+
+-- name: CreateUserIfNoUsersExist :execrows
+INSERT INTO users (
+    id, username, display_name, password_hash, role, status, must_change_password,
+    created_at, updated_at
+)
+SELECT
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    datetime('now'),
+    datetime('now')
+WHERE (SELECT COUNT(*) FROM users) = 0;

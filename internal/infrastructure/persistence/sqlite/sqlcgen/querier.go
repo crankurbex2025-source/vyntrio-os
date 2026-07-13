@@ -13,6 +13,7 @@ type Querier interface {
 	CountUsers(ctx context.Context) (int64, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) error
+	CreateUserIfNoUsersExist(ctx context.Context, arg CreateUserIfNoUsersExistParams) (int64, error)
 	DeleteExpiredSessions(ctx context.Context) (int64, error)
 	GetSessionByTokenHash(ctx context.Context, sessionTokenHash string) (GetSessionByTokenHashRow, error)
 	GetSetting(ctx context.Context, arg GetSettingParams) (Setting, error)

@@ -27,7 +27,7 @@ func testRouter(t *testing.T) http.Handler {
 	}
 	logger := slog.Default()
 	readiness := health.NewReadiness(stubDB{})
-	return NewRouter(cfg, logger, readiness)
+	return NewRouter(cfg, logger, readiness, nil)
 }
 
 func TestRouterHealthz(t *testing.T) {

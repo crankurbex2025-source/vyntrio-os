@@ -13,9 +13,11 @@ import (
 	"syscall"
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
+	appidentity "github.com/crankurbex2025-source/vyntrio-os/internal/application/identity"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 )
 
@@ -53,7 +55,19 @@ func main() {
 	}
 
 	readiness := health.NewReadiness(store)
-	srv := httpapi.NewServer(cfg, logger, readiness)
+
+	hasher, err := appidentity.NewPasswordHasher(appidentity.DefaultArgon2idConfig)
+	if err != nil {
+		_ = store.Close()
+		logger.Error("password hasher init failed", "error", err)
+		os.Exit(1)
+	}
+	userRepo := sqlite.NewUserRepository(store.DB())
+	bootstrapRepo := sqlite.NewBootstrapRepository(store.DB())
+	bootstrapService := appidentity.NewBootstrapService(hasher, bootstrapRepo, userRepo)
+	bootstrapHandler := handlers.NewBootstrap(handlers.BootstrapDeps{Service: bootstrapService})
+
+	srv := httpapi.NewServer(cfg, logger, readiness, bootstrapHandler)
 
 	errCh := make(chan error, 1)
 	go func() {

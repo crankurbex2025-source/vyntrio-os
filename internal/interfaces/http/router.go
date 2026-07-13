@@ -14,7 +14,7 @@ import (
 )
 
 // NewRouter builds the HTTP router with middleware and routes.
-func NewRouter(cfg config.Config, logger *slog.Logger, readiness *health.Readiness) http.Handler {
+func NewRouter(cfg config.Config, logger *slog.Logger, readiness *health.Readiness, bootstrap *handlers.Bootstrap) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -28,6 +28,9 @@ func NewRouter(cfg config.Config, logger *slog.Logger, readiness *health.Readine
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/version", handlers.NewVersion(cfg.Version, cfg.BuildCommit).ServeHTTP)
+		if bootstrap != nil {
+			r.Post("/identity/bootstrap", bootstrap.ServeHTTP)
+		}
 	})
 
 	r.NotFound(notFoundHandler)
