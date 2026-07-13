@@ -49,7 +49,10 @@ Control Plane läuft lokal auf dem Host. Systemnahe Services werden über system
 
 **Implementiert (v1):** Das produktive Frontend wird als statisches Vite-Bundle gebaut, per `go:embed` in das API-Binary eingebettet und same-origin vom selben Binary ausgeliefert (`/assets/*` plus `index.html`-SPA-Fallback für erlaubte GET/HEAD-Pfade). API-, Health- und Readiness-Routen behalten Priorität. Der API-Server lädt Laufzeitkonfiguration aus `/etc/vyntrio/config.toml` (TOML, Fail-Closed, Neustart statt Live-Reload); persistenter State unter `/var/lib/vyntrio/` mit startup-time Pfad-/Symlink-Validierung (ohne race-freie SQLite-Eindämmung). **Slice 7.3:** systemd-Unit, statisches `vyntrio`-Konto und Ownership-Modell (`distro/systemd/`). Details: `docs/09_API.md`, `docs/17_SECURITY.md`, `docs/19_RELEASE.md`, `docs/ADR/0005-appliance-runtime-operations.md`.
 
-**Beschlossener Block-7-Vertrag (teilweise implementiert):** Backup/Restore-CLI und Packaging bleiben zukünftige Slices. Docker/OCI, ISO, Kubernetes, Clustering und Multi-Node bleiben ausdrücklich zurückgestellt.
+**Beschlossener Block-7-Vertrag (teilweise implementiert):** Backup/Restore-CLI
+(Slice 7.8 Architekturvertrag, noch ohne Implementierung) und Packaging bleiben
+zukünftige Slices. Docker/OCI, ISO, Kubernetes, Clustering und Multi-Node bleiben
+ausdrücklich zurückgestellt.
 
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.

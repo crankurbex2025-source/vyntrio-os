@@ -53,12 +53,16 @@ Current runtime truth (verified against `cmd/api/main.go`,
 - The binary requires no source checkout, `frontend/dist`, `node_modules`,
   Vite, dev proxy, or static-files directory at runtime.
 
-There is no backup/restore story yet. **Slice 7.3 (implemented):** systemd unit,
+**Not implemented:** backup CLI, restore CLI, backup timer, retention,
+encryption, or remote upload. **Slice 7.8 (accepted contract):** binding
+backup/restore safety architecture documented in sections **G** and **H** below;
+implementation remains a future slice. **Slice 7.3 (implemented):** systemd unit,
 static `vyntrio` service identity declaration, tmpfiles layout for
 `/etc/vyntrio`, and conservative unit sandboxing. Config-file ownership is
 documented for administrators; runtime enforcement of config ownership modes
 beyond startup readability checks remains packaging/operator responsibility.
-Later slices must implement backup/restore against the contract below.
+Later implementation slices must follow the contract below without expanding
+scope beyond what is explicitly approved.
 
 ## Decision
 
@@ -126,7 +130,7 @@ Intended v1 layout:
 | `/usr/bin/vyntrio-api` (or `/usr/lib/vyntrio/`) | installed immutable binary | read/execute only |
 | `/etc/vyntrio/` | root-administered configuration | read-only |
 | `/var/lib/vyntrio/` | persistent state incl. SQLite | read/write (only writable state) |
-| `/var/lib/vyntrio/backups/` | optional local backup destination | read/write (future backup slice) |
+| `/var/lib/vyntrio/backups/` | root-only local backup destination (future CLI) | **no service-account write** (future slice) |
 | `/run/vyntrio/` | ephemeral runtime files | read/write, only if a future slice needs it |
 
 - The database file and SQLite sidecar files must remain within the dedicated
@@ -189,36 +193,272 @@ Intended v1 layout:
   the configured timeout, flush/close persistence according to the current
   SQLite policy, then exit.
 
-### G. Backup contract (future CLI slice)
+### G. Backup contract (Slice 7.8 — approved for future implementation)
 
-- Backups are a **local administrator CLI feature** — not a web/API/UI
-  feature, not an automated background job, not a cloud upload.
-- A backup must be **SQLite-consistent**. Raw file copy of a live database is
-  **never** a documented backup mechanism. The later implementation prefers
-  the SQLite Backup API (e.g. `VACUUM INTO` or the online backup interface),
-  chosen only after verifying compatibility with the repository's driver
-  (`modernc.org/sqlite`) and its single-connection locking policy.
-- Output constraints: explicit destination, destination validation, write to a
-  temporary file with restrictive permissions, integrity verification, atomic
-  final rename only after success, and **no session/CSRF/password/token
-  material in logs or backup metadata**.
-- v1 has no automatic retention, scheduler, encryption-key management, remote
-  upload, or web-triggered backup.
+**Status:** architecture contract only. No backup command, script, timer, API,
+UI, encryption, retention, or remote target exists in the current deployment.
 
-### H. Restore contract (future offline operation)
+#### G.1 Authority and access model
 
-- Restore is an **explicitly invoked offline/local administrator operation** —
-  never an API endpoint, UI feature, background action, or automatic rollback.
-- Intended high-level sequence:
-  stop service → validate candidate backup → preserve/handle current state
-  according to a future explicit policy → atomically replace state → enforce
-  ownership/mode → start service → verify readiness.
-- Restore design must account for **session invalidation** (restored session
-  rows do not match live browser state), **audit-log semantics** (the restore
-  itself must be operator-visible), **database-version compatibility**
-  (migration state of the backup versus the installed binary), and
-  operator-visible recovery evidence. Destructive overwrite details beyond
-  this safety contract are not decided here.
+- Backups are a **local root-operator CLI feature** — not a web/API/UI feature,
+  not a `vyntrio` service-account action on completed artifacts, not an
+  automated background job, and not a cloud or network upload.
+- Root/administrator access is already inside the operational trust boundary
+  for appliance administration. This contract does **not** add protection
+  against a malicious or concurrent local writer in the state directory, nor
+  race-free path containment beyond what startup validation already documents.
+
+#### G.2 Backup scope (included / excluded)
+
+**Included in a future backup set:**
+
+| Member | Path / scope | Notes |
+|--------|----------------|-------|
+| SQLite main database | `<state_dir>/vyntrio.db` | Required |
+| SQLite sidecars (if present) | `vyntrio.db-journal`, `vyntrio.db-wal`, `vyntrio.db-shm` | Copy only files that exist at backup time |
+| Runtime configuration (companion) | `/etc/vyntrio/config.toml` | Separate manifest member; see G.5 |
+
+**Excluded (never implied by v1 backup):**
+
+- Installed binary (`/usr/bin/vyntrio-api`), embedded frontend build output,
+  systemd unit files, sysusers/tmpfiles artifacts, Nginx/Certbot/TLS material,
+  Cloudflare/DNS/firewall state, OS packages, logs, `/tmp`, credentials stored
+  outside the explicitly included config file, operator shell history, and
+  third-party data.
+- Optional future application-managed persistent files **do not exist today**;
+  if added later, they require an explicit contract extension before inclusion.
+
+`/etc/vyntrio/config.toml` must **not** be documented as always safe to copy
+blindly: the v1 schema has no secrets, but future keys may hold sensitive
+material. The future CLI must treat config as operator-protected data, apply
+restrictive permissions to any copied config member, and never emit raw config
+contents in logs or operator-visible success output.
+
+#### G.3 SQLite consistency model (first implementation decision)
+
+**Current persistence facts (implemented):**
+
+- Database path: `<state_dir>/vyntrio.db` with `state_dir` fixed to
+  `/var/lib/vyntrio` in production.
+- Driver: `modernc.org/sqlite` v1.46.1; DSN is pathname-based; pool limited to
+  one connection; only `foreign_keys` pragma is set — **journal mode is not
+  configured explicitly** and therefore remains SQLite default **DELETE**
+  (rollback journal sidecar `vyntrio.db-journal` when a transaction is active).
+- WAL/SHM are not enabled now but are rejected as symlinks at startup if
+  present; a future journal-mode change would make sidecar handling mandatory.
+- Graceful shutdown is implemented: `SIGINT`/`SIGTERM` → `http.Server.Shutdown`
+  with configured timeout → `store.Close()` (`cmd/api/main.go`). systemd uses
+  `KillSignal=SIGTERM`. Shutdown drains in-flight HTTP work but is **not** a
+  separate maintenance/quiesce API.
+
+**Approaches considered (conceptual only — not implemented):**
+
+| Approach | Role in v1 contract |
+|----------|---------------------|
+| 1. Stop `vyntrio-api.service`, then copy state files | **Approved first implementation** |
+| 2. SQLite online backup API via application/driver | Deferred; requires explicit driver verification and new code |
+| 3. External `sqlite3 .backup` / equivalent | Deferred; adds tooling dependency and operator foot-guns |
+| 4. Raw filesystem copy while service is running | **Forbidden** as a documented backup mechanism |
+
+**Approved first-implementation sequence (contract level):**
+
+1. Verify `vyntrio-api.service` is running or intentionally stopped for
+   maintenance; refuse backup if state is ambiguous without operator intent.
+2. `systemctl stop vyntrio-api.service` and prove **inactive** (or equivalent
+   verified stop). If stop fails, abort with a non-zero exit and **no**
+   published artifact.
+3. Copy `vyntrio.db` and every **existing** known sidecar file from
+   `/var/lib/vyntrio/` into a root-only temporary staging area inside the
+   approved backup destination (see G.6). Copying **only** `vyntrio.db` while
+   the service is active is **not** a guaranteed-consistent backup because
+   DELETE-journal and future WAL sidecars may be mid-write.
+4. Optionally copy `/etc/vyntrio/config.toml` as a separate companion member
+   per G.5.
+5. Build manifest, compute SHA-256 digests, atomically publish the completed
+   artifact (G.5).
+6. `systemctl start vyntrio-api.service` — required after successful artifact
+   publication **and** after any backup failure path that stopped the service
+   (including copy/manifest/checksum failures before publication).
+7. Prove restart success before reporting backup completion: service **active**,
+   local loopback `http://127.0.0.1:<listen_port>/healthz` returns success, and
+   local loopback `/readyz` returns success. This is a **future operational
+   contract only**; no backup command or runbook exists today.
+8. A future implementation must **not** report backup success unless steps 6–7
+   succeed. If restart or either local probe fails, report backup **failure**
+   clearly, preserve a completed artifact only according to the future operator
+   contract, and do **not** claim the appliance returned to service.
+9. On copy/manifest/checksum failure **before** publication: remove temporary
+   files, attempt service restart per steps 6–7, exit non-zero if restart or
+   local probes fail, and do not leave a restore candidate behind.
+
+**Explicit non-guarantees:** no crash-consistent snapshot of a live database;
+no protection against a malicious local actor replacing files between stop and
+copy; no symlink-traversal-resistant copy until a future implementation adds
+one.
+
+#### G.4 Artifact format, integrity, and configuration packaging
+
+**Approved v1 local artifact model:**
+
+- **Format identifier:** `vyntrio-backup-v1` (future CLI must reject unknown
+  format versions fail-closed).
+- **Publication pattern:** write under a root-only temporary name inside the
+  backup destination, verify digests, then **atomic rename** to the final
+  artifact name. Incomplete/temporary prefixes are **never** restore candidates.
+- **Final name (contract):**
+  `vyntrio-backup-v1_<UTC-timestamp>.tar` (exact archive layout is
+  implementation detail; members below are normative).
+- **Restrictive permissions:** completed artifact and manifest readable/writable
+  only by root (mode `0600` or tighter directory `0700` policy — see G.6).
+- **Manifest (required, JSON or equivalent):** artifact format version, creation
+  timestamp (UTC), installed `vyntrio-api` version/commit metadata when safely
+  determinable, database schema/migration revision metadata when safely
+  determinable, per-member relative path, byte size, SHA-256 digest.
+- **Checksum rule:** future restore tooling must verify manifest digests before
+  touching production state. A per-member SHA-256 match does **not** make an
+  unsafe archive path or disallowed member name safe; path validation remains
+  mandatory (see H.2).
+- **Config packaging decision (approved):** configuration is a **separate
+  manifest member** (`config.toml`) inside the same backup artifact, not merged
+  into the database file. Rationale: keeps SQLite state and host-runtime config
+  distinguishable for partial recovery and makes future secret-bearing config
+  keys explicit in operator handling. Operators may omit config capture via a
+  future explicit CLI flag; default is include-with-warning.
+
+**Out of scope for first implementation:** encryption, signing, deduplication,
+compression, remote upload, retention pruning, and key management.
+
+#### G.5 Observability (future CLI)
+
+Safe operator-visible reporting only:
+
+- start / completion / failure status;
+- artifact identifier and destination **classification** (not contents);
+- SHA-256 digests in logs **allowed** (not treated as secrets);
+- **never** passwords, raw config values, cookies, session IDs, CSRF tokens,
+  database rows, or credential material.
+
+Structured audit events for backup are **deferred** unless a later slice extends
+the audit schema without widening this slice.
+
+#### G.6 Backup destination and access boundary
+
+- **Approved destination root:** `/var/lib/vyntrio/backups/` (root-controlled).
+  The `vyntrio` service account must **not** receive write access to completed
+  backup artifacts or the destination directory unless a future slice explicitly
+  revisits this boundary with justification. Backup creation runs as **root**.
+- Destination and temp paths must be **absolute**, fixed or allowlisted, and
+  validated; arbitrary operator-supplied paths are rejected.
+- Symlink traversal resistance is **not** claimed until implemented.
+- No HTTP/API/UI download or upload surface.
+
+### H. Restore contract (Slice 7.8 — approved for future implementation)
+
+**Status:** architecture contract only. No restore command exists today.
+
+#### H.1 Access model
+
+- Restore is an **explicitly invoked offline root-operator procedure** — never
+  an API endpoint, UI feature, background action, live in-place rollback, or
+  automatic recovery.
+- Restore does **not** replace application binaries, systemd units, Nginx, TLS,
+  Certbot certificates, DNS, firewall rules, host users/groups, or non-Vyntrio
+  packages.
+
+#### H.2 Required operator sequence
+
+1. Operator selects a **completed** backup artifact (reject temp/incomplete names).
+2. Before touching active Vyntrio state or extracting the archive, a future
+   implementation must validate the artifact fail-closed:
+   - recognize only the approved backup artifact format and manifest;
+   - enumerate every archive member;
+   - reject absolute paths;
+   - reject `..` traversal components;
+   - reject empty, malformed, duplicate, unexpected, or disallowed member names;
+   - reject symlink, hard-link, device, FIFO, socket, or other non-regular-file
+     archive entries unless a later approved contract explicitly supports them;
+   - allow only the exact approved member set for the recognized artifact format;
+   - verify per-member SHA-256 digests from the manifest (checksum match alone
+     does not authorize extraction of an unsafe or disallowed path).
+   If any validation fails, abort without modifying active Vyntrio state.
+3. `systemctl stop vyntrio-api.service` and prove **inactive**. **Refuse** restore
+   if stop cannot be proven.
+4. Create a **root-only pre-restore preservation copy** of current
+   `/var/lib/vyntrio/` state (and current `/etc/vyntrio/config.toml` if config
+   restore is requested) under a timestamped directory beneath
+   `/var/lib/vyntrio/backups/` or another fixed root-only preserve root.
+5. Extract and restore validated SQLite member files only into `/var/lib/vyntrio/`
+   and validated config member only into `/etc/vyntrio/config.toml` when included.
+6. Enforce ownership/mode: state directory and DB files `vyntrio:vyntrio` with
+   directory `0750` and database `0640` (or stricter); config `root:vyntrio`
+   `0640`.
+7. `systemctl start vyntrio-api.service` and prove service **active**.
+8. Prove application recovery via **local** `http://127.0.0.1:<listen_port>/healthz`
+   and `/readyz` only (not public HTTPS in the restore tool). Readiness success
+   is the final application-level validation; it is **not** proof of every
+   historical workflow, session continuity, or transactional host recovery.
+9. Emit operator-visible outcome summary without config contents, credentials,
+   session data, or database rows.
+
+#### H.3 Rollback boundary
+
+- If manifest or archive-member validation, file placement, ownership repair,
+  service start, or readiness proof fails, the operator procedure must document
+  attempting rollback to the pre-restore preservation copy created in step 4.
+- **Not guaranteed:** rollback after external interruption (power loss, kill -9,
+  manual deletion mid-restore). Operators must treat a failed restore as an
+  incident requiring manual inspection of preserve copies.
+
+#### H.4 Post-restore semantics (operator expectations)
+
+- **Session invalidation:** restored session rows will not match live browser
+  cookies; users must re-authenticate.
+- **Audit semantics:** restore is operator-driven; application audit tables reflect
+  restored history — a future CLI may append an operator-visible audit entry only
+  if a later slice extends schema support.
+- **Readiness success** is the final application-level validation; it is **not**
+  proof that every historical workflow or browser session survived.
+
+#### H.5 Compatibility and migrations
+
+- Unknown or newer `vyntrio-backup-v1` successor formats must **fail closed**.
+- Before restore, compare backup metadata (when present) against installed binary
+  and embedded migration revision. **Schema downgrade is unsupported** unless
+  explicitly implemented later.
+- Forward upgrade after restore may run embedded migrations on next start only
+  where existing migration code proves upgrade paths; restore must not assume
+  downgrade safety.
+- Cross-major incompatibility must abort before overwriting live state.
+
+#### H.6 Explicit restore exclusions
+
+No live restore; no web/API/UI restore; no restore from arbitrary unsigned
+archives outside the approved layout; no credential/key recovery beyond what
+exists in restored files; no multi-node orchestration; no encryption, signing, or
+key management in v1.
+
+#### H.7 Deferred implementation topics (explicit)
+
+The following remain **out of scope** until dedicated future slices:
+
+- backup implementation (script/binary command);
+- systemd backup timer or scheduling;
+- retention/pruning;
+- compression;
+- encryption and key management;
+- signatures;
+- remote/cloud/network targets (S3, WebDAV, rclone, etc.);
+- UI/API backup or restore;
+- incremental backup;
+- online SQLite backup API / custom VFS;
+- filesystem snapshots;
+- restore preview;
+- role-based delegated backup authority;
+- installer/package integration beyond documenting paths;
+- monitoring/alerting integration;
+- tested disaster-recovery runbook execution;
+- symlink-race-resistant file operations;
+- full-host or infrastructure configuration backup.
 
 ### I. Networking and transport boundary
 
@@ -267,7 +507,9 @@ Intended v1 layout:
       inputs and the CWD-derived `./data` default.
 - [x] systemd slice: unit file, service account provisioning, tmpfiles/state
       directory ownership, sandboxing per section E.
-- [ ] Backup CLI slice per section G; restore procedure per section H.
+- [x] Slice 7.8 backup/restore safety architecture contract (sections G, H).
+- [ ] Backup CLI implementation per section G.
+- [ ] Restore CLI implementation per section H.
 - [ ] Upgrade/migration-policy slice per section J.
 - [ ] Distribution-tested seccomp/`SystemCallFilter` hardening slice.
 

@@ -82,5 +82,12 @@ Legacy-`VYNTRIO_*`-Umgebungsvariablen beeinflussen den API-Server nicht mehr.
 empfohlen). Systemd/Ownership operationalisiert die Trusted-Admin-Annahme;
 pathname-basiertes SQLite bleibt nicht race-frei.
 
-**Beschlossen, noch nicht implementiert:** Backup/Restore-CLI.
-Autoritativ: `docs/ADR/0005-appliance-runtime-operations.md`.
+**Beschlossen (Slice 7.8), noch nicht implementiert:** lokale
+Backup/Restore-Architektur für Root-Operatoren — Service-Stop vor
+SQLite-Dateikopie, Manifest mit SHA-256, Ziel unter
+`/var/lib/vyntrio/backups/` (root-only), Offline-Restore mit
+Pre-Restore-Preserve und Readiness-Nachweis über Loopback. Kein API/UI-Zugriff,
+keine Verschlüsselung/Retention/Cloud in v1. Konfigurationskopie als separater
+Manifest-Member; zukünftige Geheimnisse in `config.toml` erfordern expliziten
+Operator-Schutz. Autoritativ: `docs/ADR/0005-appliance-runtime-operations.md`
+(Abschnitte G, H).

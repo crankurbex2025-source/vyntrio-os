@@ -93,3 +93,18 @@ the production binary is absent.
 - `MemoryDenyWriteExecute` is intentionally omitted: Go runtimes may require
   executable heap mappings.
 - `SystemCallFilter`/seccomp hardening remains deferred per ADR-0005.
+
+## Future offline backup/restore (not implemented)
+
+Block 7 Slice 7.8 defines the **approved architecture contract only**. Current
+deployment has **no** backup command, timer, API, or restore tool.
+
+When implemented, backup and restore will be **root-operator, offline** actions:
+
+- stop `vyntrio-api.service` before copying SQLite state;
+- write completed artifacts under `/var/lib/vyntrio/backups/` (root-controlled;
+  the `vyntrio` account does not publish backups);
+- restore replaces validated state/config only after service stop and a
+  root-only pre-restore preserve copy.
+
+See `docs/ADR/0005-appliance-runtime-operations.md` sections G and H.
