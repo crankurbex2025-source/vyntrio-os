@@ -1,11 +1,6 @@
 import "./App.css";
+import { LoginScreen } from "./features/auth/LoginScreen";
 
 export default function App() {
-  return (
-    <main className="app">
-      <h1>Vyntrio OS</h1>
-      <p>Dashboard foundation</p>
-      <p>Frontend toolchain initialized</p>
-    </main>
-  );
+  return <LoginScreen />;
 }

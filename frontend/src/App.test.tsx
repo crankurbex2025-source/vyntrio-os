@@ -3,15 +3,14 @@ import { render, screen } from "@testing-library/react";
 import App from "./App";
 
 describe("App", () => {
-  it("renders the Vyntrio OS frontend foundation content", () => {
+  it("renders the login view shell", () => {
     render(<App />);
 
     expect(
       screen.getByRole("heading", { name: "Vyntrio OS" })
     ).toBeInTheDocument();
-    expect(screen.getByText("Dashboard foundation")).toBeInTheDocument();
-    expect(
-      screen.getByText("Frontend toolchain initialized")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Username")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
   });
 });
