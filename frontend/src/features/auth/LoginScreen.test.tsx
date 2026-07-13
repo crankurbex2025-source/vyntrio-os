@@ -87,30 +87,27 @@ describe("LoginScreen", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Sign-in succeeded for this browser session.")
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
     });
   });
 
-  it("accepts exact success payload, enters signed-in state, and never renders csrf token", async () => {
+  it("accepts exact success payload and calls onLoginSuccess without rendering csrf token", async () => {
     const { apiClient, requestJson } = makeApiClientMock();
+    const onLoginSuccess = vi.fn();
     requestJson.mockResolvedValue({
       ok: true,
       status: 200,
       requestId: "request-ok",
       data: { csrf_token: "inert-test-csrf-token" },
     });
-    renderLoginScreen(apiClient);
+    render(<LoginScreen apiClient={apiClient} onLoginSuccess={onLoginSuccess} />);
 
     fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
     fireEvent.change(screen.getByLabelText("Password"), { target: { value: "secret-pass" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Sign-in succeeded for this browser session.")
-      ).toBeInTheDocument();
+      expect(onLoginSuccess).toHaveBeenCalledWith("inert-test-csrf-token");
     });
     expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
     expect(requestJson).toHaveBeenCalledTimes(1);
@@ -148,9 +145,6 @@ describe("LoginScreen", () => {
     expect(screen.queryByText("UNAUTHORIZED")).not.toBeInTheDocument();
     expect(screen.queryByText("request-auth-fail")).not.toBeInTheDocument();
     expect(screen.queryByText("401")).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("Sign-in succeeded for this browser session.")
-    ).not.toBeInTheDocument();
     expect((screen.getByLabelText("Password") as HTMLInputElement).value).toBe("");
   });
 
@@ -193,9 +187,6 @@ describe("LoginScreen", () => {
         ).toBeInTheDocument();
       });
       expect((screen.getByLabelText("Password") as HTMLInputElement).value).toBe("");
-      expect(
-        screen.queryByText("Sign-in succeeded for this browser session.")
-      ).not.toBeInTheDocument();
       view.unmount();
     }
   });
@@ -228,42 +219,16 @@ describe("LoginScreen", () => {
         ).toBeInTheDocument();
       });
       expect((screen.getByLabelText("Password") as HTMLInputElement).value).toBe("");
-      expect(
-        screen.queryByText("Sign-in succeeded for this browser session.")
-      ).not.toBeInTheDocument();
       view.unmount();
     }
   });
 
-  it("reset action returns to login state, clears in-memory csrf state, and makes no extra request", async () => {
+  it("does not auto-fetch settings or other routes on initial render", () => {
     const { apiClient, requestJson } = makeApiClientMock();
-    requestJson.mockResolvedValue({
-      ok: true,
-      status: 200,
-      requestId: "request-reset",
-      data: { csrf_token: "inert-test-csrf-token" },
-    });
     renderLoginScreen(apiClient);
-
-    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Sign-in succeeded for this browser session.")
-      ).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Reset sign-in view" }));
 
     expect(screen.getByLabelText("Username")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Sign-in succeeded for this browser session.")
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
-    expect(requestJson).toHaveBeenCalledTimes(1);
-    expect((screen.getByLabelText("Password") as HTMLInputElement).value).toBe("");
+    expect(requestJson).toHaveBeenCalledTimes(0);
   });
 });

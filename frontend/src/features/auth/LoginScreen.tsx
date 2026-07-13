@@ -4,11 +4,11 @@ import { createApiClient, type ApiClient } from "../../lib/api";
 type LoginViewState =
   | { kind: "idle" }
   | { kind: "submitting" }
-  | { kind: "error" }
-  | { kind: "signed_in"; csrfToken: string };
+  | { kind: "error" };
 
 type LoginScreenProps = {
   apiClient?: ApiClient;
+  onLoginSuccess?: (csrfToken: string) => void;
 };
 
 const GENERIC_LOGIN_ERROR = "Sign-in failed. Check your credentials and try again.";
@@ -32,7 +32,7 @@ function readCSRFTokenFromLoginPayload(payload: unknown): string | null {
   return csrfToken;
 }
 
-export function LoginScreen({ apiClient }: LoginScreenProps) {
+export function LoginScreen({ apiClient, onLoginSuccess }: LoginScreenProps) {
   const client = useMemo(() => apiClient ?? createApiClient(), [apiClient]);
   const isMounted = useRef(true);
   const [username, setUsername] = useState("");
@@ -79,7 +79,8 @@ export function LoginScreen({ apiClient }: LoginScreenProps) {
         return;
       }
 
-      setViewState({ kind: "signed_in", csrfToken });
+      onLoginSuccess?.(csrfToken);
+      setViewState({ kind: "idle" });
     } catch {
       if (isMounted.current) {
         setViewState({ kind: "error" });
@@ -89,23 +90,6 @@ export function LoginScreen({ apiClient }: LoginScreenProps) {
         setPassword("");
       }
     }
-  }
-
-  function handleReset() {
-    setViewState({ kind: "idle" });
-    setPassword("");
-  }
-
-  if (viewState.kind === "signed_in") {
-    return (
-      <section className="auth-card" aria-live="polite">
-        <h1>Vyntrio OS</h1>
-        <p>Sign-in succeeded for this browser session.</p>
-        <button type="button" onClick={handleReset}>
-          Reset sign-in view
-        </button>
-      </section>
-    );
   }
 
   const isSubmitting = viewState.kind === "submitting";
