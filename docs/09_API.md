@@ -15,6 +15,35 @@ REST für Konfiguration und Ressourcen, WebSocket für Live-Events. JSON-only. V
 
 Weitere Probes ohne Auth: `/healthz`, `/readyz`, `/api/v1/version`.
 
+## UI-Serving und Routen-Priorität (v1, implementiert)
+
+Das API-Binary liefert die eingebettete produktive UI same-origin aus:
+
+```text
+Vyntrio Go-Binary
+  /api/v1/*   bestehende JSON-API (unverändert)
+  /healthz    operationale JSON-Probe (unverändert)
+  /readyz     operationale JSON-Probe (unverändert)
+  /assets/*   eingebettete, content-gehashte Vite-Assets
+  GET/HEAD nicht-reservierte UI-Pfade  eingebettetes index.html (SPA-Fallback)
+```
+
+Regeln:
+
+- API-, Health- und Readiness-Routen werden **vor** dem UI-Fallback
+  registriert und behalten Priorität.
+- Unbekannte API-Pfade (z. B. `GET /api/v1/does-not-exist`) liefern weiterhin
+  den kanonischen JSON-404 bzw. JSON-405 — niemals `index.html`.
+- Nur `GET` und `HEAD` erhalten UI-HTML; `POST`/`PUT`/`PATCH`/`DELETE` auf
+  UI-Pfade bleiben kanonische Nicht-HTML-Fehler.
+- Reservierte Präfixe (`/api`, `/assets`, `/healthz`, `/readyz`) sind nie
+  SPA-Fallback.
+- Für diese Same-Origin-Topologie sind **kein Vite-Dev-Proxy** und **keine
+  CORS-Lockerung** in Produktion erforderlich.
+
+Cache- und Security-Header-Policy: siehe `docs/17_SECURITY.md`;
+Build/Embedding: siehe `docs/19_RELEASE.md`.
+
 Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cookie (`vyntrio_session`, HttpOnly).
 
 ### PATCH `/api/v1/settings/instance`

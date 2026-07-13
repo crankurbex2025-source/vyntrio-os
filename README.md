@@ -17,7 +17,7 @@ make test
 make build
 ```
 
-Requires: Git, Make, Go 1.24+, Node.js 20+ (for frontend phase).
+Requires: Git, Make, Go 1.24+, Node.js 20+ (`make build` builds and embeds the production frontend UI into the API binary).
 
 Setup details: **[docs/21_CURSOR_REPO_SETUP.md](docs/21_CURSOR_REPO_SETUP.md)**
 

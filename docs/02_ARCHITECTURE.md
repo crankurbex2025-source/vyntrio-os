@@ -45,7 +45,9 @@ Start mit SQLite für Appliance-Einfachheit; PostgreSQL als spätere Option für
 - Secrets niemals im Frontend.
 
 ## Deployment-Modell
-Control Plane läuft lokal auf dem Host. Systemnahe Services werden über systemd verwaltet. API und Worker laufen als getrennte Go-Binaries oder Prozesse, das Frontend wird als statisches Web-Bundle ausgeliefert.
+Control Plane läuft lokal auf dem Host. Systemnahe Services werden über systemd verwaltet. API und Worker laufen als getrennte Go-Binaries oder Prozesse.
+
+**Implementiert (v1):** Das produktive Frontend wird als statisches Vite-Bundle gebaut, per `go:embed` in das API-Binary eingebettet und same-origin vom selben Binary ausgeliefert (`/assets/*` plus `index.html`-SPA-Fallback für erlaubte GET/HEAD-Pfade). API-, Health- und Readiness-Routen behalten Priorität. Details: `docs/09_API.md`, `docs/17_SECURITY.md`, `docs/19_RELEASE.md`.
 
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
