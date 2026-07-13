@@ -51,7 +51,7 @@ func newBootstrapRouter(t *testing.T) (http.Handler, *sqlite.Store) {
 		BuildCommit: "test",
 		ReadTimeout: 15 * time.Second,
 	}
-	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, nil, nil)
+	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, nil, nil, nil, nil)
 	return router, store
 }
 

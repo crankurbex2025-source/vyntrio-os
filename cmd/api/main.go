@@ -14,6 +14,7 @@ import (
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appidentity "github.com/crankurbex2025-source/vyntrio-os/internal/application/identity"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
@@ -88,7 +89,25 @@ func main() {
 		CookiePolicy: cookiePolicy,
 	})
 
-	srv := httpapi.NewServer(cfg, logger, readiness, bootstrapHandler, loginHandler, logoutHandler)
+	sessionAuthRepo := sqlite.NewSessionAuthRepository(store.DB())
+	sessionResolver := appidentity.NewSessionResolver(sessionAuthRepo)
+	authorizer := ports.NewRBACAuthorizer()
+	settingsView := appsettings.NewPublicView(snapshot, cfg.Version, cfg.Env)
+	settingsHandler := handlers.NewSettings(handlers.SettingsDeps{View: settingsView})
+
+	srv := httpapi.NewServer(
+		cfg,
+		logger,
+		readiness,
+		bootstrapHandler,
+		loginHandler,
+		logoutHandler,
+		settingsHandler,
+		&httpapi.SessionAuth{
+			Resolver:   sessionResolver,
+			Authorizer: authorizer,
+		},
+	)
 
 	errCh := make(chan error, 1)
 	go func() {

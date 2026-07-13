@@ -296,5 +296,5 @@ func TestLogoutRevokeFailureStillClearsCookies(t *testing.T) {
 
 func httpapiNewRouter(store *sqlite.Store, bootstrap *handlers.Bootstrap, login *handlers.Login, logout *handlers.Logout) http.Handler {
 	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
-	return httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, logout)
+	return httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, logout, nil, nil)
 }

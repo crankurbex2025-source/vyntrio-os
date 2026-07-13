@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
+	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/middleware"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/response"
@@ -12,6 +14,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
+
+// SessionAuth wires session resolution and RBAC for protected routes.
+type SessionAuth struct {
+	Resolver   middleware.SessionResolver
+	Authorizer ports.Authorizer
+}
 
 // NewRouter builds the HTTP router with middleware and routes.
 func NewRouter(
@@ -21,6 +29,8 @@ func NewRouter(
 	bootstrap *handlers.Bootstrap,
 	login *handlers.Login,
 	logout *handlers.Logout,
+	settings *handlers.Settings,
+	sessionAuth *SessionAuth,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -43,6 +53,13 @@ func NewRouter(
 		}
 		if logout != nil {
 			r.Post("/identity/logout", logout.ServeHTTP)
+		}
+		if settings != nil && sessionAuth != nil && sessionAuth.Resolver != nil && sessionAuth.Authorizer != nil {
+			r.With(
+				middleware.OptionalAuthentication(sessionAuth.Resolver),
+				middleware.RequireAuthentication,
+				middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionSettingsAdminRead),
+			).Get("/settings", settings.ServeHTTP)
 		}
 	})
 

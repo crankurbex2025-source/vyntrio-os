@@ -84,7 +84,7 @@ func newIdentityRouter(t *testing.T, env string, cookieSecure *bool) identityRou
 		cfg.CookieSecure = cookieSecure
 	}
 
-	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, logout)
+	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, logout, nil, nil)
 	return identityRouter{
 		handler:  router,
 		store:    store,
@@ -552,7 +552,7 @@ func TestLoginRehashFailureSetsNoSession(t *testing.T) {
 	})
 
 	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
-	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), nil, login, nil)
+	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), nil, login, nil, nil, nil)
 
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, loginPOST(`{"username":"rehash-fail","password":"`+testLoginPassword+`"}`, nil))
@@ -611,7 +611,7 @@ func TestLoginSessionPersistenceFailureSetsNoCookie(t *testing.T) {
 	})
 
 	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
-	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, nil)
+	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, nil, nil, nil)
 
 	recBootstrap := httptest.NewRecorder()
 	router.ServeHTTP(recBootstrap, bootstrapPOST("127.0.0.1:8080", `{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
