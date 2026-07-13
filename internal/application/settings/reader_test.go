@@ -89,7 +89,7 @@ func TestLoadSystemSettingsInvalidHostname(t *testing.T) {
 			setting.KeyHostname: {
 				Namespace: setting.NamespaceSystem,
 				Key:       setting.KeyHostname,
-				Value:     "bad host",
+				Value:     "bad\nhost",
 				ValueType: setting.ValueTypeString,
 			},
 		},

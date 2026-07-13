@@ -9,29 +9,30 @@ import (
 // expectedMatrix is the normative ADR-0004 v1 role/permission matrix.
 var expectedMatrix = map[identity.Role]map[identity.Permission]bool{
 	identity.RoleOwner: {
-		identity.PermissionSystemHealth:      true,
-		identity.PermissionAuthSession:       true,
-		identity.PermissionUsersRead:         true,
-		identity.PermissionUsersWrite:        true,
-		identity.PermissionRolesAssign:       true,
-		identity.PermissionRolesAssignOwner:  true,
-		identity.PermissionSettingsRead:      true,
-		identity.PermissionSettingsWrite:     true,
-		identity.PermissionSettingsAdminRead: true,
-		identity.PermissionStorageRead:       true,
-		identity.PermissionStorageWrite:      true,
-		identity.PermissionContainersRead:    true,
-		identity.PermissionContainersWrite:   true,
-		identity.PermissionVMsRead:           true,
-		identity.PermissionVMsWrite:          true,
-		identity.PermissionNetworkRead:       true,
-		identity.PermissionNetworkWrite:      true,
-		identity.PermissionUpdatesRead:       true,
-		identity.PermissionUpdatesApply:      true,
-		identity.PermissionLicensingRead:     true,
-		identity.PermissionLicensingWrite:    true,
-		identity.PermissionAuditRead:         true,
-		identity.PermissionAuditExport:       true,
+		identity.PermissionSystemHealth:       true,
+		identity.PermissionAuthSession:        true,
+		identity.PermissionUsersRead:          true,
+		identity.PermissionUsersWrite:         true,
+		identity.PermissionRolesAssign:        true,
+		identity.PermissionRolesAssignOwner:   true,
+		identity.PermissionSettingsRead:       true,
+		identity.PermissionSettingsWrite:      true,
+		identity.PermissionSettingsAdminRead:  true,
+		identity.PermissionSettingsAdminWrite: true,
+		identity.PermissionStorageRead:        true,
+		identity.PermissionStorageWrite:       true,
+		identity.PermissionContainersRead:     true,
+		identity.PermissionContainersWrite:    true,
+		identity.PermissionVMsRead:            true,
+		identity.PermissionVMsWrite:           true,
+		identity.PermissionNetworkRead:        true,
+		identity.PermissionNetworkWrite:       true,
+		identity.PermissionUpdatesRead:        true,
+		identity.PermissionUpdatesApply:       true,
+		identity.PermissionLicensingRead:      true,
+		identity.PermissionLicensingWrite:     true,
+		identity.PermissionAuditRead:          true,
+		identity.PermissionAuditExport:        true,
 	},
 	identity.RoleAdministrator: {
 		identity.PermissionSystemHealth:      true,
@@ -207,6 +208,8 @@ func TestOperatorDeniedPrivilegedPermissions(t *testing.T) {
 		identity.PermissionRolesAssign,
 		identity.PermissionRolesAssignOwner,
 		identity.PermissionSettingsWrite,
+		identity.PermissionSettingsAdminRead,
+		identity.PermissionSettingsAdminWrite,
 		identity.PermissionNetworkWrite,
 		identity.PermissionLicensingWrite,
 		identity.PermissionAuditRead,
@@ -267,9 +270,23 @@ func TestOwnerAloneGrantsSettingsAdminRead(t *testing.T) {
 	}
 }
 
+func TestOwnerAloneGrantsSettingsAdminWrite(t *testing.T) {
+	for _, role := range identity.AllRoles {
+		if role == identity.RoleOwner {
+			continue
+		}
+		if identity.Allows(role, identity.PermissionSettingsAdminWrite) {
+			t.Fatalf("%s must not have settings:admin:write", role)
+		}
+	}
+	if !identity.Allows(identity.RoleOwner, identity.PermissionSettingsAdminWrite) {
+		t.Fatal("Owner must have settings:admin:write")
+	}
+}
+
 func TestNoImplicitPrivilegeEscalationAcrossRoles(t *testing.T) {
 	roleGrantCounts := map[identity.Role]int{
-		identity.RoleOwner:         23,
+		identity.RoleOwner:         24,
 		identity.RoleAdministrator: 19,
 		identity.RoleOperator:      13,
 		identity.RoleUser:          9,

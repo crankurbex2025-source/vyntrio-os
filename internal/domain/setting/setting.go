@@ -112,15 +112,6 @@ func validateTimezone(value string) error {
 }
 
 func validateHostname(value string) error {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
-		return fmt.Errorf("%w: hostname must not be empty", ErrInvalidValue)
-	}
-	if utf8.RuneCountInString(trimmed) > 253 {
-		return fmt.Errorf("%w: hostname exceeds maximum length", ErrInvalidValue)
-	}
-	if strings.ContainsAny(trimmed, " \t\r\n/") {
-		return fmt.Errorf("%w: hostname contains invalid characters", ErrInvalidValue)
-	}
-	return nil
+	_, err := ValidateInstanceDisplayName(value)
+	return err
 }

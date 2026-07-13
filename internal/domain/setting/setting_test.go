@@ -43,8 +43,11 @@ func TestValidateValueHostname(t *testing.T) {
 	if err := setting.ValidateValue(setting.KeyHostname, "vyntrio"); err != nil {
 		t.Fatalf("ValidateValue hostname: %v", err)
 	}
-	if err := setting.ValidateValue(setting.KeyHostname, "bad host"); err == nil {
-		t.Fatal("expected hostname with space to fail")
+	if _, err := setting.ValidateInstanceDisplayName("Vyntrio Home"); err != nil {
+		t.Fatalf("ValidateInstanceDisplayName spaced name: %v", err)
+	}
+	if err := setting.ValidateValue(setting.KeyHostname, "Vyntrio Home"); err != nil {
+		t.Fatalf("ValidateValue hostname with space: %v", err)
 	}
 }
 
@@ -66,7 +69,7 @@ func TestSettingValidate(t *testing.T) {
 }
 
 func TestValidateValueHostnameMaxLength(t *testing.T) {
-	long := strings.Repeat("a", 254)
+	long := strings.Repeat("a", setting.MaxInstanceDisplayNameRunes+1)
 	if err := setting.ValidateValue(setting.KeyHostname, long); err == nil {
 		t.Fatal("expected overlong hostname to fail")
 	}

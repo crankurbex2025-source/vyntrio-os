@@ -73,6 +73,7 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	}
 	snapshot := appsettings.NewSnapshot(sysSettings)
 	view := appsettings.NewPublicView(snapshot, settingsTestVersion, settingsTestEnvironment)
+	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, settingsTestVersion, settingsTestEnvironment)
 
 	hasher, err := appidentity.NewPasswordHasher(appidentity.Argon2idConfig{
 		Memory:      4096,
@@ -102,7 +103,10 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 
 	login := handlers.NewLogin(handlers.LoginDeps{Service: loginService, CookiePolicy: cookiePolicy})
 	logout := handlers.NewLogout(handlers.LogoutDeps{Service: logoutService, CookiePolicy: cookiePolicy})
-	settings := handlers.NewSettings(handlers.SettingsDeps{View: view})
+	settings := handlers.NewSettings(handlers.SettingsDeps{Loader: settingsLoader})
+	instanceDisplayNameRepo := sqlite.NewInstanceDisplayNameRepository(store.DB())
+	updateInstanceService := appsettings.NewUpdateInstanceDisplayNameService(instanceDisplayNameRepo)
+	updateInstance := handlers.NewUpdateInstanceSettings(handlers.UpdateInstanceSettingsDeps{Service: updateInstanceService})
 
 	resolver := opts.resolver
 	if resolver == nil {
@@ -128,6 +132,7 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 		login,
 		logout,
 		settings,
+		updateInstance,
 		&httpapi.SessionAuth{
 			Resolver:   resolver,
 			Authorizer: authorizer,

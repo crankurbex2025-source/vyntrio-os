@@ -93,8 +93,13 @@ func main() {
 	sessionAuthRepo := sqlite.NewSessionAuthRepository(store.DB())
 	sessionResolver := appidentity.NewSessionResolver(sessionAuthRepo)
 	authorizer := ports.NewRBACAuthorizer()
-	settingsView := appsettings.NewPublicView(snapshot, cfg.Version, cfg.Env)
-	settingsHandler := handlers.NewSettings(handlers.SettingsDeps{View: settingsView})
+	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, cfg.Version, cfg.Env)
+	settingsHandler := handlers.NewSettings(handlers.SettingsDeps{Loader: settingsLoader})
+	instanceDisplayNameRepo := sqlite.NewInstanceDisplayNameRepository(store.DB())
+	updateInstanceService := appsettings.NewUpdateInstanceDisplayNameService(instanceDisplayNameRepo)
+	updateInstanceHandler := handlers.NewUpdateInstanceSettings(handlers.UpdateInstanceSettingsDeps{
+		Service: updateInstanceService,
+	})
 
 	srv := httpapi.NewServer(
 		cfg,
@@ -104,6 +109,7 @@ func main() {
 		loginHandler,
 		logoutHandler,
 		settingsHandler,
+		updateInstanceHandler,
 		&httpapi.SessionAuth{
 			Resolver:   sessionResolver,
 			Authorizer: authorizer,

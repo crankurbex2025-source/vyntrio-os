@@ -74,7 +74,7 @@ Because the SPA uses cookie sessions:
 
 - `SameSite=Strict` cookie reduces cross-site risk.
 - Every **state-changing endpoint that relies on an authenticated cookie-backed session** must require a valid **`X-CSRF-Token`** header matching the **session-bound CSRF token**, enforced **after** session authentication.
-- In **current v1**, the only such endpoint is **`POST /api/v1/identity/logout`**. **`POST /api/v1/identity/bootstrap`** and **`POST /api/v1/identity/login`** are explicitly **pre-session** and do **not** use CSRF validation. **`GET /api/v1/settings`** is read-only and does not use CSRF middleware.
+- In **current v1**, the only session-authenticated mutating endpoint is **`POST /api/v1/identity/logout`**. **`PATCH /api/v1/settings/instance`** also requires CSRF after Owner write authorization. **`POST /api/v1/identity/bootstrap`** and **`POST /api/v1/identity/login`** are explicitly **pre-session** and do **not** use CSRF validation. **`GET /api/v1/settings`** is read-only and does not use CSRF middleware.
 - **Future** cookie-session-authenticated **`POST` / `PUT` / `PATCH` / `DELETE`** endpoints must attach the same CSRF middleware before activation; no session-authenticated write may ship without it.
 - Safe methods (`GET`, `HEAD`, `OPTIONS`) are exempt from CSRF validation.
 
@@ -182,6 +182,7 @@ Required event types (v1 implementation namespace `identity.*`):
 - `identity.bootstrap.succeeded`
 - `identity.login.succeeded` / `identity.login.failure`
 - `identity.logout.succeeded`
+- `settings.instance_display_name.updated`
 - (deferred) `identity.session.revoked`, `user.created`, `user.disabled`, `user.password.changed`, `role.changed`, `access.denied`
 
 Each event: timestamp, actor user ID (nullable on failed login), subject user ID where applicable, action, result, metadata JSON (**no secrets** — no session IDs, CSRF tokens, passwords, or password material). Failed login events use empty metadata `{}`.
@@ -219,6 +220,7 @@ Legend: **R** read, **W** write/admin, **A** apply/action, **—** denied.
 | `roles:assign_owner` | W | — | — | — | — |
 | `settings:read` | W | W | R | R | R |
 | `settings:admin:read` | W | — | — | — | — |
+| `settings:admin:write` | W | — | — | — | — |
 | `settings:write` | W | W | — | — | — |
 | `storage:read` | W | W | R | R | R |
 | `storage:write` | W | W | W | — | — |

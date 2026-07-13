@@ -6,29 +6,30 @@ import "fmt"
 type Permission string
 
 const (
-	PermissionSystemHealth      Permission = "system:health"
-	PermissionAuthSession       Permission = "auth:session"
-	PermissionUsersRead         Permission = "users:read"
-	PermissionUsersWrite        Permission = "users:write"
-	PermissionRolesAssign       Permission = "roles:assign"
-	PermissionRolesAssignOwner  Permission = "roles:assign_owner"
-	PermissionSettingsRead      Permission = "settings:read"
-	PermissionSettingsWrite     Permission = "settings:write"
-	PermissionSettingsAdminRead Permission = "settings:admin:read"
-	PermissionStorageRead       Permission = "storage:read"
-	PermissionStorageWrite      Permission = "storage:write"
-	PermissionContainersRead    Permission = "containers:read"
-	PermissionContainersWrite   Permission = "containers:write"
-	PermissionVMsRead           Permission = "vms:read"
-	PermissionVMsWrite          Permission = "vms:write"
-	PermissionNetworkRead       Permission = "network:read"
-	PermissionNetworkWrite      Permission = "network:write"
-	PermissionUpdatesRead       Permission = "updates:read"
-	PermissionUpdatesApply      Permission = "updates:apply"
-	PermissionLicensingRead     Permission = "licensing:read"
-	PermissionLicensingWrite    Permission = "licensing:write"
-	PermissionAuditRead         Permission = "audit:read"
-	PermissionAuditExport       Permission = "audit:export"
+	PermissionSystemHealth       Permission = "system:health"
+	PermissionAuthSession        Permission = "auth:session"
+	PermissionUsersRead          Permission = "users:read"
+	PermissionUsersWrite         Permission = "users:write"
+	PermissionRolesAssign        Permission = "roles:assign"
+	PermissionRolesAssignOwner   Permission = "roles:assign_owner"
+	PermissionSettingsRead       Permission = "settings:read"
+	PermissionSettingsWrite      Permission = "settings:write"
+	PermissionSettingsAdminRead  Permission = "settings:admin:read"
+	PermissionSettingsAdminWrite Permission = "settings:admin:write"
+	PermissionStorageRead        Permission = "storage:read"
+	PermissionStorageWrite       Permission = "storage:write"
+	PermissionContainersRead     Permission = "containers:read"
+	PermissionContainersWrite    Permission = "containers:write"
+	PermissionVMsRead            Permission = "vms:read"
+	PermissionVMsWrite           Permission = "vms:write"
+	PermissionNetworkRead        Permission = "network:read"
+	PermissionNetworkWrite       Permission = "network:write"
+	PermissionUpdatesRead        Permission = "updates:read"
+	PermissionUpdatesApply       Permission = "updates:apply"
+	PermissionLicensingRead      Permission = "licensing:read"
+	PermissionLicensingWrite     Permission = "licensing:write"
+	PermissionAuditRead          Permission = "audit:read"
+	PermissionAuditExport        Permission = "audit:export"
 )
 
 // AllPermissions lists every normative v1 permission in stable order.
@@ -42,6 +43,7 @@ var AllPermissions = []Permission{
 	PermissionSettingsRead,
 	PermissionSettingsWrite,
 	PermissionSettingsAdminRead,
+	PermissionSettingsAdminWrite,
 	PermissionStorageRead,
 	PermissionStorageWrite,
 	PermissionContainersRead,
@@ -85,6 +87,7 @@ func (p Permission) IsMutating() bool {
 		PermissionRolesAssign,
 		PermissionRolesAssignOwner,
 		PermissionSettingsWrite,
+		PermissionSettingsAdminWrite,
 		PermissionStorageWrite,
 		PermissionContainersWrite,
 		PermissionVMsWrite,

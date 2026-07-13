@@ -30,6 +30,7 @@ func NewRouter(
 	login *handlers.Login,
 	logout *handlers.Logout,
 	settings *handlers.Settings,
+	updateInstance *handlers.UpdateInstanceSettings,
 	sessionAuth *SessionAuth,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -64,6 +65,14 @@ func NewRouter(
 				middleware.RequireAuthentication,
 				middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionSettingsAdminRead),
 			).Get("/settings", settings.ServeHTTP)
+		}
+		if updateInstance != nil && sessionAuth != nil && sessionAuth.Resolver != nil && sessionAuth.Authorizer != nil {
+			r.With(
+				middleware.OptionalAuthentication(sessionAuth.Resolver),
+				middleware.RequireAuthentication,
+				middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionSettingsAdminWrite),
+				middleware.RequireCSRF,
+			).Patch("/settings/instance", updateInstance.ServeHTTP)
 		}
 	})
 

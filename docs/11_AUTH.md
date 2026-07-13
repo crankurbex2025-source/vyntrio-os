@@ -22,11 +22,11 @@ Fünf feste Rollen:
 | **User** | Standardbenutzer, eingeschränktes Schreiben |
 | **ReadOnly** | Nur Lesen |
 
-Owner-only Admin-Settings: Permission `settings:admin:read` schützt `GET /api/v1/settings`. Die allgemeine Permission `settings:read` bleibt unverändert und wird von diesem Admin-Endpoint nicht verwendet.
+Owner-only Admin-Settings: Permission `settings:admin:read` schützt `GET /api/v1/settings`; Permission `settings:admin:write` schützt `PATCH /api/v1/settings/instance` (CSRF erforderlich). Die allgemeinen Permissions `settings:read` / `settings:write` bleiben unverändert und werden von diesen Admin-Endpoints nicht verwendet.
 
 ## Sicherheitsregeln
 - Sessions widerrufbar (Logout).
-- Audit Events für sicherheitsrelevante Identity-Aktionen (`identity.login.succeeded`, `identity.login.failure`, `identity.logout.succeeded`, …).
+- Audit Events für sicherheitsrelevante Identity-Aktionen (`identity.login.succeeded`, `identity.login.failure`, `identity.logout.succeeded`, …) und Settings-Mutationen (`settings.instance_display_name.updated`).
 - Keine Benutzer-Enumeration bei Login-Fehlern.
 - Secret Handling: keine rohen Session-/CSRF-Tokens in Logs, Audit-Metadaten oder DB.
 

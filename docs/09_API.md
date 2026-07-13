@@ -11,10 +11,20 @@ REST für Konfiguration und Ressourcen, WebSocket für Live-Events. JSON-only. V
 | POST | `/api/v1/identity/login` | — | Anmeldung; bei Erfolg **200** mit `{ "csrf_token": "..." }` und `vyntrio_session`-Cookie |
 | POST | `/api/v1/identity/logout` | Session + `X-CSRF-Token` | Session widerrufen und Cookie löschen |
 | GET | `/api/v1/settings` | Session; Permission `settings:admin:read` (Owner) | Sichere Admin-Settings-Ansicht (read-only) |
+| PATCH | `/api/v1/settings/instance` | Session; Permission `settings:admin:write` (Owner); `X-CSRF-Token` | Instanz-Anzeigename (`display_name`) ändern |
 
 Weitere Probes ohne Auth: `/healthz`, `/readyz`, `/api/v1/version`.
 
 Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cookie (`vyntrio_session`, HttpOnly).
+
+### PATCH `/api/v1/settings/instance`
+
+- **Request:** `Content-Type: application/json`, Body `{ "display_name": "<name>" }` (max. 4 KiB).
+- **Validierung:** Pflichtfeld `display_name`; Unicode-Trim; max. 80 Zeichen; keine Steuerzeichen; keine unbekannten JSON-Felder.
+- **Erfolg:** **200** `{ "display_name": "<persistierter Name>" }`; kein Cookie-Change.
+- **No-Op:** Identischer normalisierter Name → **200** ohne DB-Update, Timestamp-Update oder Audit.
+- **Fehler:** **400** ungültige Anfrage; **401** fehlende Session; **403** fehlende Berechtigung oder CSRF; **405** andere Methoden; **500** Persistenzfehler.
+- Persistiert in `system.hostname` (kanonischer Speicherort für `instance.name` in GET `/api/v1/settings`).
 
 ## Resource Families (geplant)
 - /users
