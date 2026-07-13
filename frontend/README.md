@@ -2,29 +2,25 @@
 
 React + TypeScript web dashboard for Vyntrio OS administration.
 
-## Planned stack
+## Toolchain foundation
 
-See `docs/04_TECH_STACK.md` and `docs/08_FRONTEND.md`:
+This slice initializes a minimal React + TypeScript + Vite frontend foundation.
+It currently renders a static page only and does not call backend APIs.
 
-- React, TypeScript, TailwindCSS
-- TanStack Query, Zustand (or Redux Toolkit)
-- Vite (toolchain selection in Phase 2)
-
-## Status
-
-Foundation only — no application UI in Phase 1. Toolchain initialization is Phase 2.
-
-## Local setup (after Phase 2)
+## Local commands
 
 ```bash
 cd frontend
-cp .env.example .env.local   # when applicable
-npm install
+npm ci
 npm run dev
+npm run typecheck
+npm run lint
+npm run test:run
+npm run build
 ```
 
 ## Rules
 
 - No secrets in frontend bundles.
-- API calls go through typed client modules (Phase 2+).
-- No product dashboards until Phase 0.4 (Dashboard).
+- No browser storage/cookie/session-token handling in this foundation slice.
+- No product dashboard modules in this slice.

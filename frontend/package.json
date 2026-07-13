@@ -1,15 +1,41 @@
 {
   "name": "@vyntrio-os/frontend",
   "private": true,
-  "version": "0.1.0",
-  "description": "Vyntrio OS web dashboard — toolchain initialized in Phase 2",
+  "version": "0.2.0",
+  "description": "Vyntrio OS dashboard frontend toolchain foundation",
+  "type": "module",
   "scripts": {
-    "dev": "node -e \"console.error('Frontend dev server not configured yet — see docs/08_FRONTEND.md'); process.exit(1)\"",
-    "build": "node -e \"console.error('Frontend build not configured yet — see docs/08_FRONTEND.md'); process.exit(1)\"",
-    "lint": "node -e \"console.log('No ESLint config yet — Phase 2'); process.exit(0)\"",
-    "test": "node -e \"console.log('No frontend tests yet — Phase 2'); process.exit(0)\""
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "test": "vitest --environment jsdom --globals",
+    "test:run": "vitest run --environment jsdom --globals"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.17.0",
+    "@types/node": "22.10.2",
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.1.0",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "eslint": "9.17.0",
+    "eslint-plugin-react-hooks": "5.1.0",
+    "eslint-plugin-react-refresh": "0.4.14",
+    "globals": "15.14.0",
+    "jsdom": "25.0.1",
+    "typescript": "5.6.3",
+    "typescript-eslint": "8.18.2",
+    "vite": "5.4.11",
+    "vitest": "2.1.8"
   }
 }
