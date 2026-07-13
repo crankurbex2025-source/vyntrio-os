@@ -7,10 +7,12 @@ import type { ApiClient, ApiResult } from "./lib/api";
 describe("App", () => {
   function makeApiClientMock() {
     const requestJson = vi.fn();
+    const requestNoContent = vi.fn();
     const apiClient: ApiClient = {
       requestJson: requestJson as ApiClient["requestJson"],
+      requestNoContent: requestNoContent as NonNullable<ApiClient["requestNoContent"]>,
     };
-    return { apiClient, requestJson };
+    return { apiClient, requestJson, requestNoContent };
   }
 
   function validSettingsPayload() {
@@ -414,6 +416,395 @@ describe("App", () => {
       });
       expect(screen.queryByText("Instance settings")).not.toBeInTheDocument();
       expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
+      view.unmount();
+    }
+  });
+
+  it("sign out action appears only in authorized settings shell", async () => {
+    const { apiClient, requestJson } = makeApiClientMock();
+    requestJson
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-initial-200",
+        data: validSettingsPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          kind: "unauthorized",
+          status: 401,
+          code: "UNAUTHORIZED",
+          message: "Authentication required",
+          requestId: "request-401",
+        },
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          kind: "forbidden",
+          status: 403,
+          code: "FORBIDDEN",
+          message: "Permission denied",
+          requestId: "request-403",
+        },
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          kind: "api_error",
+          status: 500,
+          code: "INTERNAL_ERROR",
+          message: "Internal server error",
+          requestId: "request-500",
+        },
+      });
+
+    const authorized = render(<App apiClient={apiClient} />);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+    });
+    authorized.unmount();
+
+    const unauthenticated = render(<App apiClient={apiClient} />);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
+    unauthenticated.unmount();
+
+    const forbidden = render(<App apiClient={apiClient} />);
+    await waitFor(() => {
+      expect(
+        screen.getByText("You do not have access to instance settings.")
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
+    forbidden.unmount();
+
+    const unavailable = render(<App apiClient={apiClient} />);
+    await waitFor(() => {
+      expect(
+        screen.getByText("Instance settings are temporarily unavailable.")
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
+    unavailable.unmount();
+  });
+
+  it("exact 204 logout sends one POST with csrf option, no body, disables duplicates, and returns to login", async () => {
+    const { apiClient, requestJson, requestNoContent } = makeApiClientMock();
+    requestJson
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          kind: "unauthorized",
+          status: 401,
+          code: "UNAUTHORIZED",
+          message: "Authentication required",
+          requestId: "request-initial-401",
+        },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-login",
+        data: { csrf_token: "inert-test-csrf-token" },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-settings",
+        data: validSettingsPayload(),
+      });
+
+    let resolveLogout:
+      | ((value: Awaited<ReturnType<NonNullable<ApiClient["requestNoContent"]>>>) => void)
+      | undefined;
+    const logoutPending = new Promise<Awaited<ReturnType<NonNullable<ApiClient["requestNoContent"]>>>>(
+      (resolve) => {
+        resolveLogout = resolve;
+      }
+    );
+    requestNoContent.mockReturnValue(logoutPending);
+
+    render(<App apiClient={apiClient} />);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
+    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Signing out..." })).toBeDisabled();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Signing out..." }));
+
+    expect(requestNoContent).toHaveBeenCalledTimes(1);
+    expect(requestNoContent).toHaveBeenCalledWith("/api/v1/identity/logout", 204, {
+      method: "POST",
+      csrfToken: "inert-test-csrf-token",
+    });
+    expect(requestJson).toHaveBeenCalledTimes(3);
+
+    resolveLogout?.({
+      ok: true,
+      status: 204,
+      requestId: "request-logout",
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Vyntrio Home")).not.toBeInTheDocument();
+    expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
+    expect(requestJson).toHaveBeenCalledTimes(3);
+    expect(requestNoContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("missing in-memory csrf in authorized state does not request logout and shows generic error", async () => {
+    const { apiClient, requestJson, requestNoContent } = makeApiClientMock();
+    requestJson.mockResolvedValue({
+      ok: true,
+      status: 200,
+      requestId: "request-initial-200",
+      data: validSettingsPayload(),
+    });
+
+    render(<App apiClient={apiClient} />);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+
+    expect(requestNoContent).toHaveBeenCalledTimes(0);
+    expect(
+      screen.getByText("Sign-out could not be completed. Please try again.")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+  });
+
+  it("logout 401 and 403 keep authorized state with generic error and allow manual retry", async () => {
+    const failures: Awaited<ReturnType<NonNullable<ApiClient["requestNoContent"]>>>[] = [
+      {
+        ok: false,
+        error: {
+          kind: "unauthorized",
+          status: 401,
+          code: "UNAUTHORIZED",
+          message: "Authentication required",
+          requestId: "request-logout-401",
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "forbidden",
+          status: 403,
+          code: "FORBIDDEN",
+          message: "CSRF validation failed",
+          requestId: "request-logout-403",
+        },
+      },
+    ];
+
+    for (const logoutFailure of failures) {
+      const { apiClient, requestJson, requestNoContent } = makeApiClientMock();
+      requestJson
+        .mockResolvedValueOnce({
+          ok: false,
+          error: {
+            kind: "unauthorized",
+            status: 401,
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
+            requestId: "request-initial-401",
+          },
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          requestId: "request-login",
+          data: { csrf_token: "inert-test-csrf-token" },
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          requestId: "request-settings",
+          data: validSettingsPayload(),
+        });
+      requestNoContent.mockResolvedValue(logoutFailure);
+
+      const view = render(<App apiClient={apiClient} />);
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+      });
+      fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
+      fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
+      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Sign-out could not be completed. Please try again.")
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
+      expect(requestNoContent).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+      expect(requestNoContent).toHaveBeenCalledTimes(2);
+      view.unmount();
+    }
+  });
+
+  it("logout API/408/500/network/invalid-response/unexpected-2xx failures remain authorized with generic error", async () => {
+    const failures: Awaited<ReturnType<NonNullable<ApiClient["requestNoContent"]>>>[] = [
+      {
+        ok: false,
+        error: {
+          kind: "api_error",
+          status: 408,
+          code: "REQUEST_TIMEOUT",
+          message: "Request timed out",
+          requestId: "request-logout-408",
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "api_error",
+          status: 500,
+          code: "INTERNAL_ERROR",
+          message: "Internal server error",
+          requestId: "request-logout-500",
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "network_error",
+          status: null,
+          code: "NETWORK_ERROR",
+          message: "Network request failed",
+          requestId: null,
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "invalid_response",
+          status: 500,
+          code: "INVALID_RESPONSE",
+          message: "Invalid server response",
+          requestId: "request-logout-invalid",
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "invalid_response",
+          status: 200,
+          code: "INVALID_RESPONSE",
+          message: "Invalid server response",
+          requestId: "request-logout-200",
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "invalid_response",
+          status: 201,
+          code: "INVALID_RESPONSE",
+          message: "Invalid server response",
+          requestId: "request-logout-201",
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "invalid_response",
+          status: 202,
+          code: "INVALID_RESPONSE",
+          message: "Invalid server response",
+          requestId: "request-logout-202",
+        },
+      },
+      {
+        ok: false,
+        error: {
+          kind: "invalid_response",
+          status: 205,
+          code: "INVALID_RESPONSE",
+          message: "Invalid server response",
+          requestId: "request-logout-205",
+        },
+      },
+    ];
+
+    for (const logoutFailure of failures) {
+      const { apiClient, requestJson, requestNoContent } = makeApiClientMock();
+      requestJson
+        .mockResolvedValueOnce({
+          ok: false,
+          error: {
+            kind: "unauthorized",
+            status: 401,
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
+            requestId: "request-initial-401",
+          },
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          requestId: "request-login",
+          data: { csrf_token: "inert-test-csrf-token" },
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          requestId: "request-settings",
+          data: validSettingsPayload(),
+        });
+      requestNoContent.mockResolvedValue(logoutFailure);
+
+      const view = render(<App apiClient={apiClient} />);
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+      });
+      fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
+      fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
+      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Sign-out could not be completed. Please try again.")
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+      expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
+      expect(requestNoContent).toHaveBeenCalledTimes(1);
+      expect(requestJson).toHaveBeenCalledTimes(3);
       view.unmount();
     }
   });

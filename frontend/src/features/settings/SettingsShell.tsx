@@ -2,9 +2,12 @@ import type { PublicSettingsDto } from "./settingsDto";
 
 type SettingsShellProps = {
   settings: PublicSettingsDto;
+  isSigningOut: boolean;
+  signOutError: boolean;
+  onSignOut: () => void;
 };
 
-export function SettingsShell({ settings }: SettingsShellProps) {
+export function SettingsShell({ settings, isSigningOut, signOutError, onSignOut }: SettingsShellProps) {
   return (
     <main className="settings-wrap">
       <section className="settings-card">
@@ -22,6 +25,13 @@ export function SettingsShell({ settings }: SettingsShellProps) {
           <span>Environment</span>
           <span>{settings.api.environment}</span>
         </div>
+
+        <button type="button" onClick={onSignOut} disabled={isSigningOut}>
+          {isSigningOut ? "Signing out..." : "Sign out"}
+        </button>
+        {signOutError ? (
+          <p role="alert">Sign-out could not be completed. Please try again.</p>
+        ) : null}
       </section>
     </main>
   );

@@ -288,4 +288,122 @@ describe("createApiClient", () => {
     expect(malformedResult).toEqual(expectedInvalid("req-malformed"));
     expect(textResult).toEqual(expectedInvalid("req-text"));
   });
+
+  it("requestNoContent succeeds only on exact expected status", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      new Response(null, {
+        status: 204,
+        headers: { "X-Request-ID": "req-204" },
+      })
+    );
+    const client = createApiClient(fetchMock);
+
+    const result = await client.requestNoContent!("/api/v1/identity/logout", 204, {
+      method: "POST",
+      csrfToken: "inert-test-csrf-token",
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      status: 204,
+      requestId: "req-204",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/identity/logout",
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        headers: expect.objectContaining({
+          Accept: "application/json",
+          "X-CSRF-Token": "inert-test-csrf-token",
+        }),
+      })
+    );
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
+    expect(init?.body).toBeUndefined();
+  });
+
+  it("requestNoContent treats unexpected 2xx as invalid_response", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      new Response(null, {
+        status: 200,
+        headers: { "X-Request-ID": "req-200" },
+      })
+    );
+    const client = createApiClient(fetchMock);
+
+    const result = await client.requestNoContent!("/api/v1/identity/logout", 204, {
+      method: "POST",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        kind: "invalid_response",
+        status: 200,
+        code: "INVALID_RESPONSE",
+        message: "Invalid server response",
+        requestId: "req-200",
+      },
+    });
+  });
+
+  it("requestNoContent maps canonical 401 and 403 errors", async () => {
+    const unauthorized = jsonResponse(
+      401,
+      {
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Authentication required",
+          request_id: "req-401",
+        },
+      },
+      { "X-Request-ID": "req-401" }
+    );
+    const forbidden = jsonResponse(
+      403,
+      {
+        error: {
+          code: "FORBIDDEN",
+          message: "CSRF validation failed",
+          request_id: "req-403",
+        },
+      },
+      { "X-Request-ID": "req-403" }
+    );
+    const fetchMock = vi.fn<typeof fetch>();
+    fetchMock.mockResolvedValueOnce(unauthorized);
+    fetchMock.mockResolvedValueOnce(forbidden);
+    const client = createApiClient(fetchMock);
+
+    const unauthorizedResult = await client.requestNoContent!("/api/v1/identity/logout", 204, {
+      method: "POST",
+      csrfToken: "inert-test-csrf-token",
+    });
+    const forbiddenResult = await client.requestNoContent!("/api/v1/identity/logout", 204, {
+      method: "POST",
+      csrfToken: "inert-test-csrf-token",
+    });
+
+    expect(unauthorizedResult).toEqual({
+      ok: false,
+      error: {
+        kind: "unauthorized",
+        status: 401,
+        code: "UNAUTHORIZED",
+        message: "Authentication required",
+        requestId: "req-401",
+      },
+    });
+    expect(forbiddenResult).toEqual({
+      ok: false,
+      error: {
+        kind: "forbidden",
+        status: 403,
+        code: "FORBIDDEN",
+        message: "CSRF validation failed",
+        requestId: "req-403",
+      },
+    });
+  });
 });

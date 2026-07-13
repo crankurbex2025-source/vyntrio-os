@@ -6,6 +6,11 @@ export type ApiRequestOptions = {
   csrfToken?: string;
 };
 
+export type ApiNoContentRequestOptions = {
+  method?: ApiMethod;
+  csrfToken?: string;
+};
+
 export type ApiSuccess<T> = {
   ok: true;
   status: number;
@@ -35,6 +40,14 @@ export type ApiFailure = {
 };
 
 export type ApiResult<T> = ApiSuccess<T> | ApiFailure;
+
+export type ApiNoContentSuccess = {
+  ok: true;
+  status: number;
+  requestId: string | null;
+};
+
+export type ApiNoContentResult = ApiNoContentSuccess | ApiFailure;
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
@@ -124,6 +137,11 @@ function validateApiPath(path: string): ApiError | null {
 
 export type ApiClient = {
   requestJson<T>(path: string, options?: ApiRequestOptions): Promise<ApiResult<T>>;
+  requestNoContent?(
+    path: string,
+    expectedStatus: number,
+    options?: ApiNoContentRequestOptions
+  ): Promise<ApiNoContentResult>;
 };
 
 export function createApiClient(fetchImpl: FetchLike = fetch): ApiClient {
@@ -265,7 +283,128 @@ export function createApiClient(fetchImpl: FetchLike = fetch): ApiClient {
     });
   }
 
+  async function requestNoContent(
+    path: string,
+    expectedStatus: number,
+    options: ApiNoContentRequestOptions = {}
+  ): Promise<ApiNoContentResult> {
+    const pathError = validateApiPath(path);
+    if (pathError) {
+      return makeError(pathError);
+    }
+
+    const method = options.method ?? "GET";
+    const headers: Record<string, string> = {
+      Accept: ACCEPT_HEADER_VALUE,
+    };
+
+    if (typeof options.csrfToken === "string" && options.csrfToken.trim() !== "") {
+      headers["X-CSRF-Token"] = options.csrfToken;
+    }
+
+    let response: Response;
+    try {
+      response = await fetchImpl(path, {
+        method,
+        credentials: "include",
+        headers,
+      });
+    } catch {
+      return makeError({
+        kind: "network_error",
+        status: null,
+        code: "NETWORK_ERROR",
+        message: "Network request failed",
+        requestId: null,
+      });
+    }
+
+    const responseRequestID = response.headers.get(REQUEST_ID_HEADER);
+    const contentType = response.headers.get("Content-Type");
+
+    if (response.ok) {
+      if (response.status !== expectedStatus) {
+        return makeError({
+          kind: "invalid_response",
+          status: response.status,
+          code: "INVALID_RESPONSE",
+          message: "Invalid server response",
+          requestId: responseRequestID,
+        });
+      }
+
+      return {
+        ok: true,
+        status: response.status,
+        requestId: responseRequestID,
+      };
+    }
+
+    if (!isJsonContentType(contentType)) {
+      return makeError({
+        kind: "invalid_response",
+        status: response.status,
+        code: "INVALID_RESPONSE",
+        message: "Invalid server response",
+        requestId: responseRequestID,
+      });
+    }
+
+    let errorPayload: unknown;
+    try {
+      errorPayload = await response.json();
+    } catch {
+      return makeError({
+        kind: "invalid_response",
+        status: response.status,
+        code: "INVALID_RESPONSE",
+        message: "Invalid server response",
+        requestId: responseRequestID,
+      });
+    }
+
+    if (!isCanonicalApiErrorEnvelope(errorPayload)) {
+      return makeError({
+        kind: "invalid_response",
+        status: response.status,
+        code: "INVALID_RESPONSE",
+        message: "Invalid server response",
+        requestId: responseRequestID,
+      });
+    }
+
+    const requestId = errorPayload.error.request_id || responseRequestID;
+    if (response.status === 401) {
+      return makeError({
+        kind: "unauthorized",
+        status: response.status,
+        code: errorPayload.error.code,
+        message: errorPayload.error.message,
+        requestId,
+      });
+    }
+
+    if (response.status === 403) {
+      return makeError({
+        kind: "forbidden",
+        status: response.status,
+        code: errorPayload.error.code,
+        message: errorPayload.error.message,
+        requestId,
+      });
+    }
+
+    return makeError({
+      kind: "api_error",
+      status: response.status,
+      code: errorPayload.error.code,
+      message: errorPayload.error.message,
+      requestId,
+    });
+  }
+
   return {
     requestJson,
+    requestNoContent,
   };
 }
