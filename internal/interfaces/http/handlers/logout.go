@@ -38,7 +38,6 @@ func (h *Logout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := middleware.GetRequestID(r.Context())
 
 	if err := r.Context().Err(); err != nil {
-		h.cookiePolicy.ClearSessionCookie(w)
 		response.Error(w, http.StatusRequestTimeout, "REQUEST_TIMEOUT", "Request timed out", requestID)
 		return
 	}
@@ -51,7 +50,6 @@ func (h *Logout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, err := h.service.Logout(r.Context(), rawSessionToken, h.newAuditID())
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			h.cookiePolicy.ClearSessionCookie(w)
 			response.Error(w, http.StatusRequestTimeout, "REQUEST_TIMEOUT", "Request timed out", requestID)
 			return
 		}

@@ -289,6 +289,148 @@ func (f *failingLogoutRevoker) RevokeActiveSessionByTokenHash(
 	return false, errors.New("revoke failed")
 }
 
+type controllableLogoutRevoker struct {
+	revoked bool
+	err     error
+	calls   int
+}
+
+func (c *controllableLogoutRevoker) RevokeActiveSessionByTokenHash(
+	context.Context,
+	string,
+	string,
+	appidentity.AppendSecurityAuditEventInput,
+) (bool, error) {
+	c.calls++
+	if c.err != nil {
+		return false, c.err
+	}
+	return c.revoked, nil
+}
+
+func newIdentityRouterWithCustomLogoutService(t *testing.T, logoutService *appidentity.LogoutService) identityRouter {
+	t.Helper()
+
+	dir := t.TempDir()
+	store, err := sqlite.Open(context.Background(), dir)
+	if err != nil {
+		t.Fatalf("Open() error: %v", err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+
+	hasher, err := appidentity.NewPasswordHasher(appidentity.Argon2idConfig{
+		Memory: 4096, Iterations: 1, Parallelism: 1, SaltLength: 16, KeyLength: 32,
+	})
+	if err != nil {
+		t.Fatalf("NewPasswordHasher() error: %v", err)
+	}
+	userRepo := sqlite.NewUserRepository(store.DB())
+	bootstrapRepo := sqlite.NewBootstrapRepository(store.DB())
+	bootstrapService := appidentity.NewBootstrapService(hasher, bootstrapRepo, userRepo)
+	bootstrap := handlers.NewBootstrap(handlers.BootstrapDeps{Service: bootstrapService})
+
+	sessionTokens, err := appidentity.NewSessionTokenService(appidentity.DefaultSessionTokenConfig)
+	if err != nil {
+		t.Fatalf("NewSessionTokenService() error: %v", err)
+	}
+	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), sqlite.NewSecurityAuditRepository(store.DB()))
+	login := handlers.NewLogin(handlers.LoginDeps{
+		Service:      loginService,
+		CookiePolicy: cookie.NewPolicy("development", nil),
+	})
+	logout := handlers.NewLogout(handlers.LogoutDeps{
+		Service:      logoutService,
+		CookiePolicy: cookie.NewPolicy("development", nil),
+	})
+
+	return identityRouter{
+		handler:  httpapiNewRouter(store, bootstrap, login, logout),
+		store:    store,
+		audit:    sqlite.NewSecurityAuditRepository(store.DB()),
+		sessions: sqlite.NewSessionRepository(store.DB()),
+	}
+}
+
+func TestLogoutUseCaseSuccessClearsCookieOnce(t *testing.T) {
+	revoker := &controllableLogoutRevoker{revoked: true}
+	router := newIdentityRouterWithCustomLogoutService(t, appidentity.NewLogoutService(revoker))
+	bootstrapOwner(t, router)
+	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
+
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, logoutPOST([]*http.Cookie{sessionCookie}, csrfToken))
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want 204", rec.Code)
+	}
+	if revoker.calls != 1 {
+		t.Fatalf("logout use case calls = %d, want 1", revoker.calls)
+	}
+	cookies := rec.Result().Cookies()
+	if len(cookies) != 1 {
+		t.Fatalf("clear cookie count = %d, want 1", len(cookies))
+	}
+	if cookies[0].Name != cookie.SessionCookieName || cookies[0].MaxAge != -1 || cookies[0].Value != "" {
+		t.Fatalf("cleared cookie = %#v", cookies[0])
+	}
+}
+
+func TestLogoutUseCaseGenericErrorDoesNotClearCookie(t *testing.T) {
+	revoker := &controllableLogoutRevoker{err: errors.New("persist failed")}
+	router := newIdentityRouterWithCustomLogoutService(t, appidentity.NewLogoutService(revoker))
+	bootstrapOwner(t, router)
+	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
+
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, logoutPOST([]*http.Cookie{sessionCookie}, csrfToken))
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want 500", rec.Code)
+	}
+	if revoker.calls != 1 {
+		t.Fatalf("logout use case calls = %d, want 1", revoker.calls)
+	}
+	if len(rec.Result().Cookies()) != 0 {
+		t.Fatalf("Set-Cookie count = %d, want 0", len(rec.Result().Cookies()))
+	}
+}
+
+func TestLogoutUseCaseContextCanceledDoesNotClearCookie(t *testing.T) {
+	revoker := &controllableLogoutRevoker{err: context.Canceled}
+	router := newIdentityRouterWithCustomLogoutService(t, appidentity.NewLogoutService(revoker))
+	bootstrapOwner(t, router)
+	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
+
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, logoutPOST([]*http.Cookie{sessionCookie}, csrfToken))
+	if rec.Code != http.StatusRequestTimeout {
+		t.Fatalf("status = %d, want 408", rec.Code)
+	}
+	if revoker.calls != 1 {
+		t.Fatalf("logout use case calls = %d, want 1", revoker.calls)
+	}
+	if len(rec.Result().Cookies()) != 0 {
+		t.Fatalf("Set-Cookie count = %d, want 0", len(rec.Result().Cookies()))
+	}
+}
+
+func TestLogoutUseCaseDeadlineExceededDoesNotClearCookie(t *testing.T) {
+	revoker := &controllableLogoutRevoker{err: context.DeadlineExceeded}
+	router := newIdentityRouterWithCustomLogoutService(t, appidentity.NewLogoutService(revoker))
+	bootstrapOwner(t, router)
+	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
+
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, logoutPOST([]*http.Cookie{sessionCookie}, csrfToken))
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want 500", rec.Code)
+	}
+	if revoker.calls != 1 {
+		t.Fatalf("logout use case calls = %d, want 1", revoker.calls)
+	}
+	if len(rec.Result().Cookies()) != 0 {
+		t.Fatalf("Set-Cookie count = %d, want 0", len(rec.Result().Cookies()))
+	}
+}
+
 func TestLogoutRevokeFailureReturns500WithoutCookieClear(t *testing.T) {
 	dir := t.TempDir()
 	store, err := sqlite.Open(context.Background(), dir)
