@@ -22,8 +22,7 @@ import (
 )
 
 func TestLogoutRevokesSessionClearsCookiesAndAudits(t *testing.T) {
-	secure := true
-	router := newIdentityRouter(t, "production", &secure)
+	router := newIdentityRouter(t, true)
 	bootstrapOwner(t, router)
 	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
 
@@ -88,7 +87,7 @@ func TestLogoutRevokesSessionClearsCookiesAndAudits(t *testing.T) {
 }
 
 func TestLogoutIsIdempotent(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
 
@@ -123,7 +122,7 @@ func TestLogoutIsIdempotent(t *testing.T) {
 }
 
 func TestLogoutMissingOrInvalidSessionReturnsUnauthorized(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	cases := []struct {
@@ -155,7 +154,7 @@ func TestLogoutMissingOrInvalidSessionReturnsUnauthorized(t *testing.T) {
 }
 
 func TestLogoutMissingCSRFReturnsForbidden(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, _ := loginAndGetCredentials(t, router)
 
@@ -179,7 +178,7 @@ func TestLogoutMissingCSRFReturnsForbidden(t *testing.T) {
 }
 
 func TestLogoutInvalidCSRFDoesNotRevokeOrAudit(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, _ := loginAndGetCredentials(t, router)
 
@@ -218,7 +217,7 @@ func TestLogoutInvalidCSRFDoesNotRevokeOrAudit(t *testing.T) {
 }
 
 func TestLogoutExpiredSessionReturnsUnauthorized(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
 
@@ -256,7 +255,7 @@ func TestLogoutExpiredSessionReturnsUnauthorized(t *testing.T) {
 }
 
 func TestLogoutDoesNotCreateSession(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	countBefore, err := countSessions(context.Background(), router.store.DB())
@@ -336,11 +335,11 @@ func newIdentityRouterWithCustomLogoutService(t *testing.T, logoutService *appid
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), sqlite.NewSecurityAuditRepository(store.DB()))
 	login := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
-		CookiePolicy: cookie.NewPolicy("development", nil),
+		CookiePolicy: cookie.NewPolicy(false),
 	})
 	logout := handlers.NewLogout(handlers.LogoutDeps{
 		Service:      logoutService,
-		CookiePolicy: cookie.NewPolicy("development", nil),
+		CookiePolicy: cookie.NewPolicy(false),
 	})
 
 	return identityRouter{
@@ -457,12 +456,12 @@ func TestLogoutRevokeFailureReturns500WithoutCookieClear(t *testing.T) {
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), sqlite.NewSecurityAuditRepository(store.DB()))
 	login := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
-		CookiePolicy: cookie.NewPolicy("development", nil),
+		CookiePolicy: cookie.NewPolicy(false),
 	})
 	logoutService := appidentity.NewLogoutService(&failingLogoutRevoker{})
 	logout := handlers.NewLogout(handlers.LogoutDeps{
 		Service:      logoutService,
-		CookiePolicy: cookie.NewPolicy("development", nil),
+		CookiePolicy: cookie.NewPolicy(false),
 	})
 
 	router := identityRouter{
@@ -543,7 +542,7 @@ func httpapiNewRouter(store *sqlite.Store, bootstrap *handlers.Bootstrap, login 
 }
 
 func TestLogoutCSRFHeaderOnly(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
 
@@ -559,7 +558,7 @@ func TestLogoutCSRFHeaderOnly(t *testing.T) {
 }
 
 func TestLogoutWhitespaceOnlyCSRFRejected(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, _ := loginAndGetCredentials(t, router)
 
@@ -571,7 +570,7 @@ func TestLogoutWhitespaceOnlyCSRFRejected(t *testing.T) {
 }
 
 func TestLogoutOversizedCSRFRejected(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, _ := loginAndGetCredentials(t, router)
 
@@ -584,7 +583,7 @@ func TestLogoutOversizedCSRFRejected(t *testing.T) {
 }
 
 func TestLogoutResponseDoesNotLeakCSRF(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, csrfToken := loginAndGetCredentials(t, router)
 
@@ -602,7 +601,7 @@ func TestLogoutResponseDoesNotLeakCSRF(t *testing.T) {
 }
 
 func TestLogoutForbiddenResponseShape(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 	sessionCookie, _ := loginAndGetCredentials(t, router)
 

@@ -100,7 +100,7 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo, sqlite.NewSecurityAuditRepository(store.DB()))
 	logoutRepo := sqlite.NewLogoutRepository(store.DB())
 	logoutService := appidentity.NewLogoutService(logoutRepo)
-	cookiePolicy := cookie.NewPolicy("development", nil)
+	cookiePolicy := cookie.NewPolicy(false)
 
 	login := handlers.NewLogin(handlers.LoginDeps{Service: loginService, CookiePolicy: cookiePolicy})
 	logout := handlers.NewLogout(handlers.LogoutDeps{Service: logoutService, CookiePolicy: cookiePolicy})

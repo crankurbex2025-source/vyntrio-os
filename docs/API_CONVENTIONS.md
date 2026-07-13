@@ -75,19 +75,20 @@ All non-2xx JSON errors use this shape:
 | 500 | `INTERNAL_ERROR` | Unexpected server error |
 | 503 | `SERVICE_UNAVAILABLE` | Process not ready (future: dependency down) |
 
-## Environment variables (`cmd/api`)
+## Runtime configuration (`cmd/api`, implementiert)
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `VYNTRIO_ENV` | no | `development` | `development` or `production` |
-| `VYNTRIO_LOG_LEVEL` | no | `info` | `debug`, `info`, `warn`, `error` |
-| `VYNTRIO_API_HOST` | no | `127.0.0.1` | Bind address |
-| `VYNTRIO_API_PORT` | no | `8080` | Listen port |
-| `VYNTRIO_API_READ_TIMEOUT` | no | `15s` | Server read timeout |
-| `VYNTRIO_API_WRITE_TIMEOUT` | no | `15s` | Server write timeout |
-| `VYNTRIO_API_IDLE_TIMEOUT` | no | `60s` | Server idle timeout |
-| `VYNTRIO_VERSION` | no | `0.2.0-dev` | Reported API version |
-| `VYNTRIO_BUILD_COMMIT` | no | `unknown` | Git commit for `/api/v1/version` |
-| `VYNTRIO_DATA_DIR` | no | `./data` | SQLite data directory (`{dir}/vyntrio.db`) |
+Canonical file: `/etc/vyntrio/config.toml`. Development/tests may pass
+`--config <absolute-path>` only.
 
-Copy from `.env.example`. Never commit `.env` or `data/` contents.
+| Key | Type | Description |
+|-----|------|-------------|
+| `bind_address` | string | Literal IP only (`netip.ParseAddr`); no hostnames or wildcards |
+| `listen_port` | integer | 1–65535 |
+| `state_dir` | string | Must equal `/var/lib/vyntrio` exactly in production |
+| `log_level` | string | `debug`, `info`, `warn`, or `error` (exact match) |
+| `cookie_secure` | boolean | `false` allowed only with loopback `bind_address` |
+
+All keys are required. Unknown keys, duplicate keys, wrong types, invalid
+values, and path-boundary violations fail startup. Legacy `VYNTRIO_*` runtime
+environment variables no longer affect the API server. See
+`docs/ADR/0005-appliance-runtime-operations.md`.

@@ -25,7 +25,12 @@ import (
 )
 
 func main() {
-	cfg, err := config.Load()
+	configPath, err := config.ParseFlags(os.Args[1:])
+	if err != nil {
+		log.Fatalf("config: %v", err)
+	}
+
+	cfg, err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}
@@ -33,9 +38,9 @@ func main() {
 	logger := newLogger(cfg)
 
 	ctx := context.Background()
-	store, err := sqlite.Open(ctx, cfg.DataDir)
+	store, err := sqlite.Open(ctx, cfg.StateDir)
 	if err != nil {
-		logger.Error("database startup failed", "error", err, "data_dir", cfg.DataDir)
+		logger.Error("database startup failed", "error", err, "state_dir", cfg.StateDir)
 		os.Exit(1)
 	}
 
@@ -81,7 +86,7 @@ func main() {
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo, auditRepo)
 	logoutRepo := sqlite.NewLogoutRepository(store.DB())
 	logoutService := appidentity.NewLogoutService(logoutRepo)
-	cookiePolicy := cookie.NewPolicy(cfg.Env, cfg.CookieSecure)
+	cookiePolicy := cookie.NewPolicy(cfg.CookieSecure)
 	loginHandler := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
 		CookiePolicy: cookiePolicy,

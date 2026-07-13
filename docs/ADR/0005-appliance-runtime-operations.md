@@ -14,29 +14,47 @@ policy. The next concern is **appliance operation**, not UI functionality.
 Current runtime truth (verified against `cmd/api/main.go`,
 `internal/platform/config`, `internal/infrastructure/persistence/sqlite`):
 
-- Configuration comes from **environment variables** with documented defaults:
-  `VYNTRIO_API_HOST` (`127.0.0.1`), `VYNTRIO_API_PORT` (`8080`, validated
-  1–65535), read/write/idle/shutdown timeouts, `VYNTRIO_ENV` (`development`),
-  `VYNTRIO_LOG_LEVEL` (`info`), optional `VYNTRIO_COOKIE_SECURE`, and
-  `VYNTRIO_DATA_DIR` with the default `./data` — a **current-working-directory
-  dependency** that is unacceptable for a supervised production service.
-- SQLite (pure-Go `modernc.org/sqlite`, CGO-free) lives at
-  `<DataDir>/vyntrio.db`; migrations are embedded and run at startup; the data
-  directory is created with mode `0o750`; `foreign_keys` is enforced and the
-  pool is limited to one connection.
-- Startup is fail-closed today: invalid configuration, database open/migrate/
-  ping failure, settings load/verification failure, credential-service init
-  failure, or embedded-UI init failure aborts the process with a clear error.
+- **Implemented (Slice 7.2):** the API server loads host-admin runtime
+  configuration from **`/etc/vyntrio/config.toml`** (or `--config <absolute-path>`
+  for development/tests). TOML schema: `bind_address`, `listen_port`,
+  `state_dir`, `log_level`, `cookie_secure` — all required, no implicit
+  defaults; strictness via explicit required-key/exact-key-count/type validation
+  and parser duplicate-key rejection. Legacy environment variables
+  (`VYNTRIO_API_HOST`, `VYNTRIO_API_PORT`, `VYNTRIO_DATA_DIR`, `VYNTRIO_LOG_LEVEL`,
+  `VYNTRIO_ENV`, `VYNTRIO_COOKIE_SECURE`) no longer affect the API server.
+- **Startup-time path validation (implemented):** config-controlled traversal
+  blocked; `state_dir` must equal exactly `/var/lib/vyntrio` in production;
+  symlink `state_dir` rejected; pre-existing symlinks for `vyntrio.db` and known
+  SQLite sidecar names (`vyntrio.db-journal`, `vyntrio.db-wal`, `vyntrio.db-shm`)
+  rejected before SQLite open; fixed DB name and server-built DSN only.
+- **Not guaranteed (deferred):** race-free confinement against a concurrent local
+  actor who can mutate the state directory after validation; `os.Root`-bound
+  SQLite I/O; complete local-filesystem attacker resistance. `os.OpenRoot` is a
+  startup accessibility probe only and does not constrain pathname-based SQLite
+  opens through `modernc.org/sqlite`.
+- **Operational assumption:** `/var/lib/vyntrio` is administered by the trusted
+  host operator and is not concurrently writable by an untrusted local actor.
+  The planned systemd/ownership slice operationalizes this; it does not make the
+  current pathname SQLite open race-free.
+- SQLite (pure-Go `modernc.org/sqlite` v1.46.1, CGO-free) at
+  `<state_dir>/vyntrio.db`; default **DELETE** journal mode (rollback journal
+  sidecar `vyntrio.db-journal` when active); WAL/SHM are not enabled now but
+  are checked at startup if present; migrations embedded at startup; state
+  directory created `0o750`; `foreign_keys` enforced; pool limited to one
+  connection.
+- Startup is fail-closed: invalid configuration (including path-boundary
+  violations), database open/migrate/ping failure, settings load/verification
+  failure, credential-service init failure, or embedded-UI init failure aborts
+  the process with a clear error.
 - `/healthz` is process liveness; `/readyz` is process plus database readiness.
 - Shutdown is graceful: SIGINT/SIGTERM → `http.Server.Shutdown` with a
   configured timeout → database close.
 - The binary requires no source checkout, `frontend/dist`, `node_modules`,
-  Vite, dev proxy, or static-files directory at runtime (ADR-0004,
-  `docs/19_RELEASE.md`).
+  Vite, dev proxy, or static-files directory at runtime.
 
-There is no service-manager integration, no host filesystem contract, no
-backup/restore story, and no host-admin configuration file. Later slices must
-implement these against a stable contract; this ADR is that contract.
+There is no service-manager integration, no backup/restore story, and no
+config-file ownership enforcement yet. Later slices must implement these
+against the contract below.
 
 ## Decision
 
@@ -58,10 +76,8 @@ implement these against a stable contract; this ADR is that contract.
 - **Format: TOML.** Rationale: comment support and human editability for
   operators, deterministic parsing without YAML's implicit-typing ambiguity,
   flat-table fit for a small schema, and mature Go libraries. Consequence: the
-  future runtime-config slice adds one vetted TOML parser dependency; **no
-  parser is added in this slice**, and the current environment-variable loader
-  remains the implemented mechanism until that slice replaces or explicitly
-  maps it.
+  future runtime-config slice adds one vetted TOML parser dependency; **implemented
+  in Slice 7.2** (`github.com/pelletier/go-toml/v2`).
 - Minimal v1 schema (architectural level only):
   - bind address (default loopback);
   - listen port;
@@ -109,11 +125,17 @@ Intended v1 layout:
 | `/var/lib/vyntrio/backups/` | optional local backup destination | read/write (future backup slice) |
 | `/run/vyntrio/` | ephemeral runtime files | read/write, only if a future slice needs it |
 
-- The database file **and all SQLite sidecar files** (journal/WAL/SHM) must
-  remain within the dedicated state directory.
-- Prohibited: relative database paths, runtime paths derived from the current
-  working directory, arbitrary host paths, path traversal, symlink escape out
-  of the state directory, and writing adjacent to the binary.
+- The database file and SQLite sidecar files must remain within the dedicated
+  state directory. Current runtime uses **DELETE** journal mode; WAL/SHM are
+  possible future sidecars if journal mode changes.
+- **Implemented startup checks:** config-controlled traversal blocked; exact
+  `state_dir` root; symlink `state_dir` rejected; pre-existing symlinks for the
+  main DB and known sidecar names rejected before SQLite open.
+- **Not implemented:** race-free persistence I/O confinement; `os.Root`-bound
+  SQLite open; rejection of post-validation filesystem mutation by a local actor.
+- Prohibited by configuration contract: relative database paths, runtime paths
+  derived from the current working directory, arbitrary host paths, path
+  traversal, and writing adjacent to the binary.
 - Intended ownership/mode expectations (to be implemented by later packaging
   slices, **not enforced by current code**): state directory owned by the
   service account with restrictive modes (directory `0750`, database files
@@ -143,16 +165,14 @@ Intended v1 layout:
 
 ### F. Startup, liveness, readiness and shutdown
 
-- **Fail-closed startup today** (implemented): invalid runtime configuration,
-  inaccessible state path, unavailable/unopenable database, settings
-  load/verification failure, credential-service (hasher) init failure, session-
-  service init failure, or embedded-UI init failure prevents readiness and
-  terminates startup with a clear error.
-- **Fail-closed startup (future runtime-config slice):** the TOML loader and
-  path validation must additionally fail closed for invalid state-path
-  boundaries, prohibited paths, path traversal, and symlink escape attempts
-  (see section D). These checks are not implemented in the current
-  environment-variable loader.
+- **Fail-closed startup (implemented):** invalid runtime configuration,
+  inaccessible state path, startup-time path/symlink validation failure,
+  unavailable/unopenable database, settings load/verification failure,
+  credential-service (hasher) init failure, session-service init failure, or
+  embedded-UI init failure prevents readiness and terminates startup with a
+  clear error.
+- **Deferred:** race-resistant persistence I/O confinement (custom VFS,
+  descriptor-based open, or equivalent) for pathname-based SQLite access.
 - Endpoint semantics are preserved: **`/healthz` is liveness**, **`/readyz` is
   service readiness** (process plus database). Later implementation must
   ensure readiness reports success only after required persistent state and
@@ -235,9 +255,9 @@ Intended v1 layout:
 
 ### Follow-up
 
-- [ ] Runtime-config slice: TOML loader for `/etc/vyntrio/config.toml`,
-      fail-closed validation, removal of the CWD-derived `./data` default for
-      production operation.
+- [x] Runtime-config slice: TOML loader for `/etc/vyntrio/config.toml`,
+      fail-closed validation, removal of legacy environment-variable runtime
+      inputs and the CWD-derived `./data` default.
 - [ ] systemd slice: unit file, service account provisioning, tmpfiles/state
       directory ownership, sandboxing per section E.
 - [ ] Backup CLI slice per section G; restore procedure per section H.

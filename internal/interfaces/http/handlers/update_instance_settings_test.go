@@ -380,9 +380,9 @@ func TestUpdateInstanceDisplayNamePersistenceFailure(t *testing.T) {
 		t.Fatalf("NewSessionTokenService() error: %v", err)
 	}
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), sqlite.NewSecurityAuditRepository(store.DB()))
-	login := handlers.NewLogin(handlers.LoginDeps{Service: loginService, CookiePolicy: cookie.NewPolicy("development", nil)})
+	login := handlers.NewLogin(handlers.LoginDeps{Service: loginService, CookiePolicy: cookie.NewPolicy(false)})
 	logoutRepo := sqlite.NewLogoutRepository(store.DB())
-	logout := handlers.NewLogout(handlers.LogoutDeps{Service: appidentity.NewLogoutService(logoutRepo), CookiePolicy: cookie.NewPolicy("development", nil)})
+	logout := handlers.NewLogout(handlers.LogoutDeps{Service: appidentity.NewLogoutService(logoutRepo), CookiePolicy: cookie.NewPolicy(false)})
 	settingsRepo := sqlite.NewSettingsRepository(store.DB())
 	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, settingsTestVersion, settingsTestEnvironment)
 	settings := handlers.NewSettings(handlers.SettingsDeps{Loader: settingsLoader})

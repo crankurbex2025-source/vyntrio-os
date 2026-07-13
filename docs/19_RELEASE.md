@@ -42,6 +42,11 @@ Das gebaute Binary benötigt zur Laufzeit weder den Repository-Checkout noch
 `frontend/dist`, `node_modules`, Vite, einen Dev-Server oder ein
 Static-Files-Verzeichnis. Alle UI-Dateien sind im Binary enthalten.
 
+Der API-Server benötigt zur Laufzeit eine gültige TOML-Konfigurationsdatei
+(Standard: `/etc/vyntrio/config.toml`, alternativ `--config <absoluter-Pfad>`
+für Entwicklung/Tests). Siehe `docs/ADR/0005-appliance-runtime-operations.md`
+und `docs/API_CONVENTIONS.md`.
+
 CI (`.github/workflows/ci.yml`) und Release-Validierung
 (`.github/workflows/release.yml`) installieren Node, führen `npm ci` im
 Frontend aus und rufen `make ui-stage` auf, bevor Go-Kommandos laufen.
@@ -75,17 +80,18 @@ test -z "$(gofmt -l .)"   # gofmt-Gate, identisch zur CI
 - Dass API-artige Pfade (`/api/...`) JSON-Fehler statt UI-HTML liefern, ist
   beabsichtigt (API-Isolation, siehe `docs/09_API.md`).
 
-### Betriebs- und Upgrade-Vertrag (Block 7, beschlossen — noch nicht implementiert)
+### Betriebs- und Upgrade-Vertrag (Block 7)
 
-Das Laufzeit-, Dateisystem-, systemd-, Backup-/Restore- und Upgrade-Modell für
-den Appliance-Betrieb ist in `docs/ADR/0005-appliance-runtime-operations.md`
-festgelegt. Kernpunkte für Releases: unveränderliches Binary getrennt vom
-persistenten State (`/var/lib/vyntrio/`), Host-Konfiguration unter
-`/etc/vyntrio/`, Konfigurationsänderungen nur per kontrolliertem Neustart,
-Backup/Restore als zukünftige lokale Admin-CLI-Operationen (SQLite-konsistent,
-nie Raw-Copy einer laufenden Datenbank, nie über Web/API) und
-Kompatibilitäts-/Backup-vor-Migration-Policy in späteren Upgrade-Slices.
-Docker/OCI-, ISO- und Container-Pfade existieren noch nicht.
+**Implementiert:** TOML-Laufzeitkonfiguration (`/etc/vyntrio/config.toml`),
+Fail-Closed-Validierung (explizite Pflicht-/Exakt-Schlüssel- und Typprüfung,
+Parser-Duplikat-Ablehnung), persistenter State unter `/var/lib/vyntrio/`,
+startup-time `state_dir`- und SQLite-Datei-Symlink-Ablehnung, feste DB-Bezeichnung
+`vyntrio.db`, serverseitig gebauter DSN. **Nicht garantiert:** race-freie
+Dateisystem-Eindämmung, `os.Root`-gebundenes SQLite-I/O, vollständiger Schutz
+gegen lokale Schreiber im State-Verzeichnis nach der Validierung. **Noch nicht
+implementiert:** systemd, Servicekonto, Config-Ownership-Härtung,
+Backup/Restore-CLI, Upgrade-Packaging. Autoritativ:
+`docs/ADR/0005-appliance-runtime-operations.md`.
 
 ## Release-Arten
 - Nightly / Development

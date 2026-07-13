@@ -19,13 +19,9 @@ type Policy struct {
 	Secure bool
 }
 
-// NewPolicy returns cookie transport settings from server configuration.
-func NewPolicy(env string, cookieSecureOverride *bool) Policy {
-	secure := env == "production"
-	if cookieSecureOverride != nil {
-		secure = *cookieSecureOverride
-	}
-	return Policy{Secure: secure}
+// NewPolicy returns cookie transport settings from runtime configuration.
+func NewPolicy(cookieSecure bool) Policy {
+	return Policy{Secure: cookieSecure}
 }
 
 // SetSessionCookie writes the session cookie for a successful login.

@@ -28,6 +28,8 @@ func Open(ctx context.Context, dataDir string) (*Store, error) {
 	}
 
 	path := filepath.Join(dataDir, "vyntrio.db")
+	// modernc.org/sqlite opens by pathname DSN; this assumes a host-admin-controlled
+	// state root and is not a root-bound or descriptor-based SQLite open.
 	db, err := sql.Open("sqlite", fmt.Sprintf("file:%s?_pragma=foreign_keys(1)", path))
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)

@@ -14,8 +14,8 @@ import (
 
 func TestShutdownWithoutActiveListener(t *testing.T) {
 	cfg := config.Config{
-		APIHost:         "127.0.0.1",
-		APIPort:         8080,
+		BindAddress:     "127.0.0.1",
+		ListenPort:      8080,
 		ReadTimeout:     time.Second,
 		WriteTimeout:    time.Second,
 		IdleTimeout:     time.Second,

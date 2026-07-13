@@ -35,7 +35,7 @@ type identityRouter struct {
 	audit    *sqlite.SecurityAuditRepository
 }
 
-func newIdentityRouter(t *testing.T, env string, cookieSecure *bool) identityRouter {
+func newIdentityRouter(t *testing.T, cookieSecure bool) identityRouter {
 	t.Helper()
 
 	dir := t.TempDir()
@@ -69,19 +69,21 @@ func newIdentityRouter(t *testing.T, env string, cookieSecure *bool) identityRou
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo, sqlite.NewSecurityAuditRepository(store.DB()))
 	logoutRepo := sqlite.NewLogoutRepository(store.DB())
 	logoutService := appidentity.NewLogoutService(logoutRepo)
-	cookiePolicy := cookie.NewPolicy(env, cookieSecure)
+	cookiePolicy := cookie.NewPolicy(cookieSecure)
 
 	login := handlers.NewLogin(handlers.LoginDeps{Service: loginService, CookiePolicy: cookiePolicy})
 	logout := handlers.NewLogout(handlers.LogoutDeps{Service: logoutService, CookiePolicy: cookiePolicy})
+
+	env := "production"
+	if !cookieSecure {
+		env = "development"
+	}
 
 	cfg := config.Config{
 		Env:         env,
 		Version:     "test",
 		BuildCommit: "test",
 		ReadTimeout: 15 * time.Second,
-	}
-	if cookieSecure != nil {
-		cfg.CookieSecure = cookieSecure
 	}
 
 	resolver := appidentity.NewSessionResolver(sqlite.NewSessionAuthRepository(store.DB()))
@@ -198,7 +200,7 @@ func findCookie(cookies []*http.Cookie, name string) *http.Cookie {
 
 func TestLoginValidOwnerSetsCookiesAndSession(t *testing.T) {
 	secure := true
-	router := newIdentityRouter(t, "production", &secure)
+	router := newIdentityRouter(t, secure)
 	bootstrapOwner(t, router)
 
 	rec := httptest.NewRecorder()
@@ -302,7 +304,7 @@ func TestLoginValidOwnerSetsCookiesAndSession(t *testing.T) {
 }
 
 func TestLoginPersistsLifecycleTimestampsAlignedToMaterial(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	rec := httptest.NewRecorder()
@@ -336,7 +338,7 @@ func TestLoginPersistsLifecycleTimestampsAlignedToMaterial(t *testing.T) {
 }
 
 func TestLoginDevelopmentCookieSecureDefault(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	rec := httptest.NewRecorder()
@@ -354,7 +356,7 @@ func TestLoginDevelopmentCookieSecureDefault(t *testing.T) {
 }
 
 func TestLoginCredentialFailuresIndistinguishable(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	hash, err := router.hasher.HashPassword(context.Background(), testLoginPassword)
@@ -454,7 +456,7 @@ func normalizeAuthFailureBody(body []byte) []byte {
 }
 
 func TestLoginRejectsInvalidRequests(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	cases := []struct {
@@ -569,7 +571,7 @@ func TestLoginFailureAuditPersistenceErrorReturns500(t *testing.T) {
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), failingLoginAuditStore{})
 	login := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
-		CookiePolicy: cookie.NewPolicy("development", nil),
+		CookiePolicy: cookie.NewPolicy(false),
 	})
 
 	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
@@ -592,7 +594,7 @@ func TestLoginFailureAuditPersistenceErrorReturns500(t *testing.T) {
 }
 
 func TestLoginNeedsRehashUpdatesHashAndCreatesSession(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 
 	oldHasher, err := appidentity.NewPasswordHasher(appidentity.Argon2idConfig{
 		Memory:      2048,
@@ -694,7 +696,7 @@ func TestLoginRehashFailureSetsNoSession(t *testing.T) {
 	loginService := appidentity.NewLoginService(failingUsers, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), sqlite.NewSecurityAuditRepository(store.DB()))
 	login := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
-		CookiePolicy: cookie.NewPolicy("development", nil),
+		CookiePolicy: cookie.NewPolicy(false),
 	})
 
 	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
@@ -753,7 +755,7 @@ func TestLoginSessionPersistenceFailureSetsNoCookie(t *testing.T) {
 	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, &failingLoginCreator{}, sqlite.NewSecurityAuditRepository(store.DB()))
 	login := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
-		CookiePolicy: cookie.NewPolicy("development", nil),
+		CookiePolicy: cookie.NewPolicy(false),
 	})
 
 	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
@@ -776,7 +778,7 @@ func TestLoginSessionPersistenceFailureSetsNoCookie(t *testing.T) {
 }
 
 func TestLoginRequestCancellationFailsSafely(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -796,7 +798,7 @@ func TestLoginRequestCancellationFailsSafely(t *testing.T) {
 }
 
 func TestLoginConcurrentCreatesSeparateSessions(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	const workers = 4
@@ -843,7 +845,7 @@ func countSessions(ctx context.Context, db *sql.DB) (int, error) {
 }
 
 func TestLoginStoredPasswordIsArgon2id(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	rec := httptest.NewRecorder()
@@ -872,7 +874,7 @@ func min(a, b int) int {
 }
 
 func TestLoginWrongContentType(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/identity/login", strings.NewReader(`{"username":"owner","password":"x"}`))
@@ -887,7 +889,7 @@ func TestLoginWrongContentType(t *testing.T) {
 }
 
 func TestLoginSecondJSONValueRejected(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	body := `{"username":"owner","password":"` + testLoginPassword + `"}{}`
@@ -899,7 +901,7 @@ func TestLoginSecondJSONValueRejected(t *testing.T) {
 }
 
 func TestLoginDoesNotReadResponseSecrets(t *testing.T) {
-	router := newIdentityRouter(t, "development", nil)
+	router := newIdentityRouter(t, false)
 	bootstrapOwner(t, router)
 
 	rec := httptest.NewRecorder()

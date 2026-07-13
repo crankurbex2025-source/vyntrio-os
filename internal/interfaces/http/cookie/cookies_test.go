@@ -9,31 +9,22 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/cookie"
 )
 
-func TestNewPolicyProductionSecureDefault(t *testing.T) {
-	policy := cookie.NewPolicy("production", nil)
+func TestNewPolicySecure(t *testing.T) {
+	policy := cookie.NewPolicy(true)
 	if !policy.Secure {
-		t.Fatal("production must default to Secure cookies")
+		t.Fatal("cookie_secure=true must set Secure cookies")
 	}
 }
 
-func TestNewPolicyDevelopmentInsecureDefault(t *testing.T) {
-	policy := cookie.NewPolicy("development", nil)
+func TestNewPolicyInsecure(t *testing.T) {
+	policy := cookie.NewPolicy(false)
 	if policy.Secure {
-		t.Fatal("development must default to insecure cookies")
-	}
-}
-
-func TestNewPolicyExplicitOverride(t *testing.T) {
-	secure := true
-	policy := cookie.NewPolicy("development", &secure)
-	if !policy.Secure {
-		t.Fatal("explicit override must enable Secure cookies")
+		t.Fatal("cookie_secure=false must not set Secure cookies")
 	}
 }
 
 func TestSetAndClearSessionCookie(t *testing.T) {
-	secure := true
-	policy := cookie.NewPolicy("production", &secure)
+	policy := cookie.NewPolicy(true)
 	now := time.Date(2026, 7, 13, 12, 0, 0, 0, time.UTC)
 	expires := now.Add(7 * 24 * time.Hour)
 	material := appidentity.SessionMaterial{
