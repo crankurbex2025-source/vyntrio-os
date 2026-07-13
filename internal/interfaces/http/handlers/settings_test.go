@@ -45,6 +45,7 @@ type settingsRouterOpts struct {
 	authorizer ports.Authorizer
 	resolver   *appidentity.SessionResolver
 	store      *sqlite.Store
+	routerOpts []httpapi.RouterOption
 }
 
 func newSettingsRouter(t *testing.T, opts settingsRouterOpts) settingsRouter {
@@ -137,6 +138,7 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 			Resolver:   resolver,
 			Authorizer: authorizer,
 		},
+		opts.routerOpts...,
 	)
 
 	return settingsRouter{

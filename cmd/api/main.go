@@ -20,6 +20,7 @@ import (
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/cookie"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/ui"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 )
 
@@ -101,6 +102,13 @@ func main() {
 		Service: updateInstanceService,
 	})
 
+	uiHandler, err := ui.NewHandler()
+	if err != nil {
+		_ = store.Close()
+		logger.Error("embedded ui init failed", "error", err)
+		os.Exit(1)
+	}
+
 	srv := httpapi.NewServer(
 		cfg,
 		logger,
@@ -114,6 +122,7 @@ func main() {
 			Resolver:   sessionResolver,
 			Authorizer: authorizer,
 		},
+		httpapi.WithUI(uiHandler),
 	)
 
 	errCh := make(chan error, 1)

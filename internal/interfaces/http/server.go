@@ -28,8 +28,9 @@ func NewServer(
 	settings *handlers.Settings,
 	updateInstance *handlers.UpdateInstanceSettings,
 	sessionAuth *SessionAuth,
+	opts ...RouterOption,
 ) *Server {
-	handler := NewRouter(cfg, logger, readiness, bootstrap, login, logout, settings, updateInstance, sessionAuth)
+	handler := NewRouter(cfg, logger, readiness, bootstrap, login, logout, settings, updateInstance, sessionAuth, opts...)
 	return &Server{
 		cfg:    cfg,
 		logger: logger,
