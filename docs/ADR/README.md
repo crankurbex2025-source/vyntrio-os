@@ -12,6 +12,7 @@ Governance: see `docs/01_MASTERPLAN.md` — ADR required for irreversible techno
 | [0002](0002-use-chi-router.md) | **Accepted** | Use chi for HTTP routing |
 | [0003](0003-sqlite-migrations.md) | **Accepted** | SQLite with golang-migrate and sqlc |
 | [0004](0004-identity-and-access.md) | **Accepted** | Local-first identity and access control |
+| [0005](0005-appliance-runtime-operations.md) | **Accepted** | Appliance runtime configuration and operations model |
 | [Template](ADR_TEMPLATE.md) | Template | ADR template |
 
 ## Process

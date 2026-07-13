@@ -75,6 +75,18 @@ test -z "$(gofmt -l .)"   # gofmt-Gate, identisch zur CI
 - Dass API-artige Pfade (`/api/...`) JSON-Fehler statt UI-HTML liefern, ist
   beabsichtigt (API-Isolation, siehe `docs/09_API.md`).
 
+### Betriebs- und Upgrade-Vertrag (Block 7, beschlossen — noch nicht implementiert)
+
+Das Laufzeit-, Dateisystem-, systemd-, Backup-/Restore- und Upgrade-Modell für
+den Appliance-Betrieb ist in `docs/ADR/0005-appliance-runtime-operations.md`
+festgelegt. Kernpunkte für Releases: unveränderliches Binary getrennt vom
+persistenten State (`/var/lib/vyntrio/`), Host-Konfiguration unter
+`/etc/vyntrio/`, Konfigurationsänderungen nur per kontrolliertem Neustart,
+Backup/Restore als zukünftige lokale Admin-CLI-Operationen (SQLite-konsistent,
+nie Raw-Copy einer laufenden Datenbank, nie über Web/API) und
+Kompatibilitäts-/Backup-vor-Migration-Policy in späteren Upgrade-Slices.
+Docker/OCI-, ISO- und Container-Pfade existieren noch nicht.
+
 ## Release-Arten
 - Nightly / Development
 - Beta

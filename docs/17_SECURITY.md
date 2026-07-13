@@ -63,3 +63,18 @@ Die Same-Origin-CSP ergänzt die bestehenden Kontrollen (HttpOnly-Session-
 Cookie, CSRF-Header-Pflicht für mutierende Requests, serverseitige
 Autorisierung/RBAC, Input-Validierung), ersetzt sie aber nicht: Autorisierung
 und CSRF-Prüfung bleiben ausschließlich serverseitig durchgesetzt.
+
+## Appliance-Betriebsmodell (Block 7, beschlossen — noch nicht implementiert)
+
+Der Sicherheitsvertrag für den Appliance-Betrieb ist in
+`docs/ADR/0005-appliance-runtime-operations.md` festgelegt: kein Root-Betrieb
+(dediziertes non-login `vyntrio`-Servicekonto), root-administrierte
+Laufzeitkonfiguration unter `/etc/vyntrio/` (read-only für den Service,
+Fail-Closed-Validierung), beschreibbarer State ausschließlich unter
+`/var/lib/vyntrio/`, Verbot von CWD-abgeleiteten Pfaden/Traversal/Symlink-
+Escape, systemd-Sandboxing (u. a. `NoNewPrivileges`, Capability-Entzug,
+`ProtectSystem=strict` nur mit explizit freigegebenen State-Pfaden) und
+SQLite-konsistente Backups nur über eine zukünftige lokale Admin-CLI — nie
+über Web/API. Seccomp-/`SystemCallFilter`-Härtung ist bis zu einem
+distributionsgetesteten Härtungs-Slice zurückgestellt. Laufzeitkonfiguration
+wird niemals über UI oder API exponiert.
