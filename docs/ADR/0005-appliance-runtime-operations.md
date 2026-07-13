@@ -34,7 +34,8 @@ Current runtime truth (verified against `cmd/api/main.go`,
   opens through `modernc.org/sqlite`.
 - **Operational assumption:** `/var/lib/vyntrio` is administered by the trusted
   host operator and is not concurrently writable by an untrusted local actor.
-  The planned systemd/ownership slice operationalizes this; it does not make the
+  **Slice 7.3** operationalizes this via static `vyntrio` identity, restrictive
+  directory permissions, and `StateDirectory=vyntrio`; it does not make the
   current pathname SQLite open race-free.
 - SQLite (pure-Go `modernc.org/sqlite` v1.46.1, CGO-free) at
   `<state_dir>/vyntrio.db`; default **DELETE** journal mode (rollback journal
@@ -52,9 +53,12 @@ Current runtime truth (verified against `cmd/api/main.go`,
 - The binary requires no source checkout, `frontend/dist`, `node_modules`,
   Vite, dev proxy, or static-files directory at runtime.
 
-There is no service-manager integration, no backup/restore story, and no
-config-file ownership enforcement yet. Later slices must implement these
-against the contract below.
+There is no backup/restore story yet. **Slice 7.3 (implemented):** systemd unit,
+static `vyntrio` service identity declaration, tmpfiles layout for
+`/etc/vyntrio`, and conservative unit sandboxing. Config-file ownership is
+documented for administrators; runtime enforcement of config ownership modes
+beyond startup readability checks remains packaging/operator responsibility.
+Later slices must implement backup/restore against the contract below.
 
 ## Decision
 
@@ -136,11 +140,11 @@ Intended v1 layout:
 - Prohibited by configuration contract: relative database paths, runtime paths
   derived from the current working directory, arbitrary host paths, path
   traversal, and writing adjacent to the binary.
-- Intended ownership/mode expectations (to be implemented by later packaging
-  slices, **not enforced by current code**): state directory owned by the
-  service account with restrictive modes (directory `0750`, database files
-  `0640` or stricter); configuration owned by root, readable by the service
-  account, never writable by it.
+- Intended ownership/mode expectations (**Slice 7.3 artifacts + operator
+  install**): state directory owned by the service account with restrictive
+  modes (directory `0750`, database files `0640` or stricter via `UMask=0027`);
+  configuration owned by root, group-readable by `vyntrio`, never writable by it
+  (`/etc/vyntrio` `0750`, `config.toml` `0640` recommended).
 
 ### E. systemd service identity and sandboxing
 
@@ -149,16 +153,19 @@ Intended v1 layout:
   ownership, offline restore, backup handling, and incident recovery require
   **stable file ownership** across service lifecycles; DynamicUser's mapped
   UIDs complicate all four. The service **must not run as root**.
-- Intended unit-level controls (architectural contract; **no `.service` file
-  exists yet**): `User=`/`Group=vyntrio`, restrictive `UMask=`,
-  `StateDirectory=vyntrio` (and `RuntimeDirectory=` only if needed),
-  `Restart=on-failure`, `NoNewPrivileges=yes`, full capability removal
-  (`CapabilityBoundingSet=`), filesystem protections (`ProtectSystem=strict`,
-  `ProtectHome=yes`), `PrivateTmp=yes`, device restrictions
-  (`PrivateDevices=yes`), and restrictive address families
-  (`RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX`).
-- `ProtectSystem=strict` must be paired **only** with the explicit approved
-  writable state/runtime locations from section D.
+- **Implemented (Slice 7.3):** `distro/systemd/vyntrio-api.service` with
+  `User=`/`Group=vyntrio`, restrictive `UMask=0027`, `StateDirectory=vyntrio`
+  (`StateDirectoryMode=0750`), `Restart=on-failure`, `NoNewPrivileges=yes`,
+  empty `CapabilityBoundingSet=`, `ProtectSystem=strict`, `ProtectHome=yes`,
+  `PrivateTmp=yes`, `PrivateDevices=yes`, and
+  `RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX`. Account provisioning via
+  `distro/systemd/vyntrio.sysusers`; `/etc/vyntrio` layout via
+  `distro/systemd/vyntrio.tmpfiles.conf`. Install steps:
+  `distro/systemd/README.md`.
+- `ProtectSystem=strict` is paired with the explicit approved writable state
+  location (`StateDirectory=vyntrio` → `/var/lib/vyntrio`).
+- **Not guaranteed:** race-free SQLite I/O against a concurrent local writer in
+  the state directory; pathname opens remain outside descriptor-bound confinement.
 - **Deferred:** aggressive `SystemCallFilter=`/seccomp policy, until a
   distribution-tested hardening slice proves compatibility with SQLite,
   networking, DNS, and any future TLS/proxy requirements.
@@ -258,7 +265,7 @@ Intended v1 layout:
 - [x] Runtime-config slice: TOML loader for `/etc/vyntrio/config.toml`,
       fail-closed validation, removal of legacy environment-variable runtime
       inputs and the CWD-derived `./data` default.
-- [ ] systemd slice: unit file, service account provisioning, tmpfiles/state
+- [x] systemd slice: unit file, service account provisioning, tmpfiles/state
       directory ownership, sandboxing per section E.
 - [ ] Backup CLI slice per section G; restore procedure per section H.
 - [ ] Upgrade/migration-policy slice per section J.

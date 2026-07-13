@@ -1,0 +1,7 @@
+# Vyntrio OS appliance service identity (Slice 7.3).
+# Install: systemd-sysusers /usr/lib/sysusers.d/vyntrio.conf
+# See distro/systemd/README.md
+
+u vyntrio - "Vyntrio OS appliance service" - -
+g vyntrio vyntrio
+m vyntrio vyntrio

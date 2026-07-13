@@ -1,0 +1,35 @@
+[Unit]
+Description=Vyntrio OS API (embedded UI and control plane)
+Documentation=https://github.com/crankurbex2025-source/vyntrio-os/blob/main/docs/ADR/0005-appliance-runtime-operations.md
+After=local-fs.target network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=vyntrio
+Group=vyntrio
+ExecStart=/usr/bin/vyntrio-api --config /etc/vyntrio/config.toml
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+StateDirectory=vyntrio
+StateDirectoryMode=0750
+UMask=0027
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

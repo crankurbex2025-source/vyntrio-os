@@ -1,8 +1,11 @@
 # distro
 
-Linux distribution image construction: ISO, initramfs, package lists, first-boot hooks.
+Linux distribution image construction: ISO, initramfs, package lists, first-boot
+hooks, and **systemd deployment artifacts** for appliance operation.
 
-**Status:** Not started — Phase 0.2 (Installer & Base OS).
+**Status:** Phase 0.2 (Installer & Base OS) not started. **Block 7, Slice 7.3**
+adds production-oriented systemd artifacts under `distro/systemd/` (service
+unit, sysusers, tmpfiles). See `distro/systemd/README.md`.
 
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 

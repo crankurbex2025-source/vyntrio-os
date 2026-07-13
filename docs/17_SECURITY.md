@@ -74,6 +74,13 @@ Symlink-Ablehnung) und bekannter SQLite-Dateinamen (`vyntrio.db`,
 race-freie Dateisystem-Eindämmung gegen lokale Schreiber im State-Verzeichnis.
 Legacy-`VYNTRIO_*`-Umgebungsvariablen beeinflussen den API-Server nicht mehr.
 
-**Beschlossen, noch nicht implementiert:** dediziertes non-login `vyntrio`-
-Servicekonto, systemd-Unit, Config-Datei-Ownership-Härtung, Backup/Restore-CLI.
+**Implementiert (Slice 7.3):** statisches `vyntrio`-Servicekonto
+(`distro/systemd/vyntrio.sysusers`), systemd-Unit `vyntrio-api.service`
+(non-root, `StateDirectory=vyntrio`, konservative Sandbox), tmpfiles-Layout für
+`/etc/vyntrio` (`0750 root:vyntrio`). Konfigurationsdatei
+`/etc/vyntrio/config.toml` bleibt root-administriert (`0640 root:vyntrio`
+empfohlen). Systemd/Ownership operationalisiert die Trusted-Admin-Annahme;
+pathname-basiertes SQLite bleibt nicht race-frei.
+
+**Beschlossen, noch nicht implementiert:** Backup/Restore-CLI.
 Autoritativ: `docs/ADR/0005-appliance-runtime-operations.md`.

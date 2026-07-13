@@ -88,9 +88,12 @@ Parser-Duplikat-Ablehnung), persistenter State unter `/var/lib/vyntrio/`,
 startup-time `state_dir`- und SQLite-Datei-Symlink-Ablehnung, feste DB-Bezeichnung
 `vyntrio.db`, serverseitig gebauter DSN. **Nicht garantiert:** race-freie
 Dateisystem-Eindämmung, `os.Root`-gebundenes SQLite-I/O, vollständiger Schutz
-gegen lokale Schreiber im State-Verzeichnis nach der Validierung. **Noch nicht
-implementiert:** systemd, Servicekonto, Config-Ownership-Härtung,
-Backup/Restore-CLI, Upgrade-Packaging. Autoritativ:
+gegen lokale Schreiber im State-Verzeichnis nach der Validierung.
+
+**Implementiert (Slice 7.3):** systemd-Betriebsmodell unter `distro/systemd/`
+(statisches `vyntrio`-Konto, `vyntrio-api.service`, tmpfiles für
+`/etc/vyntrio`). Installation: `distro/systemd/README.md`. **Noch nicht
+implementiert:** Backup/Restore-CLI, Upgrade-Packaging. Autoritativ:
 `docs/ADR/0005-appliance-runtime-operations.md`.
 
 ## Release-Arten
