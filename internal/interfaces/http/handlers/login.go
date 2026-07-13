@@ -22,6 +22,10 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
+type loginResponse struct {
+	CSRFToken string `json:"csrf_token"`
+}
+
 // Login handles username/password authentication requests.
 type Login struct {
 	service      *appidentity.LoginService
@@ -83,7 +87,7 @@ func (h *Login) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.cookiePolicy.SetSessionCookie(w, result.Material, h.now())
-	response.NoContent(w)
+	response.JSON(w, http.StatusOK, loginResponse{CSRFToken: result.Material.RawCSRFToken})
 }
 
 func (h *Login) writeLoginError(w http.ResponseWriter, requestID string, err error) {

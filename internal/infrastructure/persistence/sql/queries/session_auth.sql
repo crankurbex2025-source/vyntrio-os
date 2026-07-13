@@ -5,6 +5,7 @@ SELECT
     s.expires_at,
     s.idle_expires_at,
     s.revoked_at,
+    s.csrf_token_hash,
     u.status AS user_status,
     u.role AS user_role
 FROM sessions s

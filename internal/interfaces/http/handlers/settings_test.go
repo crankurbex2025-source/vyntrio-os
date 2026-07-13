@@ -95,7 +95,7 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 		t.Fatalf("NewSessionTokenService() error: %v", err)
 	}
 	loginRepo := sqlite.NewLoginRepository(store.DB())
-	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo)
+	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo, sqlite.NewSecurityAuditRepository(store.DB()))
 	logoutRepo := sqlite.NewLogoutRepository(store.DB())
 	logoutService := appidentity.NewLogoutService(logoutRepo)
 	cookiePolicy := cookie.NewPolicy("development", nil)
@@ -168,8 +168,8 @@ func ownerSessionCookie(t *testing.T, router settingsRouter) *http.Cookie {
 
 	rec = httptest.NewRecorder()
 	router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
-	if rec.Code != http.StatusNoContent {
-		t.Fatalf("login status = %d, want 204", rec.Code)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("login status = %d, want 200", rec.Code)
 	}
 	sessionCookie := findCookie(rec.Result().Cookies(), cookie.SessionCookieName)
 	if sessionCookie == nil {

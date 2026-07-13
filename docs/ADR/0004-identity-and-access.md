@@ -73,14 +73,17 @@ Before the first Owner exists, bootstrap **must not be freely reachable on the L
 Because the SPA uses cookie sessions:
 
 - `SameSite=Strict` cookie reduces cross-site risk.
-- All **state-changing** API methods (`POST`, `PUT`, `PATCH`, `DELETE`) require **`X-CSRF-Token`** header matching the **session-bound CSRF token**.
-- Safe methods (`GET`, `HEAD`, `OPTIONS`) are exempt.
+- Every **state-changing endpoint that relies on an authenticated cookie-backed session** must require a valid **`X-CSRF-Token`** header matching the **session-bound CSRF token**, enforced **after** session authentication.
+- In **current v1**, the only such endpoint is **`POST /api/v1/identity/logout`**. **`POST /api/v1/identity/bootstrap`** and **`POST /api/v1/identity/login`** are explicitly **pre-session** and do **not** use CSRF validation. **`GET /api/v1/settings`** is read-only and does not use CSRF middleware.
+- **Future** cookie-session-authenticated **`POST` / `PUT` / `PATCH` / `DELETE`** endpoints must attach the same CSRF middleware before activation; no session-authenticated write may ship without it.
+- Safe methods (`GET`, `HEAD`, `OPTIONS`) are exempt from CSRF validation.
 
 #### CSRF delivery (mandatory)
 
-- CSRF token is returned **only** in same-origin authenticated responses such as **login** or a future **authenticated session-refresh / me** endpoint.
-- The SPA keeps the CSRF token **in memory only** and sends it in `X-CSRF-Token` for mutating requests.
-- **Never** expose CSRF tokens via URL, query string, logs, or cookies.
+- On **successful login** (`POST /api/v1/identity/login`), the server returns **200 OK** with JSON body `{ "csrf_token": "<raw opaque token>" }` only. No CSRF cookie is set.
+- The raw CSRF token appears **only** in that login response body (over HTTPS in production). The SPA keeps it **in memory only** and sends it in the **`X-CSRF-Token`** header for mutating requests.
+- **Logout** (`POST /api/v1/identity/logout`) requires a valid session cookie **and** matching `X-CSRF-Token` after authentication.
+- **Never** expose CSRF tokens via URL, query string, logs, response headers, error responses, or cookies.
 
 ### 6. User identity model (minimal lifecycle)
 
@@ -174,18 +177,14 @@ Document policy; do not implement in v1:
 
 Append-only **security audit events** (separate from general application logs):
 
-Required event types (v1):
+Required event types (v1 implementation namespace `identity.*`):
 
-- `auth.login.success` / `auth.login.failure`
-- `auth.logout`
-- `auth.session.revoked`
-- `user.created` / `user.disabled`
-- `user.password.changed`
-- `role.changed`
-- `bootstrap.completed`
-- `access.denied` (at admin log level)
+- `identity.bootstrap.succeeded`
+- `identity.login.succeeded` / `identity.login.failure`
+- `identity.logout.succeeded`
+- (deferred) `identity.session.revoked`, `user.created`, `user.disabled`, `user.password.changed`, `role.changed`, `access.denied`
 
-Each event: timestamp, actor user ID (nullable on failed login), subject user ID, IP, user agent hash, action, result, metadata JSON (**no secrets** — no session IDs, CSRF tokens, or password material).
+Each event: timestamp, actor user ID (nullable on failed login), subject user ID where applicable, action, result, metadata JSON (**no secrets** — no session IDs, CSRF tokens, passwords, or password material). Failed login events use empty metadata `{}`.
 
 Retention: local SQLite; export/deletion policy deferred.
 
@@ -219,6 +218,7 @@ Legend: **R** read, **W** write/admin, **A** apply/action, **—** denied.
 | `roles:assign` | W | W* | — | — | — |
 | `roles:assign_owner` | W | — | — | — | — |
 | `settings:read` | W | W | R | R | R |
+| `settings:admin:read` | W | — | — | — | — |
 | `settings:write` | W | W | — | — | — |
 | `storage:read` | W | W | R | R | R |
 | `storage:write` | W | W | W | — | — |

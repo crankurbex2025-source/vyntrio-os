@@ -42,6 +42,7 @@ func mapSessionAuthRecord(row sqlcgen.GetSessionAuthByTokenHashRow) appidentity.
 	return appidentity.SessionAuthRecord{
 		SessionID:     row.SessionID,
 		UserID:        domainidentity.UserID(row.UserID),
+		CSRFTokenHash: row.CsrfTokenHash,
 		ExpiresAt:     row.ExpiresAt,
 		IdleExpiresAt: row.IdleExpiresAt,
 		RevokedAt:     stringFromNull(row.RevokedAt),

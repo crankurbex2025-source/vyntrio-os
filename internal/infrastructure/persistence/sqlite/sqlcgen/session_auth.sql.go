@@ -17,6 +17,7 @@ SELECT
     s.expires_at,
     s.idle_expires_at,
     s.revoked_at,
+    s.csrf_token_hash,
     u.status AS user_status,
     u.role AS user_role
 FROM sessions s
@@ -30,6 +31,7 @@ type GetSessionAuthByTokenHashRow struct {
 	ExpiresAt     string
 	IdleExpiresAt string
 	RevokedAt     sql.NullString
+	CsrfTokenHash string
 	UserStatus    string
 	UserRole      string
 }
@@ -43,6 +45,7 @@ func (q *Queries) GetSessionAuthByTokenHash(ctx context.Context, sessionTokenHas
 		&i.ExpiresAt,
 		&i.IdleExpiresAt,
 		&i.RevokedAt,
+		&i.CsrfTokenHash,
 		&i.UserStatus,
 		&i.UserRole,
 	)

@@ -55,7 +55,6 @@ func (h *Logout) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			response.Error(w, http.StatusRequestTimeout, "REQUEST_TIMEOUT", "Request timed out", requestID)
 			return
 		}
-		h.cookiePolicy.ClearSessionCookie(w)
 		response.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error", requestID)
 		return
 	}

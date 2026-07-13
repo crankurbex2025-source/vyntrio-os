@@ -51,8 +51,12 @@ func NewRouter(
 		if login != nil {
 			r.Post("/identity/login", login.ServeHTTP)
 		}
-		if logout != nil {
-			r.Post("/identity/logout", logout.ServeHTTP)
+		if logout != nil && sessionAuth != nil && sessionAuth.Resolver != nil {
+			r.With(
+				middleware.OptionalAuthentication(sessionAuth.Resolver),
+				middleware.RequireAuthentication,
+				middleware.RequireCSRF,
+			).Post("/identity/logout", logout.ServeHTTP)
 		}
 		if settings != nil && sessionAuth != nil && sessionAuth.Resolver != nil && sessionAuth.Authorizer != nil {
 			r.With(

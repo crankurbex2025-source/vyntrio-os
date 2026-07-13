@@ -23,3 +23,7 @@
 - Unsichere Plugin-Erweiterungen
 - Manipulierte Update-Pipelines
 - Lizenz-Bypass und Token-Leaks
+
+## Identity & Sessions (v1)
+
+Browser-Auth nutzt serverseitige Sessions (`vyntrio_session`, HttpOnly) und CSRF via `X-CSRF-Token` (geliefert nur im Login-JSON). Details: `docs/ADR/0004-identity-and-access.md`, `docs/11_AUTH.md`.

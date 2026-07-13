@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appidentity "github.com/crankurbex2025-source/vyntrio-os/internal/application/identity"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
 	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
@@ -66,7 +66,7 @@ func newIdentityRouter(t *testing.T, env string, cookieSecure *bool) identityRou
 		t.Fatalf("NewSessionTokenService() error: %v", err)
 	}
 	loginRepo := sqlite.NewLoginRepository(store.DB())
-	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo)
+	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo, sqlite.NewSecurityAuditRepository(store.DB()))
 	logoutRepo := sqlite.NewLogoutRepository(store.DB())
 	logoutService := appidentity.NewLogoutService(logoutRepo)
 	cookiePolicy := cookie.NewPolicy(env, cookieSecure)
@@ -84,7 +84,17 @@ func newIdentityRouter(t *testing.T, env string, cookieSecure *bool) identityRou
 		cfg.CookieSecure = cookieSecure
 	}
 
-	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, logout, nil, nil)
+	resolver := appidentity.NewSessionResolver(sqlite.NewSessionAuthRepository(store.DB()))
+	router := httpapi.NewRouter(
+		cfg,
+		slog.Default(),
+		health.NewReadiness(store),
+		bootstrap,
+		login,
+		logout,
+		nil,
+		&httpapi.SessionAuth{Resolver: resolver, Authorizer: ports.NewRBACAuthorizer()},
+	)
 	return identityRouter{
 		handler:  router,
 		store:    store,
@@ -119,8 +129,40 @@ func loginPOST(body string, cookies []*http.Cookie) *http.Request {
 	return identityPOST("/api/v1/identity/login", body, cookies)
 }
 
-func logoutPOST(cookies []*http.Cookie) *http.Request {
-	return identityPOST("/api/v1/identity/logout", "", cookies)
+func logoutPOST(cookies []*http.Cookie, csrfToken string) *http.Request {
+	req := identityPOST("/api/v1/identity/logout", "", cookies)
+	if csrfToken != "" {
+		req.Header.Set("X-CSRF-Token", csrfToken)
+	}
+	return req
+}
+
+func loginAndGetCredentials(t *testing.T, router identityRouter) (*http.Cookie, string) {
+	t.Helper()
+
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("login status = %d body=%s", rec.Code, rec.Body.String())
+	}
+
+	var body map[string]string
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("json.Unmarshal() error: %v", err)
+	}
+	if len(body) != 1 {
+		t.Fatalf("login body keys = %v, want csrf_token only", body)
+	}
+	csrfToken, ok := body["csrf_token"]
+	if !ok || csrfToken == "" {
+		t.Fatalf("login body = %v", body)
+	}
+
+	sessionCookie := findCookie(rec.Result().Cookies(), cookie.SessionCookieName)
+	if sessionCookie == nil {
+		t.Fatal("missing session cookie")
+	}
+	return sessionCookie, csrfToken
 }
 
 func parseErrorBody(t *testing.T, body []byte) map[string]any {
@@ -160,11 +202,16 @@ func TestLoginValidOwnerSetsCookiesAndSession(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
-	if rec.Code != http.StatusNoContent {
-		t.Fatalf("status = %d, want 204", rec.Code)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
 	}
-	if len(rec.Body.Bytes()) != 0 {
-		t.Fatalf("body must be empty on success")
+
+	var loginBody map[string]string
+	if err := json.Unmarshal(rec.Body.Bytes(), &loginBody); err != nil {
+		t.Fatalf("json.Unmarshal() error: %v", err)
+	}
+	if len(loginBody) != 1 || loginBody["csrf_token"] == "" {
+		t.Fatalf("login body = %v", loginBody)
 	}
 
 	cookies := rec.Result().Cookies()
@@ -232,7 +279,7 @@ func TestLoginValidOwnerSetsCookiesAndSession(t *testing.T) {
 	}
 	foundLoginAudit := false
 	for _, event := range events {
-		if event.EventType == "identity.login.succeeded" {
+		if event.EventType == appidentity.AuditEventLoginSucceeded {
 			foundLoginAudit = true
 		}
 		if strings.Contains(event.MetadataJSON, testLoginPassword) ||
@@ -245,8 +292,11 @@ func TestLoginValidOwnerSetsCookiesAndSession(t *testing.T) {
 	}
 
 	body := rec.Body.String()
-	if strings.Contains(body, testLoginPassword) || strings.Contains(body, sessionCookie.Value) {
-		t.Fatal("response leaked secret material")
+	if strings.Contains(body, testLoginPassword) {
+		t.Fatal("response leaked password material")
+	}
+	if strings.Contains(body, sessionCookie.Value) {
+		t.Fatal("response leaked session cookie value")
 	}
 }
 
@@ -256,11 +306,13 @@ func TestLoginPersistsLifecycleTimestampsAlignedToMaterial(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
-	if rec.Code != http.StatusNoContent {
+	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d", rec.Code)
 	}
-
 	sessionCookie := findCookie(rec.Result().Cookies(), cookie.SessionCookieName)
+	if sessionCookie == nil {
+		t.Fatal("missing session cookie")
+	}
 	tokenHash := appidentity.HashRawToken(sessionCookie.Value)
 	cred, err := router.sessions.GetSessionByTokenHash(context.Background(), tokenHash)
 	if err != nil {
@@ -288,7 +340,7 @@ func TestLoginDevelopmentCookieSecureDefault(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
-	if rec.Code != http.StatusNoContent {
+	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d", rec.Code)
 	}
 	sessionCookie := findCookie(rec.Result().Cookies(), cookie.SessionCookieName)
@@ -371,6 +423,23 @@ func TestLoginCredentialFailuresIndistinguishable(t *testing.T) {
 	if count != 0 {
 		t.Fatalf("sessions after failures = %d, want 0", count)
 	}
+
+	events, err := router.audit.ListSecurityAuditEvents(context.Background(), appidentity.ListSecurityAuditEventsInput{Limit: 20})
+	if err != nil {
+		t.Fatalf("ListSecurityAuditEvents() error: %v", err)
+	}
+	failureAudits := 0
+	for _, event := range events {
+		if event.EventType == appidentity.AuditEventLoginFailure {
+			failureAudits++
+		}
+		if strings.Contains(event.MetadataJSON, testLoginPassword) {
+			t.Fatalf("audit leaked password material: %q", event.MetadataJSON)
+		}
+	}
+	if failureAudits != len(cases) {
+		t.Fatalf("failure audit count = %d, want %d", failureAudits, len(cases))
+	}
 }
 
 func normalizeAuthFailureBody(body []byte) []byte {
@@ -443,6 +512,82 @@ func TestLoginRejectsInvalidRequests(t *testing.T) {
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("oversized body status = %d, want 400", rec.Code)
 	}
+
+	count, err := countSessions(context.Background(), router.store.DB())
+	if err != nil {
+		t.Fatalf("countSessions() error: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("malformed login must not create sessions: count = %d", count)
+	}
+
+	events, err := router.audit.ListSecurityAuditEvents(context.Background(), appidentity.ListSecurityAuditEventsInput{Limit: 20})
+	if err != nil {
+		t.Fatalf("ListSecurityAuditEvents() error: %v", err)
+	}
+	for _, event := range events {
+		if event.EventType == appidentity.AuditEventLoginFailure {
+			t.Fatalf("malformed login must not write failure audit: %s", event.EventType)
+		}
+	}
+}
+
+type failingLoginAuditStore struct{}
+
+func (f failingLoginAuditStore) AppendSecurityAuditEvent(context.Context, appidentity.AppendSecurityAuditEventInput) error {
+	return errors.New("audit persist failed")
+}
+
+func (f failingLoginAuditStore) ListSecurityAuditEvents(context.Context, appidentity.ListSecurityAuditEventsInput) ([]appidentity.SecurityAuditEvent, error) {
+	return nil, nil
+}
+
+func TestLoginFailureAuditPersistenceErrorReturns500(t *testing.T) {
+	dir := t.TempDir()
+	store, err := sqlite.Open(context.Background(), dir)
+	if err != nil {
+		t.Fatalf("Open() error: %v", err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+
+	hasher, err := appidentity.NewPasswordHasher(appidentity.Argon2idConfig{
+		Memory: 4096, Iterations: 1, Parallelism: 1, SaltLength: 16, KeyLength: 32,
+	})
+	if err != nil {
+		t.Fatalf("NewPasswordHasher() error: %v", err)
+	}
+	userRepo := sqlite.NewUserRepository(store.DB())
+	bootstrapRepo := sqlite.NewBootstrapRepository(store.DB())
+	bootstrapService := appidentity.NewBootstrapService(hasher, bootstrapRepo, userRepo)
+	bootstrap := handlers.NewBootstrap(handlers.BootstrapDeps{Service: bootstrapService})
+
+	sessionTokens, err := appidentity.NewSessionTokenService(appidentity.DefaultSessionTokenConfig)
+	if err != nil {
+		t.Fatalf("NewSessionTokenService() error: %v", err)
+	}
+	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), failingLoginAuditStore{})
+	login := handlers.NewLogin(handlers.LoginDeps{
+		Service:      loginService,
+		CookiePolicy: cookie.NewPolicy("development", nil),
+	})
+
+	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
+	router := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, nil, nil, nil)
+
+	recBootstrap := httptest.NewRecorder()
+	router.ServeHTTP(recBootstrap, bootstrapPOST("127.0.0.1:8080", `{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
+	if recBootstrap.Code != http.StatusCreated {
+		t.Fatalf("bootstrap status = %d", recBootstrap.Code)
+	}
+
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"wrong-password"}`, nil))
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want 500", rec.Code)
+	}
+	if len(rec.Result().Cookies()) != 0 {
+		t.Fatal("must not set cookies when failure audit persist fails")
+	}
 }
 
 func TestLoginNeedsRehashUpdatesHashAndCreatesSession(t *testing.T) {
@@ -474,8 +619,8 @@ func TestLoginNeedsRehashUpdatesHashAndCreatesSession(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	router.handler.ServeHTTP(rec, loginPOST(`{"username":"rehash-user","password":"`+testLoginPassword+`"}`, nil))
-	if rec.Code != http.StatusNoContent {
-		t.Fatalf("status = %d, want 204", rec.Code)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
 	}
 
 	cred, err := router.users.GetUserByUsername(context.Background(), "rehash-user")
@@ -545,7 +690,7 @@ func TestLoginRehashFailureSetsNoSession(t *testing.T) {
 		t.Fatalf("NewSessionTokenService() error: %v", err)
 	}
 	failingUsers := &failingPasswordUpdater{UserRepository: userRepo}
-	loginService := appidentity.NewLoginService(failingUsers, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()))
+	loginService := appidentity.NewLoginService(failingUsers, hasher, sessionTokens, sqlite.NewLoginRepository(store.DB()), sqlite.NewSecurityAuditRepository(store.DB()))
 	login := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
 		CookiePolicy: cookie.NewPolicy("development", nil),
@@ -604,7 +749,7 @@ func TestLoginSessionPersistenceFailureSetsNoCookie(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewSessionTokenService() error: %v", err)
 	}
-	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, &failingLoginCreator{})
+	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, &failingLoginCreator{}, sqlite.NewSecurityAuditRepository(store.DB()))
 	login := handlers.NewLogin(handlers.LoginDeps{
 		Service:      loginService,
 		CookiePolicy: cookie.NewPolicy("development", nil),
@@ -663,8 +808,8 @@ func TestLoginConcurrentCreatesSeparateSessions(t *testing.T) {
 			defer wg.Done()
 			rec := httptest.NewRecorder()
 			router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
-			if rec.Code != http.StatusNoContent {
-				t.Errorf("status = %d, want 204", rec.Code)
+			if rec.Code != http.StatusOK {
+				t.Errorf("status = %d, want 200", rec.Code)
 				return
 			}
 			sessionCookie := findCookie(rec.Result().Cookies(), cookie.SessionCookieName)
@@ -702,7 +847,7 @@ func TestLoginStoredPasswordIsArgon2id(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
-	if rec.Code != http.StatusNoContent {
+	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d", rec.Code)
 	}
 
@@ -758,14 +903,24 @@ func TestLoginDoesNotReadResponseSecrets(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	router.handler.ServeHTTP(rec, loginPOST(`{"username":"owner","password":"`+testLoginPassword+`"}`, nil))
-	if rec.Code != http.StatusNoContent {
+	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d", rec.Code)
 	}
-	if rec.Body.Len() != 0 {
-		t.Fatalf("unexpected body: %q", rec.Body.String())
+	var payload map[string]string
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error: %v", err)
 	}
-	_, err := io.ReadAll(rec.Body)
-	if err != nil {
-		t.Fatalf("ReadAll() error: %v", err)
+	if len(payload) != 1 || payload["csrf_token"] == "" {
+		t.Fatalf("body = %#v, want only csrf_token", payload)
+	}
+	sessionCookie := findCookie(rec.Result().Cookies(), cookie.SessionCookieName)
+	if sessionCookie == nil {
+		t.Fatal("missing session cookie")
+	}
+	if payload["csrf_token"] == sessionCookie.Value {
+		t.Fatal("csrf_token must not equal session cookie value")
+	}
+	if strings.Contains(rec.Body.String(), sessionCookie.Value) {
+		t.Fatal("response must not contain raw session token")
 	}
 }

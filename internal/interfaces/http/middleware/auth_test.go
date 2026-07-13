@@ -46,7 +46,7 @@ func newAuthTestEnv(t *testing.T) authTestEnv {
 	}
 }
 
-func (env authTestEnv) createActiveOwnerSession(t *testing.T, rawToken string) {
+func (env authTestEnv) createActiveOwnerSession(t *testing.T, rawToken, csrfHash string) {
 	t.Helper()
 	ctx := context.Background()
 	users := sqlite.NewUserRepository(env.store.DB())
@@ -65,7 +65,7 @@ func (env authTestEnv) createActiveOwnerSession(t *testing.T, rawToken string) {
 		ID:               "sess-owner",
 		UserID:           domainidentity.UserID("owner-1"),
 		SessionTokenHash: appidentity.HashRawToken(rawToken),
-		CSRFTokenHash:    "csrf-hash",
+		CSRFTokenHash:    csrfHash,
 		CreatedAt:        "2026-07-13T10:00:00Z",
 		LastSeenAt:       "2026-07-13T10:00:00Z",
 		ExpiresAt:        futureSessionExpiry,
@@ -143,7 +143,7 @@ func parseErrorCode(t *testing.T, body []byte) string {
 
 func TestOptionalAuthenticationValidSessionSetsPrincipal(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	var gotPrincipal auth.Principal
 	handler := middleware.OptionalAuthentication(env.resolver)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -185,7 +185,7 @@ func TestOptionalAuthenticationMissingCookieIsAnonymous(t *testing.T) {
 
 func TestOptionalAuthenticationOversizedCookieIsAnonymous(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	oversized := strings.Repeat("a", appidentity.MaxSessionCookieValueLen+1)
 	handler := middleware.OptionalAuthentication(env.resolver)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -237,7 +237,7 @@ func TestRequireAuthenticationAuthenticatedReachesNext(t *testing.T) {
 
 func TestProtectedProbeOwnerAllowed(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	handler := protectedProbeHandler(t, env, domainidentity.PermissionRolesAssignOwner, nil)
 	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
@@ -278,7 +278,7 @@ func TestProtectedProbeAnonymousReturns401(t *testing.T) {
 
 func TestProtectedProbeInvalidPermissionDenied(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	handler := protectedProbeHandler(t, env, domainidentity.Permission("secrets:dump"), nil)
 	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
@@ -291,7 +291,7 @@ func TestProtectedProbeInvalidPermissionDenied(t *testing.T) {
 
 func TestRequireAuthenticationIndistinguishable401Cases(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	cases := []struct {
 		name string
@@ -350,7 +350,7 @@ func (s *countingSessionAuthStore) GetSessionAuthByTokenHash(
 
 func TestAuthMiddlewareCompositionResolvesOnce(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	counter := &countingSessionAuthStore{inner: sqlite.NewSessionAuthRepository(env.store.DB())}
 	resolver := appidentity.NewSessionResolver(counter)
@@ -402,7 +402,7 @@ func TestOptionalAuthenticationStoreFailureReturns500(t *testing.T) {
 func TestSessionResolverUsesSameHashAsLoginPersistence(t *testing.T) {
 	env := newAuthTestEnv(t)
 	raw := "hash-consistency-token"
-	env.createActiveOwnerSession(t, raw)
+	env.createActiveOwnerSession(t, raw, appidentity.HashRawToken("auth-test-csrf"))
 
 	record, err := sqlite.NewSessionAuthRepository(env.store.DB()).GetSessionAuthByTokenHash(
 		context.Background(),
@@ -418,7 +418,7 @@ func TestSessionResolverUsesSameHashAsLoginPersistence(t *testing.T) {
 
 func TestOptionalAuthenticationRevokedSessionIsAnonymous(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	_, err := env.store.DB().ExecContext(
 		context.Background(),
@@ -447,7 +447,7 @@ func TestOptionalAuthenticationRevokedSessionIsAnonymous(t *testing.T) {
 
 func TestOptionalAuthenticationIdleExpiredSessionIsAnonymous(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	_, err := env.store.DB().ExecContext(
 		context.Background(),
@@ -476,7 +476,7 @@ func TestOptionalAuthenticationIdleExpiredSessionIsAnonymous(t *testing.T) {
 
 func TestOptionalAuthenticationCancellationReturns408(t *testing.T) {
 	env := newAuthTestEnv(t)
-	env.createActiveOwnerSession(t, testRawSessionToken)
+	env.createActiveOwnerSession(t, testRawSessionToken, appidentity.HashRawToken("auth-test-csrf"))
 
 	handler := middleware.OptionalAuthentication(env.resolver)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Fatal("next handler must not run")

@@ -15,7 +15,7 @@ import (
 
 // SessionResolver resolves raw session cookie values into authenticated subjects.
 type SessionResolver interface {
-	Resolve(ctx context.Context, rawSessionToken string) (identity.UserID, identity.Role, bool, error)
+	Resolve(ctx context.Context, rawSessionToken string) (appidentity.ResolvedSession, bool, error)
 }
 
 // OptionalAuthentication resolves a session when present and stores a principal in context.
@@ -27,7 +27,7 @@ func OptionalAuthentication(resolver SessionResolver) func(http.Handler) http.Ha
 				rawSessionToken = c.Value
 			}
 
-			userID, role, ok, err := resolver.Resolve(r.Context(), rawSessionToken)
+			session, ok, err := resolver.Resolve(r.Context(), rawSessionToken)
 			if err != nil {
 				writeAuthResolverError(w, r, err)
 				return
@@ -35,7 +35,8 @@ func OptionalAuthentication(resolver SessionResolver) func(http.Handler) http.Ha
 
 			ctx := r.Context()
 			if ok {
-				ctx = auth.WithPrincipal(ctx, auth.Principal{UserID: userID, Role: role})
+				ctx = auth.WithPrincipal(ctx, auth.Principal{UserID: session.UserID, Role: session.Role})
+				ctx = auth.WithSessionCSRF(ctx, auth.NewSessionCSRF(session.CSRFTokenHash))
 			}
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

@@ -50,6 +50,16 @@ func (c *loginTimestampCreator) CreateSessionWithAudit(
 	return nil
 }
 
+type loginTimestampAuditStore struct{}
+
+func (loginTimestampAuditStore) AppendSecurityAuditEvent(context.Context, AppendSecurityAuditEventInput) error {
+	return nil
+}
+
+func (loginTimestampAuditStore) ListSecurityAuditEvents(context.Context, ListSecurityAuditEventsInput) ([]SecurityAuditEvent, error) {
+	return nil, nil
+}
+
 func TestLoginServicePersistsSessionMaterialTimestamps(t *testing.T) {
 	fixedNow := time.Date(2026, 7, 13, 10, 15, 30, 0, time.UTC)
 	ctx := context.Background()
@@ -84,7 +94,7 @@ func TestLoginServicePersistsSessionMaterialTimestamps(t *testing.T) {
 			},
 			PasswordHash: hash,
 		},
-	}, hasher, tokens, creator)
+	}, hasher, tokens, creator, loginTimestampAuditStore{})
 	service.now = func() time.Time { return fixedNow }
 
 	if _, err := service.Login(ctx, "owner", password, "sess-1", "audit-1"); err != nil {

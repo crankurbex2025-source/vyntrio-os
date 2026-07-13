@@ -12,10 +12,21 @@ import (
 // 32-byte tokens encode to 43 characters; 64-byte tokens encode to 86 characters.
 const MaxSessionCookieValueLen = 128
 
+// MaxCSRFHeaderValueLen bounds raw CSRF header values before hashing.
+const MaxCSRFHeaderValueLen = 128
+
+// ResolvedSession holds authenticated subject fields resolved from a session cookie.
+type ResolvedSession struct {
+	UserID        domainidentity.UserID
+	Role          domainidentity.Role
+	CSRFTokenHash string
+}
+
 // SessionAuthRecord holds session and user fields required for authentication.
 type SessionAuthRecord struct {
 	SessionID     string
 	UserID        domainidentity.UserID
+	CSRFTokenHash string
 	ExpiresAt     string
 	IdleExpiresAt string
 	RevokedAt     string
@@ -48,29 +59,36 @@ func NewSessionResolver(store SessionAuthStore) *SessionResolver {
 func (r *SessionResolver) Resolve(
 	ctx context.Context,
 	rawSessionToken string,
-) (domainidentity.UserID, domainidentity.Role, bool, error) {
+) (ResolvedSession, bool, error) {
 	if err := ctx.Err(); err != nil {
-		return "", "", false, err
+		return ResolvedSession{}, false, err
 	}
 	if rawSessionToken == "" || len(rawSessionToken) > MaxSessionCookieValueLen {
-		return "", "", false, nil
+		return ResolvedSession{}, false, nil
 	}
 
 	record, err := r.store.GetSessionAuthByTokenHash(ctx, HashRawToken(rawSessionToken))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return "", "", false, nil
+			return ResolvedSession{}, false, nil
 		}
-		return "", "", false, err
+		return ResolvedSession{}, false, err
 	}
 	if !isSessionAuthValid(record, r.now()) {
-		return "", "", false, nil
+		return ResolvedSession{}, false, nil
 	}
-	return record.UserID, record.Role, true, nil
+	return ResolvedSession{
+		UserID:        record.UserID,
+		Role:          record.Role,
+		CSRFTokenHash: record.CSRFTokenHash,
+	}, true, nil
 }
 
 func isSessionAuthValid(record SessionAuthRecord, now time.Time) bool {
 	if record.RevokedAt != "" {
+		return false
+	}
+	if record.CSRFTokenHash == "" {
 		return false
 	}
 	if record.UserStatus != UserStatusActive {

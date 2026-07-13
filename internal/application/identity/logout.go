@@ -46,7 +46,7 @@ func (s *LogoutService) Logout(ctx context.Context, rawSessionToken, auditID str
 	tokenHash := HashRawToken(rawSessionToken)
 	revoked, err := s.revoker.RevokeActiveSessionByTokenHash(ctx, tokenHash, FormatUTCTime(s.now()), AppendSecurityAuditEventInput{
 		ID:           auditID,
-		EventType:    "identity.logout.succeeded",
+		EventType:    AuditEventLogoutSucceeded,
 		Result:       "success",
 		MetadataJSON: `{}`,
 	})

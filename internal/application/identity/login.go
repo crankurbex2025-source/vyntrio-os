@@ -24,6 +24,7 @@ type LoginService struct {
 	hasher  credentialHasher
 	tokens  *SessionTokenService
 	creator LoginSessionCreator
+	audit   SecurityAuditStore
 	now     func() time.Time
 }
 
@@ -38,12 +39,14 @@ func NewLoginService(
 	hasher credentialHasher,
 	tokens *SessionTokenService,
 	creator LoginSessionCreator,
+	audit SecurityAuditStore,
 ) *LoginService {
 	return &LoginService{
 		users:   users,
 		hasher:  hasher,
 		tokens:  tokens,
 		creator: creator,
+		audit:   audit,
 		now:     func() time.Time { return time.Now().UTC() },
 	}
 }
@@ -70,6 +73,16 @@ func (s *LoginService) Login(
 
 	userCred, err := s.authenticateUser(ctx, username, password)
 	if err != nil {
+		if errors.Is(err, ErrAuthenticationFailed) {
+			if auditErr := s.audit.AppendSecurityAuditEvent(ctx, AppendSecurityAuditEventInput{
+				ID:           auditID,
+				EventType:    AuditEventLoginFailure,
+				Result:       "failure",
+				MetadataJSON: `{}`,
+			}); auditErr != nil {
+				return LoginResult{}, auditErr
+			}
+		}
 		return LoginResult{}, err
 	}
 
@@ -92,7 +105,7 @@ func (s *LoginService) Login(
 		ID:            auditID,
 		ActorUserID:   userCred.User.ID,
 		SubjectUserID: userCred.User.ID,
-		EventType:     "identity.login.succeeded",
+		EventType:     AuditEventLoginSucceeded,
 		Result:        "success",
 		MetadataJSON:  `{}`,
 	}); err != nil {

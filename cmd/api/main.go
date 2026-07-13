@@ -76,7 +76,8 @@ func main() {
 		os.Exit(1)
 	}
 	loginRepo := sqlite.NewLoginRepository(store.DB())
-	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo)
+	auditRepo := sqlite.NewSecurityAuditRepository(store.DB())
+	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo, auditRepo)
 	logoutRepo := sqlite.NewLogoutRepository(store.DB())
 	logoutService := appidentity.NewLogoutService(logoutRepo)
 	cookiePolicy := cookie.NewPolicy(cfg.Env, cfg.CookieSecure)
