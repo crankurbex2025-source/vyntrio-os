@@ -74,7 +74,7 @@ Because the SPA uses cookie sessions:
 
 - `SameSite=Strict` cookie reduces cross-site risk.
 - Every **state-changing endpoint that relies on an authenticated cookie-backed session** must require a valid **`X-CSRF-Token`** header matching the **session-bound CSRF token**, enforced **after** session authentication.
-- In **current v1**, the only session-authenticated mutating endpoint is **`POST /api/v1/identity/logout`**. **`PATCH /api/v1/settings/instance`** also requires CSRF after Owner write authorization. **`POST /api/v1/identity/bootstrap`** and **`POST /api/v1/identity/login`** are explicitly **pre-session** and do **not** use CSRF validation. **`GET /api/v1/settings`** is read-only and does not use CSRF middleware.
+- In **current v1**, the session-authenticated mutating endpoints are **`POST /api/v1/identity/logout`** and **`PATCH /api/v1/settings/instance`**; both require CSRF validation after authentication (for PATCH, after Owner write authorization). **`POST /api/v1/identity/bootstrap`** and **`POST /api/v1/identity/login`** are explicitly **pre-session** and do **not** use CSRF validation. **`GET /api/v1/settings`** is read-only and does not use CSRF middleware.
 - **Future** cookie-session-authenticated **`POST` / `PUT` / `PATCH` / `DELETE`** endpoints must attach the same CSRF middleware before activation; no session-authenticated write may ship without it.
 - Safe methods (`GET`, `HEAD`, `OPTIONS`) are exempt from CSRF validation.
 
