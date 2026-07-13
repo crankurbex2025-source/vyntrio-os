@@ -17,6 +17,7 @@ import (
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/cookie"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 )
@@ -67,7 +68,27 @@ func main() {
 	bootstrapService := appidentity.NewBootstrapService(hasher, bootstrapRepo, userRepo)
 	bootstrapHandler := handlers.NewBootstrap(handlers.BootstrapDeps{Service: bootstrapService})
 
-	srv := httpapi.NewServer(cfg, logger, readiness, bootstrapHandler)
+	sessionTokens, err := appidentity.NewSessionTokenService(appidentity.DefaultSessionTokenConfig)
+	if err != nil {
+		_ = store.Close()
+		logger.Error("session token service init failed", "error", err)
+		os.Exit(1)
+	}
+	loginRepo := sqlite.NewLoginRepository(store.DB())
+	loginService := appidentity.NewLoginService(userRepo, hasher, sessionTokens, loginRepo)
+	logoutRepo := sqlite.NewLogoutRepository(store.DB())
+	logoutService := appidentity.NewLogoutService(logoutRepo)
+	cookiePolicy := cookie.NewPolicy(cfg.Env, cfg.CookieSecure)
+	loginHandler := handlers.NewLogin(handlers.LoginDeps{
+		Service:      loginService,
+		CookiePolicy: cookiePolicy,
+	})
+	logoutHandler := handlers.NewLogout(handlers.LogoutDeps{
+		Service:      logoutService,
+		CookiePolicy: cookiePolicy,
+	})
+
+	srv := httpapi.NewServer(cfg, logger, readiness, bootstrapHandler, loginHandler, logoutHandler)
 
 	errCh := make(chan error, 1)
 	go func() {

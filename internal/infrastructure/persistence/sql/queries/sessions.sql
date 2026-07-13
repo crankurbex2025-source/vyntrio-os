@@ -4,7 +4,7 @@ INSERT INTO sessions (
     expires_at, idle_expires_at, user_agent_hash, ip_hash,
     created_at, last_seen_at
 ) VALUES (
-    ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now')
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 );
 
 -- name: GetSessionByTokenHash :one

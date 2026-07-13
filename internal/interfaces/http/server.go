@@ -18,8 +18,15 @@ type Server struct {
 }
 
 // NewServer creates an configured HTTP server (not started).
-func NewServer(cfg config.Config, logger *slog.Logger, readiness *health.Readiness, bootstrap *handlers.Bootstrap) *Server {
-	handler := NewRouter(cfg, logger, readiness, bootstrap)
+func NewServer(
+	cfg config.Config,
+	logger *slog.Logger,
+	readiness *health.Readiness,
+	bootstrap *handlers.Bootstrap,
+	login *handlers.Login,
+	logout *handlers.Logout,
+) *Server {
+	handler := NewRouter(cfg, logger, readiness, bootstrap, login, logout)
 	return &Server{
 		cfg:    cfg,
 		logger: logger,

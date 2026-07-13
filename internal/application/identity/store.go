@@ -81,6 +81,8 @@ type CreateSessionInput struct {
 	UserID           domainidentity.UserID
 	SessionTokenHash string
 	CSRFTokenHash    string
+	CreatedAt        string
+	LastSeenAt       string
 	ExpiresAt        string
 	IdleExpiresAt    string
 	UserAgentHash    string

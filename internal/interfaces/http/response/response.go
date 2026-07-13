@@ -35,3 +35,8 @@ func Error(w http.ResponseWriter, status int, code, message, requestID string) {
 		},
 	})
 }
+
+// NoContent writes an empty success response.
+func NoContent(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNoContent)
+}

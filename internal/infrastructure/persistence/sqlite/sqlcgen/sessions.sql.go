@@ -16,7 +16,7 @@ INSERT INTO sessions (
     expires_at, idle_expires_at, user_agent_hash, ip_hash,
     created_at, last_seen_at
 ) VALUES (
-    ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now')
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )
 `
 
@@ -29,6 +29,8 @@ type CreateSessionParams struct {
 	IdleExpiresAt    string
 	UserAgentHash    sql.NullString
 	IpHash           sql.NullString
+	CreatedAt        string
+	LastSeenAt       string
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
@@ -41,6 +43,8 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) er
 		arg.IdleExpiresAt,
 		arg.UserAgentHash,
 		arg.IpHash,
+		arg.CreatedAt,
+		arg.LastSeenAt,
 	)
 	return err
 }

@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	futureExpiry = "2099-01-01T00:00:00Z"
-	pastExpiry   = "2000-01-01T00:00:00Z"
+	futureExpiry     = "2099-01-01T00:00:00Z"
+	pastExpiry       = "2000-01-01T00:00:00Z"
+	sessionCreatedAt = "2026-07-12T12:00:00Z"
 )
 
 func TestSessionRepositoryCreateAndLookupByTokenHash(t *testing.T) {
@@ -27,6 +28,8 @@ func TestSessionRepositoryCreateAndLookupByTokenHash(t *testing.T) {
 		UserID:           domainidentity.UserID("user-1"),
 		SessionTokenHash: "session-hash-1",
 		CSRFTokenHash:    "csrf-hash-1",
+		CreatedAt:        sessionCreatedAt,
+		LastSeenAt:       sessionCreatedAt,
 		ExpiresAt:        futureExpiry,
 		IdleExpiresAt:    futureExpiry,
 		UserAgentHash:    "ua-hash",
@@ -74,6 +77,8 @@ func TestSessionRepositoryTouchSession(t *testing.T) {
 		UserID:           domainidentity.UserID("user-1"),
 		SessionTokenHash: "session-hash-1",
 		CSRFTokenHash:    "csrf-hash-1",
+		CreatedAt:        sessionCreatedAt,
+		LastSeenAt:       sessionCreatedAt,
 		ExpiresAt:        futureExpiry,
 		IdleExpiresAt:    futureExpiry,
 	}); err != nil {
@@ -107,6 +112,8 @@ func TestSessionRepositoryRevokeOneAndAllForUser(t *testing.T) {
 			UserID:           domainidentity.UserID("user-1"),
 			SessionTokenHash: token,
 			CSRFTokenHash:    "csrf-" + token,
+			CreatedAt:        sessionCreatedAt,
+			LastSeenAt:       sessionCreatedAt,
 			ExpiresAt:        futureExpiry,
 			IdleExpiresAt:    futureExpiry,
 		}); err != nil {
@@ -160,6 +167,8 @@ func TestSessionRepositoryDeleteExpiredSessionsOnly(t *testing.T) {
 		UserID:           domainidentity.UserID("user-1"),
 		SessionTokenHash: "active-hash",
 		CSRFTokenHash:    "csrf-active",
+		CreatedAt:        sessionCreatedAt,
+		LastSeenAt:       sessionCreatedAt,
 		ExpiresAt:        futureExpiry,
 		IdleExpiresAt:    futureExpiry,
 	}); err != nil {
@@ -170,6 +179,8 @@ func TestSessionRepositoryDeleteExpiredSessionsOnly(t *testing.T) {
 		UserID:           domainidentity.UserID("user-1"),
 		SessionTokenHash: "expired-hash",
 		CSRFTokenHash:    "csrf-expired",
+		CreatedAt:        pastExpiry,
+		LastSeenAt:       pastExpiry,
 		ExpiresAt:        pastExpiry,
 		IdleExpiresAt:    pastExpiry,
 	}); err != nil {
@@ -202,6 +213,8 @@ func TestSessionRepositoryForeignKeyRequiresUser(t *testing.T) {
 		UserID:           domainidentity.UserID("missing-user"),
 		SessionTokenHash: "orphan-hash",
 		CSRFTokenHash:    "csrf-orphan",
+		CreatedAt:        sessionCreatedAt,
+		LastSeenAt:       sessionCreatedAt,
 		ExpiresAt:        futureExpiry,
 		IdleExpiresAt:    futureExpiry,
 	})

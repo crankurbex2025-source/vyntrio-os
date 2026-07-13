@@ -142,7 +142,12 @@ func generateRawToken(ctx context.Context, size int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(buf), nil
 }
 
-func hashRawToken(rawToken string) string {
+// HashRawToken returns the SHA-256 hex digest used for session and CSRF storage lookup.
+func HashRawToken(rawToken string) string {
 	sum := sha256.Sum256([]byte(rawToken))
 	return hex.EncodeToString(sum[:])
+}
+
+func hashRawToken(rawToken string) string {
+	return HashRawToken(rawToken)
 }

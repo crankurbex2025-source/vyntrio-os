@@ -32,6 +32,8 @@ func (r *SessionRepository) CreateSession(ctx context.Context, input appidentity
 		CsrfTokenHash:    input.CSRFTokenHash,
 		ExpiresAt:        input.ExpiresAt,
 		IdleExpiresAt:    input.IdleExpiresAt,
+		CreatedAt:        input.CreatedAt,
+		LastSeenAt:       input.LastSeenAt,
 		UserAgentHash:    nullString(input.UserAgentHash),
 		IpHash:           nullString(input.IPHash),
 	}); err != nil {

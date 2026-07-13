@@ -24,7 +24,7 @@ func TestShutdownWithoutActiveListener(t *testing.T) {
 		BuildCommit:     "test",
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	srv := httpapi.NewServer(cfg, logger, health.NewReadiness(nil), nil)
+	srv := httpapi.NewServer(cfg, logger, health.NewReadiness(nil), nil, nil, nil)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

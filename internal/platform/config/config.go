@@ -11,17 +11,18 @@ import (
 
 // Config holds API server configuration for cmd/api.
 type Config struct {
-	Env          string
-	LogLevel     string
-	APIHost      string
-	APIPort      int
+	Env             string
+	LogLevel        string
+	APIHost         string
+	APIPort         int
 	ReadTimeout     time.Duration
 	WriteTimeout    time.Duration
 	IdleTimeout     time.Duration
 	ShutdownTimeout time.Duration
-	Version      string
-	BuildCommit  string
-	DataDir      string
+	Version         string
+	BuildCommit     string
+	DataDir         string
+	CookieSecure    *bool
 }
 
 // Load reads configuration from environment variables with documented defaults.
@@ -60,9 +61,15 @@ func Load() (Config, error) {
 		WriteTimeout:    writeTimeout,
 		IdleTimeout:     idleTimeout,
 		ShutdownTimeout: shutdownTimeout,
-		Version:      getEnv("VYNTRIO_VERSION", "0.2.0-dev"),
-		BuildCommit:  getEnv("VYNTRIO_BUILD_COMMIT", "unknown"),
-		DataDir:      getEnv("VYNTRIO_DATA_DIR", "./data"),
+		Version:         getEnv("VYNTRIO_VERSION", "0.2.0-dev"),
+		BuildCommit:     getEnv("VYNTRIO_BUILD_COMMIT", "unknown"),
+		DataDir:         getEnv("VYNTRIO_DATA_DIR", "./data"),
+	}
+
+	if v, ok, err := getEnvBool("VYNTRIO_COOKIE_SECURE"); err != nil {
+		return Config{}, fmt.Errorf("VYNTRIO_COOKIE_SECURE: %w", err)
+	} else if ok {
+		cfg.CookieSecure = &v
 	}
 
 	if cfg.APIPort < 1 || cfg.APIPort > 65535 {
@@ -87,4 +94,16 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func getEnvBool(key string) (bool, bool, error) {
+	v, ok := os.LookupEnv(key)
+	if !ok || v == "" {
+		return false, false, nil
+	}
+	parsed, err := strconv.ParseBool(v)
+	if err != nil {
+		return false, true, err
+	}
+	return parsed, true, nil
 }
