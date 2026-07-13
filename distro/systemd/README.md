@@ -42,7 +42,7 @@ install -D -m 0755 bin/vyntrio-api /usr/bin/vyntrio-api
 
 # 2. Provision service account (requires root)
 install -D -m 0644 distro/systemd/vyntrio.sysusers /usr/lib/sysusers.d/vyntrio.conf
-systemd-sysusers
+systemd-sysusers /usr/lib/sysusers.d/vyntrio.conf
 
 # 3. Configuration directory layout
 install -D -m 0644 distro/systemd/vyntrio.tmpfiles.conf /etc/tmpfiles.d/vyntrio.conf

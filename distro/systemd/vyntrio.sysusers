@@ -3,5 +3,5 @@
 # See distro/systemd/README.md
 
 u vyntrio - "Vyntrio OS appliance service" - -
-g vyntrio vyntrio
+g vyntrio -
 m vyntrio vyntrio

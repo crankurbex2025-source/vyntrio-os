@@ -1,6 +1,7 @@
 package systemd_test
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -96,16 +97,56 @@ func TestSysusersDeclaresStaticVyntrioAccount(t *testing.T) {
 	body := readArtifact(t, "vyntrio.sysusers")
 	for _, want := range []string{
 		`u vyntrio`,
-		`g vyntrio`,
 		`m vyntrio vyntrio`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("sysusers missing %q", want)
 		}
 	}
+	if strings.Contains(body, "g vyntrio vyntrio") {
+		t.Fatal("sysusers must not use group name as GID field")
+	}
+	if !strings.Contains(body, "g vyntrio -") {
+		t.Fatalf("sysusers missing exact group declaration %q", "g vyntrio -")
+	}
+	if err := assertSysusersGroupGIDField(body); err != nil {
+		t.Fatal(err)
+	}
 	if strings.Contains(body, "/home/") {
 		t.Fatal("sysusers must not assign a home directory")
 	}
+}
+
+func assertSysusersGroupGIDField(body string) error {
+	for _, line := range strings.Split(body, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) < 2 || fields[0] != "g" {
+			continue
+		}
+		if fields[1] != "vyntrio" {
+			continue
+		}
+		if len(fields) < 3 {
+			return fmt.Errorf("group directive missing GID field: %q", line)
+		}
+		gid := fields[2]
+		if gid == "vyntrio" {
+			return fmt.Errorf("group GID field must not repeat group name: %q", line)
+		}
+		if gid != "-" {
+			for _, r := range gid {
+				if r < '0' || r > '9' {
+					return fmt.Errorf("group GID field must be - or numeric: %q", line)
+				}
+			}
+		}
+		return nil
+	}
+	return fmt.Errorf("group directive for vyntrio not found")
 }
 
 func TestTmpfilesConfigDirectoryPermissions(t *testing.T) {
