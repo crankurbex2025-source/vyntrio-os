@@ -62,6 +62,7 @@ build: ui-stage
 	@$(GO) build -o bin/vyntrio-worker ./cmd/worker
 	@$(GO) build -o bin/vyntrio-installer ./cmd/installer
 	@$(GO) build -o bin/vyntrio-update-agent ./cmd/update-agent
+	@$(GO) build -o bin/vyntrio-backup ./cmd/backup
 
 run-api:
 	@$(GO) run ./cmd/api

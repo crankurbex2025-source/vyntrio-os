@@ -53,10 +53,11 @@ Current runtime truth (verified against `cmd/api/main.go`,
 - The binary requires no source checkout, `frontend/dist`, `node_modules`,
   Vite, dev proxy, or static-files directory at runtime.
 
-**Not implemented:** backup CLI, restore CLI, backup timer, retention,
+**Implemented (Slice 7.9):** root-only local backup command `vyntrio-backup`
+(`cmd/backup`). **Not implemented:** restore CLI, backup timer, retention,
 encryption, or remote upload. **Slice 7.8 (accepted contract):** binding
-backup/restore safety architecture documented in sections **G** and **H** below;
-implementation remains a future slice. **Slice 7.3 (implemented):** systemd unit,
+backup/restore safety architecture documented in sections **G** and **H** below.
+**Slice 7.3 (implemented):** systemd unit,
 static `vyntrio` service identity declaration, tmpfiles layout for
 `/etc/vyntrio`, and conservative unit sandboxing. Config-file ownership is
 documented for administrators; runtime enforcement of config ownership modes
@@ -193,10 +194,23 @@ Intended v1 layout:
   the configured timeout, flush/close persistence according to the current
   SQLite policy, then exit.
 
-### G. Backup contract (Slice 7.8 — approved for future implementation)
+### G. Backup contract (Slice 7.8 architecture; Slice 7.9 backup CLI)
 
-**Status:** architecture contract only. No backup command, script, timer, API,
-UI, encryption, retention, or remote target exists in the current deployment.
+**Status:** backup CLI **implemented** (`vyntrio-backup`). No restore command,
+timer, API, UI, encryption, retention, or remote target exists.
+
+#### G.0 Operator command (implemented)
+
+- **Command:** `vyntrio-backup` (build output: `bin/vyntrio-backup`; production
+  install convention: `/usr/bin/vyntrio-backup` when packaged like `vyntrio-api`).
+- **Invocation:** run as **root** only; no arguments; fixed paths only.
+- **Success output:** artifact basename and member count only — no config,
+  database, digest, or credential content.
+- **Verification:** local loopback `/healthz` and `/readyz` after restart with a
+  finite retry/backoff policy (50 ms initial delay, 100 ms retry interval, 15 s
+  deadline) to accommodate normal listener startup; never public HTTPS.
+- **Manifest integrity:** per-member SHA-256 only; manifest itself is not
+  cryptographically authenticated in v1.
 
 #### G.1 Authority and access model
 
@@ -210,7 +224,7 @@ UI, encryption, retention, or remote target exists in the current deployment.
 
 #### G.2 Backup scope (included / excluded)
 
-**Included in a future backup set:**
+**Included in a backup set:**
 
 | Member | Path / scope | Notes |
 |--------|----------------|-------|
@@ -508,7 +522,7 @@ The following remain **out of scope** until dedicated future slices:
 - [x] systemd slice: unit file, service account provisioning, tmpfiles/state
       directory ownership, sandboxing per section E.
 - [x] Slice 7.8 backup/restore safety architecture contract (sections G, H).
-- [ ] Backup CLI implementation per section G.
+- [x] Backup CLI implementation per section G (`vyntrio-backup`).
 - [ ] Restore CLI implementation per section H.
 - [ ] Upgrade/migration-policy slice per section J.
 - [ ] Distribution-tested seccomp/`SystemCallFilter` hardening slice.

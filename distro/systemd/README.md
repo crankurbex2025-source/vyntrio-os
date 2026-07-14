@@ -94,17 +94,27 @@ the production binary is absent.
   executable heap mappings.
 - `SystemCallFilter`/seccomp hardening remains deferred per ADR-0005.
 
-## Future offline backup/restore (not implemented)
+## Backup command (implemented)
 
-Block 7 Slice 7.8 defines the **approved architecture contract only**. Current
-deployment has **no** backup command, timer, API, or restore tool.
+Root operators run **`vyntrio-backup`** on the appliance host. The command:
 
-When implemented, backup and restore will be **root-operator, offline** actions:
+- requires effective UID 0;
+- stops `vyntrio-api.service`, copies approved SQLite state files and
+  `/etc/vyntrio/config.toml`, publishes `vyntrio-backup-v1_<UTC>.tar` under
+  `/var/lib/vyntrio/backups/` (root `0700`, artifact `0600`);
+- restarts the service and proves loopback `/healthz` and `/readyz` with a
+  finite local retry policy after restart (no public HTTPS check);
 
-- stop `vyntrio-api.service` before copying SQLite state;
-- write completed artifacts under `/var/lib/vyntrio/backups/` (root-controlled;
-  the `vyntrio` account does not publish backups);
-- restore replaces validated state/config only after service stop and a
-  root-only pre-restore preserve copy.
+Restore remains **not implemented**. See `docs/ADR/0005-appliance-runtime-operations.md`
+section G.
+
+## Future offline restore (not implemented)
+
+Block 7 Slice 7.8 defines the restore architecture contract. Current deployment
+has **no** restore command or timer.
+
+When restore is implemented, it will be a **root-operator, offline** action
+governed by a separately approved restore contract and command. No restore
+operator command exists in the current deployment.
 
 See `docs/ADR/0005-appliance-runtime-operations.md` sections G and H.

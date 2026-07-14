@@ -10,6 +10,7 @@ Go `main` packages for Vyntrio OS binaries. Each subdirectory is one deployable 
 | `worker/` | `vyntrio-worker` | Background jobs and long-running tasks | Phase 2 |
 | `installer/` | `vyntrio-installer` | OS installation wizard / first boot | Phase 0.2 |
 | `update-agent/` | `vyntrio-update-agent` | Signed update application | Later |
+| `backup/` | `vyntrio-backup` | Root-only local appliance backup (Slice 7.9) | Block 7 |
 
 ## Rules
 
@@ -24,6 +25,7 @@ Go `main` packages for Vyntrio OS binaries. Each subdirectory is one deployable 
 make build
 # or
 go build -o bin/vyntrio-api ./cmd/api
+go build -o bin/vyntrio-backup ./cmd/backup
 ```
 
 See `docs/07_BACKEND.md` and `docs/02_ARCHITECTURE.md`.

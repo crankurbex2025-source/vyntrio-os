@@ -92,10 +92,10 @@ gegen lokale Schreiber im State-Verzeichnis nach der Validierung.
 
 **Implementiert (Slice 7.3):** systemd-Betriebsmodell unter `distro/systemd/`
 (statisches `vyntrio`-Konto, `vyntrio-api.service`, tmpfiles für
-`/etc/vyntrio`). Installation: `distro/systemd/README.md`. **Beschlossen (Slice 7.8), noch nicht implementiert:** Backup/Restore-CLI gemäß
-ADR-0005 (Service-Stop, SQLite-Dateisatz + optional `config.toml`-Companion,
-Manifest/SHA-256, root-only Ziel, Offline-Restore). Upgrade-Packaging bleibt
-zukünftig. Autoritativ: `docs/ADR/0005-appliance-runtime-operations.md`.
+`/etc/vyntrio`). Installation: `distro/systemd/README.md`. **Implementiert (Slice 7.9):**
+root-only Backup-Befehl `vyntrio-backup` gemäß ADR-0005. **Noch nicht
+implementiert:** Restore-CLI, Upgrade-Packaging. Autoritativ:
+`docs/ADR/0005-appliance-runtime-operations.md`.
 
 ## Release-Arten
 - Nightly / Development
