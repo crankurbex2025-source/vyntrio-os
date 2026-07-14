@@ -10,6 +10,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/domain/setting"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
@@ -71,6 +72,14 @@ func (stubHostCollector) Collect(context.Context) hostmetrics.Host {
 	}
 }
 
+type stubBackupLoader struct {
+	status backupstatus.Backup
+}
+
+func (s stubBackupLoader) Read(context.Context) backupstatus.Backup {
+	return s.status
+}
+
 type stubReadiness struct {
 	result health.Result
 }
@@ -108,6 +117,7 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 		repo,
 		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: true}},
 		stubHostCollector{},
+		stubBackupLoader{status: backupstatus.NeverRun()},
 		"0.2.0-dev",
 		"abc123",
 		"development",
@@ -134,6 +144,9 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 	if got.Readiness.Status != "ready" || got.Readiness.Database != "ok" {
 		t.Fatalf("readiness = %+v", got.Readiness)
 	}
+	if got.Backup.Status != backupstatus.StatusNeverRun {
+		t.Fatalf("backup = %+v", got.Backup)
+	}
 	if got.CollectedAt == "" {
 		t.Fatal("expected collected_at")
 	}
@@ -157,6 +170,7 @@ func TestLoaderMapsDatabaseFailureToNotReady(t *testing.T) {
 		repo,
 		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: false}},
 		stubHostCollector{},
+		stubBackupLoader{status: backupstatus.NeverRun()},
 		"0.2.0-dev",
 		"abc123",
 		"development",

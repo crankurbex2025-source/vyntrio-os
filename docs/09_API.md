@@ -58,6 +58,7 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
   - `service`: `{ "status" }` — `"running"` nur während der Handler ausgeführt wird
   - `readiness`: `{ "status", "database" }` — gleiche Semantik wie `/readyz` (`ready`/`not_ready`, `ok`/`error`)
   - `host`: CPU-, Speicher- und State-Filesystem-Metriken (Slice 8.3; siehe unten)
+  - `backup`: lokaler Backup-Status (Slice 8.5; siehe unten)
   - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
 - **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
 - **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
@@ -84,6 +85,40 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
 - **`host.memory`:** `total_bytes`, `available_bytes`, `used_bytes` (used = total − available); bei Fehler nur `"status": "unavailable"`.
 - **`host.filesystems`:** genau ein Eintrag mit `"id": "state"` (validierter `state_dir`); optional `fs_type` aus fester Vokabularliste (`ext4`, `xfs`, `btrfs`, `tmpfs`, `other`); nie Pfad, Device oder Mount-Quelle.
 - Host-Metrik-Fehler degradieren **nur** die betroffene Sektion; Overview bleibt **200**. Host-Metriken behaupten keine Appliance-Gesundheit.
+
+**Zusätzliches Feld `backup` (Slice 8.5):**
+
+```json
+"backup": { "status": "never_run", "ever_succeeded": false }
+```
+
+```json
+"backup": {
+  "status": "succeeded",
+  "completed_at": "2026-07-14T11:30:00.000000000Z",
+  "ever_succeeded": true
+}
+```
+
+```json
+"backup": {
+  "status": "failed",
+  "completed_at": "2026-07-14T11:30:00.000000000Z",
+  "ever_succeeded": true,
+  "failure": "restart"
+}
+```
+
+```json
+"backup": { "status": "unavailable" }
+```
+
+- **`status`:** `never_run` (kein Status-Sidecar), `succeeded`, `failed`, `unavailable` (nicht vertrauenswürdig lesbar).
+- **`completed_at`:** nur bei `succeeded`/`failed`; UTC RFC3339Nano.
+- **`ever_succeeded`:** bei `never_run` immer `false`; bei `succeeded` immer `true`; bei `failed` sticky über spätere Fehler.
+- **`failure`:** nur bei `failed`; grobe Klasse (`artifact`, `restart`, `health`, `readiness`, `internal`) — keine Pfade, Artefaktnamen, Hashes oder Rohfehler.
+- Status beschreibt den **letzten aufgezeichneten** Abschluss; er beweist nicht, dass ein Artefakt noch existiert oder gültig ist.
+- Backup-Status-Fehler degradieren **nur** `backup`; Overview bleibt **200**. Kein Backup-Trigger, keine Artefakt-Enumeration.
 
 ### PATCH `/api/v1/settings/instance`
 

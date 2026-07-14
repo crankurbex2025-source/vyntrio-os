@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backup"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 )
 
 type fakeRoot struct{ root bool }
@@ -24,17 +25,22 @@ type fakeRoot struct{ root bool }
 func (f fakeRoot) IsRoot() bool { return f.root }
 
 type fakeService struct {
-	active        bool
-	inactive      bool
-	stopErr       error
-	startErr      error
-	isActiveErr   error
-	isInactiveErr error
-	calls         []string
+	active                 bool
+	inactive               bool
+	stopErr                error
+	startErr               error
+	startFailsAfterQuiesce int
+	isActiveErr            error
+	isInactiveErr          error
+	failPostStartIsActive  bool
+	calls                  []string
 }
 
 func (f *fakeService) IsActive(context.Context) (bool, error) {
 	f.calls = append(f.calls, "is-active")
+	if containsCall(f.calls, "start") && f.failPostStartIsActive {
+		return false, errors.New("active check failed")
+	}
 	if f.isActiveErr != nil {
 		return false, f.isActiveErr
 	}
@@ -61,6 +67,10 @@ func (f *fakeService) IsInactive(context.Context) (bool, error) {
 
 func (f *fakeService) Start(context.Context) error {
 	f.calls = append(f.calls, "start")
+	if containsCall(f.calls, "stop") && f.startFailsAfterQuiesce > 0 {
+		f.startFailsAfterQuiesce--
+		return errors.New("transient start failed")
+	}
 	if f.startErr != nil {
 		return f.startErr
 	}
@@ -135,6 +145,7 @@ func newTestRunner(t *testing.T, svc *fakeService, health backup.HealthProber, s
 		VersionFetcher:     nil,
 		MigrationReader:    backup.SQLMigrationReader{},
 		Clock:              fixedClock{now: time.Date(2026, 7, 13, 15, 4, 5, 0, time.UTC)},
+		StatusPublisher:    noopStatusPublisher{},
 		PrepareDestination: testPrepareDestination,
 		Stdout:             io.Discard,
 		Options: backup.Options{
@@ -143,6 +154,13 @@ func newTestRunner(t *testing.T, svc *fakeService, health backup.HealthProber, s
 			DestinationDir: dest,
 		},
 	}
+}
+
+type noopStatusPublisher struct{}
+
+func (noopStatusPublisher) PublishSucceeded(context.Context, string, time.Time) error { return nil }
+func (noopStatusPublisher) PublishFailed(context.Context, string, time.Time, string) error {
+	return nil
 }
 
 func TestRunRejectsNonRootBeforeServiceActions(t *testing.T) {
@@ -156,6 +174,319 @@ func TestRunRejectsNonRootBeforeServiceActions(t *testing.T) {
 	if len(svc.calls) != 0 {
 		t.Fatalf("service calls = %v, want none", svc.calls)
 	}
+}
+
+type recordingStatusPublisher struct {
+	succeeded   bool
+	failedClass string
+}
+
+func (r *recordingStatusPublisher) PublishSucceeded(context.Context, string, time.Time) error {
+	r.succeeded = true
+	return nil
+}
+
+func (r *recordingStatusPublisher) PublishFailed(_ context.Context, _ string, _ time.Time, failureClass string) error {
+	r.failedClass = failureClass
+	return nil
+}
+
+type detailedStatusPublisher struct {
+	succeededCalls int
+	failedCalls    int
+	failedClass    string
+}
+
+func (d *detailedStatusPublisher) PublishSucceeded(context.Context, string, time.Time) error {
+	d.succeededCalls++
+	return nil
+}
+
+func (d *detailedStatusPublisher) PublishFailed(_ context.Context, _ string, _ time.Time, failureClass string) error {
+	d.failedCalls++
+	d.failedClass = failureClass
+	return nil
+}
+
+type failingSucceededStatusPublisher struct {
+	called      bool
+	failedCalls int
+}
+
+func (f *failingSucceededStatusPublisher) PublishSucceeded(context.Context, string, time.Time) error {
+	f.called = true
+	return errors.New("publish failed")
+}
+
+func (f *failingSucceededStatusPublisher) PublishFailed(context.Context, string, time.Time, string) error {
+	f.failedCalls++
+	return nil
+}
+
+func assertCoarseFailureClass(t *testing.T, class string) {
+	t.Helper()
+	allowed := map[string]struct{}{
+		backupstatus.FailureArtifact:  {},
+		backupstatus.FailureRestart:   {},
+		backupstatus.FailureHealth:    {},
+		backupstatus.FailureReadiness: {},
+		backupstatus.FailureInternal:  {},
+	}
+	if _, ok := allowed[class]; !ok {
+		t.Fatalf("failure class = %q, want allowed enum", class)
+	}
+	for _, forbidden := range []string{"/", "\\", ".tar", "error", "probe", "config", "db", "path"} {
+		if strings.Contains(class, forbidden) {
+			t.Fatalf("failure class leaked detail %q in %q", forbidden, class)
+		}
+	}
+}
+
+func assertNoStatusPublication(t *testing.T, recorder *detailedStatusPublisher) {
+	t.Helper()
+	if recorder.succeededCalls != 0 || recorder.failedCalls != 0 {
+		t.Fatalf("status publication = succeeded:%d failed:%d, want none", recorder.succeededCalls, recorder.failedCalls)
+	}
+}
+
+func assertPostArtifactFailedPublication(t *testing.T, recorder *detailedStatusPublisher, wantClass string) {
+	t.Helper()
+	if recorder.succeededCalls != 0 {
+		t.Fatal("PublishSucceeded must not be called")
+	}
+	if recorder.failedCalls != 1 {
+		t.Fatalf("PublishFailed calls = %d, want 1", recorder.failedCalls)
+	}
+	if recorder.failedClass != wantClass {
+		t.Fatalf("failedClass = %q, want %q", recorder.failedClass, wantClass)
+	}
+	assertCoarseFailureClass(t, recorder.failedClass)
+}
+
+func TestRunPublishesFailedStatusAfterQuiescedSourceFailure(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true}
+	stateRoot, configPath, dest := setupState(t)
+	_ = os.Remove(filepath.Join(stateRoot, backup.MainDBName))
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrSourceInvalid) {
+		t.Fatalf("err = %v", err)
+	}
+	assertPostArtifactFailedPublication(t, recorder, backupstatus.FailureArtifact)
+	if !containsCall(svc.calls, "stop") || !containsCall(svc.calls, "start") {
+		t.Fatalf("calls = %v, want stop then recovery start", svc.calls)
+	}
+}
+
+func TestRunPublishesSucceededStatusOnSuccess(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	if _, err := runner.Run(context.Background()); err != nil {
+		t.Fatalf("Run() error: %v", err)
+	}
+	if recorder.succeededCalls != 1 || recorder.failedCalls != 0 {
+		t.Fatalf("status publication = succeeded:%d failed:%d, want 1/0", recorder.succeededCalls, recorder.failedCalls)
+	}
+}
+
+func TestRunSuccessStatusPublicationFailureBlocksSuccess(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true}
+	stateRoot, configPath, dest := setupState(t)
+	publisher := &failingSucceededStatusPublisher{}
+	var buf bytes.Buffer
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = publisher
+	runner.Stdout = &buf
+	result, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrStatusPublishFailed) {
+		t.Fatalf("err = %v, want ErrStatusPublishFailed", err)
+	}
+	if result.ArtifactName != "" {
+		t.Fatalf("result = %+v, want empty success result", result)
+	}
+	if !publisher.called {
+		t.Fatal("expected PublishSucceeded attempt")
+	}
+	if publisher.failedCalls != 0 {
+		t.Fatalf("failed publications = %d, want none", publisher.failedCalls)
+	}
+	if strings.Contains(buf.String(), "backup succeeded") {
+		t.Fatalf("stdout must not report success: %q", buf.String())
+	}
+}
+
+func TestRunPostArtifactRestartFailurePublishesRestartClass(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true, startErr: errors.New("start failed")}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrServiceStartFailed) {
+		t.Fatalf("err = %v, want ErrServiceStartFailed", err)
+	}
+	assertPostArtifactFailedPublication(t, recorder, backupstatus.FailureRestart)
+	if countCalls(svc.calls, "start") < 2 {
+		t.Fatalf("calls = %v, want backup start plus recovery start", svc.calls)
+	}
+	entries, readErr := os.ReadDir(dest)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if len(entries) != 1 || !strings.HasSuffix(entries[0].Name(), ".tar") {
+		t.Fatalf("entries = %v, want preserved artifact", entries)
+	}
+}
+
+func TestRunPostArtifactStartFailureWithSuccessfulRecoveryStillPublishesRestart(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true, startFailsAfterQuiesce: 1}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrServiceStartFailed) {
+		t.Fatalf("err = %v, want ErrServiceStartFailed", err)
+	}
+	assertPostArtifactFailedPublication(t, recorder, backupstatus.FailureRestart)
+	if countCalls(svc.calls, "start") != 2 {
+		t.Fatalf("calls = %v, want primary start plus successful recovery start", svc.calls)
+	}
+	if !svc.active {
+		t.Fatal("expected recovery to leave service active")
+	}
+	if countCalls(svc.calls, "is-active") < 2 {
+		t.Fatalf("calls = %v, want active checks during backup and recovery", svc.calls)
+	}
+	entries, readErr := os.ReadDir(dest)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if len(entries) != 1 || !strings.HasSuffix(entries[0].Name(), ".tar") {
+		t.Fatalf("entries = %v, want preserved artifact", entries)
+	}
+}
+
+func TestRunPostArtifactActiveStateFailurePublishesRestartClass(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true, failPostStartIsActive: true}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrServiceStartFailed) {
+		t.Fatalf("err = %v, want ErrServiceStartFailed", err)
+	}
+	assertPostArtifactFailedPublication(t, recorder, backupstatus.FailureRestart)
+	if countCalls(svc.calls, "start") != 1 {
+		t.Fatalf("calls = %v, want single start without recovery", svc.calls)
+	}
+}
+
+func TestRunPostArtifactHealthFailurePublishesHealthClass(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{err: backup.ErrHealthProbeFailed}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrHealthProbeFailed) {
+		t.Fatalf("err = %v, want ErrHealthProbeFailed", err)
+	}
+	assertPostArtifactFailedPublication(t, recorder, backupstatus.FailureHealth)
+	if countCalls(svc.calls, "start") != 1 {
+		t.Fatalf("calls = %v, want single start without recovery", svc.calls)
+	}
+}
+
+func TestRunPostArtifactReadinessFailurePublishesReadinessClass(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	svc := &fakeService{active: true, inactive: true}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, loopbackProber(t, srv.URL, fastProbePolicy(5*time.Millisecond)), stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrReadinessProbeFailed) {
+		t.Fatalf("err = %v, want ErrReadinessProbeFailed", err)
+	}
+	assertPostArtifactFailedPublication(t, recorder, backupstatus.FailureReadiness)
+	if countCalls(svc.calls, "start") != 1 {
+		t.Fatalf("calls = %v, want single start without recovery", svc.calls)
+	}
+}
+
+func TestRunFailedRunPreservesPriorEverSucceeded(t *testing.T) {
+	svc := &fakeService{active: true, inactive: true}
+	stateRoot, configPath, dest := setupState(t)
+	priorAt := time.Date(2026, 7, 14, 9, 0, 0, 0, time.UTC)
+	failAt := time.Date(2026, 7, 14, 10, 0, 0, 0, time.UTC)
+	publisher := backupstatus.NewPublisher(backupstatus.PublisherDeps{
+		GroupGID: func() (uint32, error) { return 4242, nil },
+		Chown:    func(string, int, int) error { return nil },
+	})
+	if err := publisher.PublishSucceeded(context.Background(), stateRoot, priorAt); err != nil {
+		t.Fatalf("PublishSucceeded() error: %v", err)
+	}
+
+	runner := newTestRunner(t, svc, fakeHealth{err: backup.ErrHealthProbeFailed}, stateRoot, configPath, dest)
+	runner.StatusPublisher = publisher
+	runner.Clock = fixedClock{now: failAt}
+	if _, err := runner.Run(context.Background()); err == nil {
+		t.Fatal("expected health probe failure")
+	}
+
+	data, err := os.ReadFile(backupstatus.StatusPath(stateRoot))
+	if err != nil {
+		t.Fatalf("ReadFile() error: %v", err)
+	}
+	record, err := backupstatus.ParseDiskRecord(data, failAt.Add(time.Minute))
+	if err != nil {
+		t.Fatalf("ParseDiskRecord() error: %v", err)
+	}
+	if record.LastOutcome != backupstatus.OutcomeFailed || !record.EverSucceeded || record.FailureClass != backupstatus.FailureHealth {
+		t.Fatalf("record = %+v, want failed with preserved ever_succeeded", record)
+	}
+}
+
+func TestRunStopFailureDoesNotPublishStatus(t *testing.T) {
+	svc := &fakeService{active: true, stopErr: errors.New("stop failed")}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrServiceStopFailed) {
+		t.Fatalf("err = %v, want ErrServiceStopFailed", err)
+	}
+	assertNoStatusPublication(t, recorder)
+}
+
+func TestRunInactiveUnknownDoesNotPublishStatus(t *testing.T) {
+	svc := &fakeService{active: true, isInactiveErr: errors.New("inactive unknown")}
+	stateRoot, configPath, dest := setupState(t)
+	recorder := &detailedStatusPublisher{}
+	runner := newTestRunner(t, svc, fakeHealth{}, stateRoot, configPath, dest)
+	runner.StatusPublisher = recorder
+	_, err := runner.Run(context.Background())
+	if !errors.Is(err, backup.ErrServiceInactiveUnknown) {
+		t.Fatalf("err = %v, want ErrServiceInactiveUnknown", err)
+	}
+	assertNoStatusPublication(t, recorder)
 }
 
 func TestRunRequiresActiveServiceBeforeStop(t *testing.T) {

@@ -1,5 +1,9 @@
 import type { OverviewDto } from "./overviewDto";
-import { formatMetricBytes, formatOverviewCollectedAt } from "./overviewDto";
+import {
+  formatBackupFailureDetail,
+  formatMetricBytes,
+  formatOverviewCollectedAt,
+} from "./overviewDto";
 
 type OverviewShellProps = {
   overview: OverviewDto;
@@ -67,6 +71,53 @@ export function OverviewShell({
             <p className="dashboard-card-label">Service</p>
             <p className="dashboard-card-value">Running</p>
             <p className="dashboard-card-detail">API process is serving this overview</p>
+          </article>
+        </section>
+
+        <section className="dashboard-panel">
+          <h2>Local backup</h2>
+          <p className="dashboard-panel-note">
+            Status reflects the last recorded backup attempt only. It does not verify that a
+            backup artifact still exists.
+          </p>
+          <article className="dashboard-info-card">
+            <p className="dashboard-card-label">Backup status</p>
+            {overview.backup.status === "never_run" ? (
+              <>
+                <p className="dashboard-card-value">No backup recorded</p>
+                <p className="dashboard-card-detail">
+                  No completed local backup has been recorded yet.
+                </p>
+              </>
+            ) : null}
+            {overview.backup.status === "succeeded" ? (
+              <>
+                <p className="dashboard-card-value">Last backup succeeded</p>
+                <p className="dashboard-card-detail">
+                  Completed {formatOverviewCollectedAt(overview.backup.completed_at ?? "")}
+                </p>
+              </>
+            ) : null}
+            {overview.backup.status === "failed" ? (
+              <>
+                <p className="dashboard-card-value">Last backup failed</p>
+                <p className="dashboard-card-detail">
+                  Completed {formatOverviewCollectedAt(overview.backup.completed_at ?? "")}
+                  {overview.backup.failure
+                    ? ` · ${formatBackupFailureDetail(overview.backup.failure)}`
+                    : null}
+                </p>
+                {overview.backup.ever_succeeded ? (
+                  <p className="dashboard-card-detail">An earlier backup completed successfully.</p>
+                ) : null}
+              </>
+            ) : null}
+            {overview.backup.status === "unavailable" ? (
+              <>
+                <p className="dashboard-card-value">Unavailable</p>
+                <p className="dashboard-card-detail">Backup status could not be read.</p>
+              </>
+            ) : null}
           </article>
         </section>
 

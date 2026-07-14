@@ -68,6 +68,10 @@ describe("App", () => {
           },
         ],
       },
+      backup: {
+        status: "never_run",
+        ever_succeeded: false,
+      },
     };
   }
 

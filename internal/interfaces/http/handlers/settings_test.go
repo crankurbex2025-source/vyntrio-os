@@ -24,6 +24,7 @@ import (
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/cookie"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
@@ -45,12 +46,13 @@ type settingsRouter struct {
 }
 
 type settingsRouterOpts struct {
-	authorizer  ports.Authorizer
-	resolver    *appidentity.SessionResolver
-	store       *sqlite.Store
-	routerOpts  []httpapi.RouterOption
-	readinessDB health.DatabaseChecker
-	hostMetrics appoverview.HostMetricsCollector
+	authorizer   ports.Authorizer
+	resolver     *appidentity.SessionResolver
+	store        *sqlite.Store
+	routerOpts   []httpapi.RouterOption
+	readinessDB  health.DatabaseChecker
+	hostMetrics  appoverview.HostMetricsCollector
+	backupStatus appoverview.BackupStatusLoader
 }
 
 func newSettingsRouter(t *testing.T, opts settingsRouterOpts) settingsRouter {
@@ -90,10 +92,15 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	if hostMetrics == nil {
 		hostMetrics = hostmetrics.NewCollector(stateDir, hostmetrics.CollectorDeps{})
 	}
+	backupStatus := opts.backupStatus
+	if backupStatus == nil {
+		backupStatus = backupstatus.NewReader(stateDir, backupstatus.ReaderDeps{})
+	}
 	overviewLoader := appoverview.NewLoader(
 		settingsRepo,
 		readiness,
 		hostMetrics,
+		backupStatus,
 		settingsTestVersion,
 		"test-commit",
 		settingsTestEnvironment,

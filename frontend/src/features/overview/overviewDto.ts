@@ -28,6 +28,17 @@ export type HostDto = {
   filesystems: [HostFilesystemDto];
 };
 
+export type BackupStatus = "never_run" | "succeeded" | "failed" | "unavailable";
+
+export type BackupFailure = "artifact" | "restart" | "health" | "readiness" | "internal";
+
+export type BackupDto = {
+  status: BackupStatus;
+  completed_at?: string;
+  ever_succeeded?: boolean;
+  failure?: BackupFailure;
+};
+
 export type OverviewDto = {
   instance: {
     name: string;
@@ -45,8 +56,11 @@ export type OverviewDto = {
     database: "ok" | "error";
   };
   host: HostDto;
+  backup: BackupDto;
   collected_at: string;
 };
+
+const BACKUP_FAILURES = new Set(["artifact", "restart", "health", "readiness", "internal"]);
 
 const FS_TYPES = new Set(["ext4", "xfs", "btrfs", "tmpfs", "other"]);
 
@@ -199,10 +213,66 @@ function parseHost(value: unknown): HostDto | null {
   };
 }
 
+function parseBackup(value: unknown): BackupDto | null {
+  if (!isPlainRecord(value) || !("status" in value)) {
+    return null;
+  }
+  const status = value.status;
+  if (
+    status !== "never_run" &&
+    status !== "succeeded" &&
+    status !== "failed" &&
+    status !== "unavailable"
+  ) {
+    return null;
+  }
+  if (status === "unavailable") {
+    return hasExactKeys(value, ["status"]) ? { status } : null;
+  }
+  if (status === "never_run") {
+    if (
+      !hasExactKeys(value, ["status", "ever_succeeded"]) ||
+      value.ever_succeeded !== false
+    ) {
+      return null;
+    }
+    return { status, ever_succeeded: false };
+  }
+  if (status === "succeeded") {
+    if (
+      !hasExactKeys(value, ["status", "completed_at", "ever_succeeded"]) ||
+      typeof value.completed_at !== "string" ||
+      value.ever_succeeded !== true
+    ) {
+      return null;
+    }
+    return {
+      status,
+      completed_at: value.completed_at,
+      ever_succeeded: true,
+    };
+  }
+  if (
+    !hasExactKeys(value, ["status", "completed_at", "ever_succeeded", "failure"]) ||
+    typeof value.completed_at !== "string" ||
+    typeof value.ever_succeeded !== "boolean" ||
+    typeof value.failure !== "string" ||
+    !BACKUP_FAILURES.has(value.failure)
+  ) {
+    return null;
+  }
+  return {
+    status,
+    completed_at: value.completed_at,
+    ever_succeeded: value.ever_succeeded,
+    failure: value.failure as BackupFailure,
+  };
+}
+
 export function parseOverviewDto(payload: unknown): OverviewDto | null {
   if (
     !isPlainRecord(payload) ||
-    !hasExactKeys(payload, ["instance", "api", "service", "readiness", "host", "collected_at"])
+    !hasExactKeys(payload, ["instance", "api", "service", "readiness", "host", "backup", "collected_at"])
   ) {
     return null;
   }
@@ -212,6 +282,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
   const service = payload.service;
   const readiness = payload.readiness;
   const host = parseHost(payload.host);
+  const backup = parseBackup(payload.backup);
   const collectedAt = payload.collected_at;
 
   if (!isPlainRecord(instance) || !hasExactKeys(instance, ["name", "version", "commit"])) {
@@ -227,6 +298,9 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     return null;
   }
   if (!host) {
+    return null;
+  }
+  if (!backup) {
     return null;
   }
 
@@ -260,8 +334,24 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
       database: readiness.database,
     },
     host,
+    backup,
     collected_at: collectedAt,
   };
+}
+
+export function formatBackupFailureDetail(failure: BackupFailure): string {
+  switch (failure) {
+    case "artifact":
+      return "Backup artifact creation or validation did not complete.";
+    case "restart":
+      return "The API service did not restart successfully afterward.";
+    case "health":
+      return "Local health checks failed after restart.";
+    case "readiness":
+      return "The database was not ready after restart.";
+    default:
+      return "The backup command did not complete successfully.";
+  }
 }
 
 export function formatOverviewCollectedAt(value: string): string {

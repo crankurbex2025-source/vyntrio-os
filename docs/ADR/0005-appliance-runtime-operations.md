@@ -188,6 +188,20 @@ Intended v1 layout:
   numeric fields; overview remains HTTP **200**. No privileged helper, no sandbox
   relaxation, no `/proc/stat`, no network interface reads, no host inventory API.
 
+#### E.2 Overview backup status (Slice 8.5, implemented)
+
+- Root-only `vyntrio-backup` publishes a sanitized status sidecar
+  (`backup-last-run.json`) under the validated `state_dir` after each completed
+  quiesced run; the unprivileged API reads only this file via
+  `internal/platform/backupstatus`.
+- Expose only `backup.status`, optional `completed_at`, `ever_succeeded`, and
+  coarse `failure` on failed runs — never artifact names, paths, digests,
+  manifests, backup-directory contents, or raw command output.
+- Missing sidecar maps to `never_run`; unreadable or invalid records map to
+  `unavailable` in HTTP **200**. Status records last completion only; it does not
+  prove artifact existence or validity.
+- The status sidecar is excluded from backup artifact member allowlists.
+
 ### F. Startup, liveness, readiness and shutdown
 
 - **Fail-closed startup (implemented):** invalid runtime configuration,

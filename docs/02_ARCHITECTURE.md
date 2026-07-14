@@ -66,7 +66,13 @@ WebSockets in 8.1.
 (`host.cpu`, `host.memory`, `host.filesystems[id=state]`) via
 `internal/platform/hostmetrics` — direkte in-process `/proc`- und statfs-Sammlung
 nur auf dem validierten `state_dir`; per-Metrik `unavailable`-Degradation in HTTP 200.
-Kein CPU-%, Netzwerk, Backup, Mount-Inventory oder Privilege-Expansion.
+Kein CPU-%, Netzwerk, Backup-Artefakt-Exposure, Mount-Inventory oder Privilege-Expansion.
+
+**Block 8 / Slice 8.5 (implementiert):** Read-only lokaler Backup-Status im Overview-DTO
+(`backup.status`, optional `completed_at`, `ever_succeeded`, `failure`) via
+`internal/platform/backupstatus` — API liest nur ein root-geschriebenes Status-Sidecar
+unter dem validierten `state_dir`; `vyntrio-backup` ist alleiniger Schreiber.
+Per-Status `unavailable`-Degradation in HTTP 200. Kein Backup-Trigger, keine Artefakt-Enumeration.
 
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.

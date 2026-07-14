@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,6 +12,7 @@ import (
 
 	appoverview "github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
@@ -316,6 +318,183 @@ func sectionKeys(section map[string]json.RawMessage) []string {
 	return keys
 }
 
+func TestOverviewBackupStatusNeverRun(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	got := decodeOverviewResponse(t, rec.Body.Bytes())
+	if got.Backup.Status != backupstatus.StatusNeverRun || got.Backup.EverSucceeded == nil || *got.Backup.EverSucceeded {
+		t.Fatalf("backup = %+v", got.Backup)
+	}
+	assertOverviewCacheControlNoStore(t, rec)
+	assertNoSensitiveOverviewFields(t, rec.Body.Bytes())
+}
+
+func TestOverviewBackupStatusSucceededSerialization(t *testing.T) {
+	completedAt := "2026-07-14T11:30:00.000000000Z"
+	ever := true
+	router := newSettingsRouter(t, settingsRouterOpts{
+		backupStatus: stubBackupStatusLoader{status: backupstatus.Backup{
+			Status:        backupstatus.StatusSucceeded,
+			CompletedAt:   &completedAt,
+			EverSucceeded: &ever,
+		}},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	assertBackupJSON(t, rec.Body.Bytes(), `"status":"succeeded"`, `"ever_succeeded":true`)
+	assertOverviewCacheControlNoStore(t, rec)
+	assertNoSensitiveOverviewFields(t, rec.Body.Bytes())
+}
+
+func TestOverviewBackupStatusFailedFirstRunSerialization(t *testing.T) {
+	completedAt := "2026-07-14T11:30:00.000000000Z"
+	ever := false
+	failure := backupstatus.FailureArtifact
+	router := newSettingsRouter(t, settingsRouterOpts{
+		backupStatus: stubBackupStatusLoader{status: backupstatus.Backup{
+			Status:        backupstatus.StatusFailed,
+			CompletedAt:   &completedAt,
+			EverSucceeded: &ever,
+			Failure:       &failure,
+		}},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", rec.Code, rec.Body.String())
+	}
+
+	assertOverviewCacheControlNoStore(t, rec)
+	assertBackupFailedJSON(t, rec.Body.Bytes(), completedAt, false, backupstatus.FailureArtifact)
+	assertNoSensitiveOverviewFields(t, rec.Body.Bytes())
+	assertOverviewResponseShape(t, rec)
+}
+
+func TestOverviewBackupStatusFailedAfterPriorSuccessSerialization(t *testing.T) {
+	completedAt := "2026-07-14T12:45:00.000000000Z"
+	ever := true
+	failure := backupstatus.FailureReadiness
+	router := newSettingsRouter(t, settingsRouterOpts{
+		backupStatus: stubBackupStatusLoader{status: backupstatus.Backup{
+			Status:        backupstatus.StatusFailed,
+			CompletedAt:   &completedAt,
+			EverSucceeded: &ever,
+			Failure:       &failure,
+		}},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", rec.Code, rec.Body.String())
+	}
+
+	assertOverviewCacheControlNoStore(t, rec)
+	assertBackupFailedJSON(t, rec.Body.Bytes(), completedAt, true, backupstatus.FailureReadiness)
+	assertNoSensitiveOverviewFields(t, rec.Body.Bytes())
+	assertOverviewResponseShape(t, rec)
+}
+
+func TestOverviewBackupStatusUnavailableOmitsFields(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{
+		backupStatus: stubBackupStatusLoader{status: backupstatus.Unavailable()},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	got := decodeOverviewResponse(t, rec.Body.Bytes())
+	if got.Backup.Status != backupstatus.StatusUnavailable || got.Backup.EverSucceeded != nil {
+		t.Fatalf("backup = %+v", got.Backup)
+	}
+	bodyLower := strings.ToLower(rec.Body.String())
+	for _, forbidden := range []string{`"completed_at"`, `"failure"`, `"ever_succeeded"`} {
+		if strings.Contains(bodyLower, forbidden) {
+			t.Fatalf("response contained %q: %s", forbidden, rec.Body.String())
+		}
+	}
+}
+
+type stubBackupStatusLoader struct {
+	status backupstatus.Backup
+}
+
+func (s stubBackupStatusLoader) Read(context.Context) backupstatus.Backup {
+	return s.status
+}
+
+func assertBackupJSON(t *testing.T, body []byte, wantContains ...string) {
+	t.Helper()
+	lower := strings.ToLower(string(body))
+	for _, want := range wantContains {
+		if !strings.Contains(lower, strings.ToLower(want)) {
+			t.Fatalf("body missing %q: %s", want, body)
+		}
+	}
+}
+
+func assertBackupFailedJSON(
+	t *testing.T,
+	body []byte,
+	wantCompletedAt string,
+	wantEverSucceeded bool,
+	wantFailure string,
+) {
+	t.Helper()
+
+	var payload map[string]json.RawMessage
+	if err := json.Unmarshal(body, &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error: %v body=%s", err, body)
+	}
+	backupRaw, ok := payload["backup"]
+	if !ok {
+		t.Fatalf("missing backup in %s", body)
+	}
+
+	var backup map[string]json.RawMessage
+	if err := json.Unmarshal(backupRaw, &backup); err != nil {
+		t.Fatalf("json.Unmarshal(backup) error: %v", err)
+	}
+
+	wantKeys := map[string]struct{}{
+		"status": {}, "completed_at": {}, "ever_succeeded": {}, "failure": {},
+	}
+	if len(backup) != len(wantKeys) {
+		t.Fatalf("backup keys = %v, want exactly %v", sectionKeys(backup), wantKeys)
+	}
+	for key := range wantKeys {
+		if _, ok := backup[key]; !ok {
+			t.Fatalf("backup missing key %q", key)
+		}
+	}
+
+	if string(backup["status"]) != `"failed"` {
+		t.Fatalf("backup.status = %s, want failed", backup["status"])
+	}
+	if string(backup["completed_at"]) != `"`+wantCompletedAt+`"` {
+		t.Fatalf("backup.completed_at = %s, want %q", backup["completed_at"], wantCompletedAt)
+	}
+	wantEver := "false"
+	if wantEverSucceeded {
+		wantEver = "true"
+	}
+	if string(backup["ever_succeeded"]) != wantEver {
+		t.Fatalf("backup.ever_succeeded = %s, want %s", backup["ever_succeeded"], wantEver)
+	}
+	if string(backup["failure"]) != `"`+wantFailure+`"` {
+		t.Fatalf("backup.failure = %s, want %q", backup["failure"], wantFailure)
+	}
+}
+
 func TestOverviewPreservesHealthEndpointBehavior(t *testing.T) {
 	router := newSettingsRouter(t, settingsRouterOpts{})
 
@@ -368,6 +547,9 @@ func assertOverviewResponseShape(t *testing.T, rec *httptest.ResponseRecorder) {
 	if len(got.Host.Filesystems) != 1 || got.Host.Filesystems[0].ID != "state" {
 		t.Fatalf("host.filesystems = %+v", got.Host.Filesystems)
 	}
+	if got.Backup.Status == "" {
+		t.Fatalf("backup = %+v", got.Backup)
+	}
 }
 
 func assertOverviewCacheControlNoStore(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -377,17 +559,111 @@ func assertOverviewCacheControlNoStore(t *testing.T, rec *httptest.ResponseRecor
 	}
 }
 
+var forbiddenOverviewJSONKeys = map[string]struct{}{
+	"password": {}, "token": {}, "hash": {}, "csrf": {}, "session": {},
+	"userid": {}, "user_id": {}, "role": {}, "principal": {},
+	"datadir": {}, "data_dir": {}, "path": {}, "port": {}, "bind": {},
+	"timezone": {}, "audit": {}, "cookie": {}, "credential": {},
+	"destination": {}, "preserve": {}, "digest": {}, "manifest": {},
+	"stderr": {}, "stdout": {}, "source_path": {}, "artifact_name": {},
+	"config_path": {}, "state_root": {}, "config.toml": {},
+}
+
+var allowedBackupFailureClasses = map[string]struct{}{
+	backupstatus.FailureArtifact:  {},
+	backupstatus.FailureRestart:   {},
+	backupstatus.FailureHealth:    {},
+	backupstatus.FailureReadiness: {},
+	backupstatus.FailureInternal:  {},
+}
+
+var forbiddenOverviewValueSubstrings = []string{
+	"/var/lib", "/etc/vyntrio", "127.0.0.1", "sqlite", "config.toml",
+	".tar", "sha256", "vyntrio.db",
+}
+
 func assertNoSensitiveOverviewFields(t *testing.T, body []byte) {
 	t.Helper()
-	lower := strings.ToLower(string(body))
-	for _, forbidden := range []string{
-		"password", "token", "hash", "csrf", "session", "userid", "user_id",
-		"role", "principal", "datadir", "data_dir", "path", "port",
-		"bind", "timezone", "127.0.0.1", "sqlite", "audit", "config.toml",
-		"/var/lib", "/etc/vyntrio",
-	} {
-		if strings.Contains(lower, forbidden) {
-			t.Fatalf("response leaked forbidden substring %q: %s", forbidden, body)
+	if err := checkNoSensitiveOverviewFields(body); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func checkNoSensitiveOverviewFields(body []byte) error {
+	var payload any
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return err
+	}
+	return scanOverviewJSONValue(payload, nil)
+}
+
+func scanOverviewJSONValue(value any, parentKeys []string) error {
+	switch typed := value.(type) {
+	case map[string]any:
+		for key, child := range typed {
+			lowerKey := strings.ToLower(key)
+			if _, forbidden := forbiddenOverviewJSONKeys[lowerKey]; forbidden {
+				return fmt.Errorf("response contained forbidden JSON key %q", key)
+			}
+			if lowerKey == "failure" && isBackupSection(parentKeys) {
+				failure, ok := child.(string)
+				if !ok {
+					return fmt.Errorf("backup.failure has unexpected type %T", child)
+				}
+				if _, allowed := allowedBackupFailureClasses[failure]; !allowed {
+					return fmt.Errorf("backup.failure = %q, want allowed enum", failure)
+				}
+				continue
+			}
+			if err := scanOverviewJSONValue(child, append(parentKeys, lowerKey)); err != nil {
+				return err
+			}
 		}
+	case []any:
+		for _, child := range typed {
+			if err := scanOverviewJSONValue(child, parentKeys); err != nil {
+				return err
+			}
+		}
+	case string:
+		lower := strings.ToLower(typed)
+		for _, forbidden := range forbiddenOverviewValueSubstrings {
+			if strings.Contains(lower, forbidden) {
+				return fmt.Errorf("response leaked forbidden value substring %q in %q", forbidden, typed)
+			}
+		}
+	}
+	return nil
+}
+
+func isBackupSection(parentKeys []string) bool {
+	return len(parentKeys) == 1 && parentKeys[0] == "backup"
+}
+
+func TestDisclosureGuardAllowsArtifactFailureClass(t *testing.T) {
+	body := []byte(`{
+		"instance":{"name":"Vyntrio Home","version":"0.2.0-test","commit":"test-commit"},
+		"api":{"environment":"development"},
+		"service":{"status":"running"},
+		"readiness":{"status":"ready","database":"ok"},
+		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
+		"backup":{"status":"failed","completed_at":"2026-07-14T11:30:00.000000000Z","ever_succeeded":false,"failure":"artifact"},
+		"collected_at":"2026-07-14T12:00:00.000000000Z"
+	}`)
+	assertNoSensitiveOverviewFields(t, body)
+}
+
+func TestDisclosureGuardRejectsForbiddenPathField(t *testing.T) {
+	body := []byte(`{
+		"instance":{"name":"Vyntrio Home","version":"0.2.0-test","commit":"test-commit"},
+		"api":{"environment":"development"},
+		"service":{"status":"running"},
+		"readiness":{"status":"ready","database":"ok"},
+		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
+		"backup":{"status":"failed","completed_at":"2026-07-14T11:30:00.000000000Z","ever_succeeded":false,"failure":"artifact","path":"/var/lib/vyntrio/backups/secret.tar"},
+		"collected_at":"2026-07-14T12:00:00.000000000Z"
+	}`)
+	if err := checkNoSensitiveOverviewFields(body); err == nil {
+		t.Fatal("expected disclosure guard failure for forbidden path field")
 	}
 }

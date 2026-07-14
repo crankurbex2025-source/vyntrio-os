@@ -28,6 +28,13 @@ describe("parseOverviewDto", () => {
     };
   }
 
+  function validBackup() {
+    return {
+      status: "never_run" as const,
+      ever_succeeded: false,
+    };
+  }
+
   function validPayload() {
     return {
       instance: {
@@ -46,6 +53,7 @@ describe("parseOverviewDto", () => {
         database: "ok",
       },
       host: validHost(),
+      backup: validBackup(),
       collected_at: "2026-07-14T12:00:00.000000000Z",
     };
   }
@@ -78,6 +86,26 @@ describe("parseOverviewDto", () => {
             available_bytes: 40,
             used_bytes: 50,
           },
+        },
+      })
+    ).toBeNull();
+  });
+
+  it("accepts unavailable backup status without extra fields", () => {
+    expect(parseOverviewDto({ ...validPayload(), backup: { status: "unavailable" } })).toEqual({
+      ...validPayload(),
+      backup: { status: "unavailable" },
+    });
+  });
+
+  it("rejects failed backup without failure class", () => {
+    expect(
+      parseOverviewDto({
+        ...validPayload(),
+        backup: {
+          status: "failed",
+          completed_at: "2026-07-14T11:30:00.000000000Z",
+          ever_succeeded: false,
         },
       })
     ).toBeNull();

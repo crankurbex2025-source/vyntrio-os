@@ -1,15 +1,19 @@
 package overview
 
-import "github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
+import (
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
+)
 
 // Response is the safe authenticated overview DTO for GET /api/v1/overview.
 type Response struct {
-	Instance    InstanceSection  `json:"instance"`
-	API         APISection       `json:"api"`
-	Service     ServiceSection   `json:"service"`
-	Readiness   ReadinessSection `json:"readiness"`
-	Host        hostmetrics.Host `json:"host"`
-	CollectedAt string           `json:"collected_at"`
+	Instance    InstanceSection     `json:"instance"`
+	API         APISection          `json:"api"`
+	Service     ServiceSection      `json:"service"`
+	Readiness   ReadinessSection    `json:"readiness"`
+	Host        hostmetrics.Host    `json:"host"`
+	Backup      backupstatus.Backup `json:"backup"`
+	CollectedAt string              `json:"collected_at"`
 }
 
 // InstanceSection exposes non-secret appliance identity metadata.

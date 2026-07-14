@@ -14,6 +14,7 @@ var (
 	ErrDestinationUnsafe      = errors.New("backup: destination directory is unsafe")
 	ErrSourceInvalid          = errors.New("backup: source file validation failed")
 	ErrArtifactCollision      = errors.New("backup: artifact destination already exists")
+	ErrStatusPublishFailed    = errors.New("backup: status publication failed")
 )
 
 // FailureCategory classifies operator-visible backup failures.

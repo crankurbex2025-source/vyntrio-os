@@ -22,6 +22,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/cookie"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/ui"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
@@ -106,6 +107,7 @@ func main() {
 		settingsRepo,
 		readiness,
 		hostmetrics.NewCollector(cfg.StateDir, hostmetrics.CollectorDeps{}),
+		backupstatus.NewReader(cfg.StateDir, backupstatus.ReaderDeps{}),
 		cfg.Version,
 		cfg.BuildCommit,
 		cfg.Env,

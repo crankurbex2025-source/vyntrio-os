@@ -25,10 +25,14 @@ Session-Rollen mit `system:health` (Owner, Operator, Read-only).
 - Explizite `Unavailable`-Darstellung pro Metrik; kein Polling, kein Refresh-Control, keine Charts
 - Load average ist nicht CPU-Auslastung; keine Prozentanzeige
 
-**Explizit zukünftig (nicht in 8.1/8.3):**
+**Enthalten in 8.5:**
+- Read-only lokaler Backup-Status: `never_run`, `succeeded`, `failed`, `unavailable`
+- Keine Backup-/Restore-Aktionen, keine Artefaktdetails, kein Verlauf
+
+**Explizit zukünftig (nicht in 8.1/8.3/8.5):**
 - CPU-Auslastung in Prozent, 5m/15m-Load, Temperatur
 - Netzwerk-Metriken
-- Zusätzliche Filesystem-/Mount-IDs, Backup-Status und Restore-Aktionen
+- Zusätzliche Filesystem-/Mount-IDs, Backup-Aktionen und Restore-Aktionen
 - Warnungen, Alerts, Management-Aktionen
 - WebSocket-Live-Streams und Polling
 - Modul-Navigation / Router-Framework

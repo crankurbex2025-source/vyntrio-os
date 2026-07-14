@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 )
 
 // Options configures a backup run.
@@ -34,6 +36,7 @@ type Runner struct {
 	VersionFetcher     VersionFetcher
 	MigrationReader    MigrationReader
 	Clock              Clock
+	StatusPublisher    RunStatusPublisher
 	PrepareDestination func(string) error
 	Options            Options
 	Stdout             io.Writer
@@ -55,9 +58,16 @@ func (r *Runner) Run(ctx context.Context) (Result, error) {
 	releaseMeta, _ := r.fetchReleaseMetadata(ctx)
 
 	stopped := false
+	attempted := false
+	publishFailure := ""
 	defer func() {
 		if stopped {
-			r.recoverService(ctx, opts)
+			if recoveryClass := r.recoverService(ctx, opts); recoveryClass != "" {
+				publishFailure = recoveryClass
+			}
+		}
+		if attempted && publishFailure != "" {
+			r.recordAttemptedFailure(ctx, opts.StateRoot, r.clock().Now(), publishFailure)
 		}
 	}()
 
@@ -70,9 +80,11 @@ func (r *Runner) Run(ctx context.Context) (Result, error) {
 	if err != nil || !inactive {
 		return Result{}, ErrServiceInactiveUnknown
 	}
+	attempted = true
 
 	sources, err := SelectSourceMembers(opts.StateRoot, opts.ConfigPath)
 	if err != nil {
+		publishFailure = FailureClassFromError(err)
 		return Result{}, err
 	}
 
@@ -82,6 +94,7 @@ func (r *Runner) Run(ctx context.Context) (Result, error) {
 	}
 
 	if err := r.prepareDestination(opts.DestinationDir); err != nil {
+		publishFailure = FailureClassFromError(err)
 		return Result{}, err
 	}
 
@@ -91,26 +104,32 @@ func (r *Runner) Run(ctx context.Context) (Result, error) {
 	tempPath := tempArtifactPath(opts.DestinationDir, timestamp)
 
 	if _, err := os.Lstat(finalPath); err == nil {
+		publishFailure = backupstatus.FailureArtifact
 		return Result{}, ErrArtifactCollision
 	} else if !os.IsNotExist(err) {
+		publishFailure = backupstatus.FailureArtifact
 		return Result{}, fmt.Errorf("%w: artifact path inaccessible", ErrArtifactFailed)
 	}
 
 	manifest, err := BuildArchive(tempPath, createdAt, releaseMeta, sources)
 	if err != nil {
 		_ = os.Remove(tempPath)
+		publishFailure = FailureClassFromError(err)
 		return Result{}, err
 	}
 
 	if err := os.Rename(tempPath, finalPath); err != nil {
 		_ = os.Remove(tempPath)
+		publishFailure = backupstatus.FailureArtifact
 		return Result{}, fmt.Errorf("%w: publish artifact", ErrArtifactFailed)
 	}
 	if err := finalizeArtifactMode(finalPath); err != nil {
+		publishFailure = backupstatus.FailureArtifact
 		return Result{}, fmt.Errorf("%w: set artifact permissions", ErrArtifactFailed)
 	}
 
 	if err := r.Service.Start(ctx); err != nil {
+		publishFailure = backupstatus.FailureRestart
 		r.writeFailure(FailureRestart, finalPath)
 		return Result{}, ErrServiceStartFailed
 	}
@@ -118,18 +137,26 @@ func (r *Runner) Run(ctx context.Context) (Result, error) {
 
 	active, err = r.Service.IsActive(ctx)
 	if err != nil || !active {
+		publishFailure = backupstatus.FailureRestart
 		r.writeFailure(FailureRestart, finalPath)
 		return Result{}, ErrServiceStartFailed
 	}
 	if err := r.Health.Probe(ctx); err != nil {
 		category := FailureHealth
+		publishFailure = backupstatus.FailureHealth
 		exitErr := ErrHealthProbeFailed
 		if errors.Is(err, ErrReadinessProbeFailed) {
 			category = FailureReadiness
+			publishFailure = backupstatus.FailureReadiness
 			exitErr = ErrReadinessProbeFailed
 		}
 		r.writeFailure(category, finalPath)
 		return Result{}, exitErr
+	}
+
+	completedAt := clock.Now().UTC()
+	if err := r.publishSucceeded(ctx, opts.StateRoot, completedAt); err != nil {
+		return Result{}, ErrStatusPublishFailed
 	}
 
 	r.writeSuccess(finalPath, len(manifest.Members))
@@ -139,19 +166,48 @@ func (r *Runner) Run(ctx context.Context) (Result, error) {
 	}, nil
 }
 
-func (r *Runner) recoverService(ctx context.Context, opts Options) {
+func (r *Runner) recoverService(ctx context.Context, opts Options) string {
 	if err := r.Service.Start(ctx); err != nil {
 		r.writeFailure(FailureRestart, "")
-		return
+		return backupstatus.FailureRestart
 	}
 	active, err := r.Service.IsActive(ctx)
 	if err != nil || !active {
 		r.writeFailure(FailureRestart, "")
-		return
+		return backupstatus.FailureRestart
 	}
 	if err := r.Health.Probe(ctx); err != nil {
+		if errors.Is(err, ErrReadinessProbeFailed) {
+			r.writeFailure(FailureReadiness, "")
+			return backupstatus.FailureReadiness
+		}
 		r.writeFailure(FailureHealth, "")
+		return backupstatus.FailureHealth
 	}
+	return ""
+}
+
+func (r *Runner) recordAttemptedFailure(ctx context.Context, stateRoot string, completedAt time.Time, failureClass string) {
+	publisher := r.statusPublisher()
+	if publisher == nil {
+		return
+	}
+	_ = publisher.PublishFailed(ctx, stateRoot, completedAt, failureClass)
+}
+
+func (r *Runner) publishSucceeded(ctx context.Context, stateRoot string, completedAt time.Time) error {
+	publisher := r.statusPublisher()
+	if publisher == nil {
+		return nil
+	}
+	return publisher.PublishSucceeded(ctx, stateRoot, completedAt)
+}
+
+func (r *Runner) statusPublisher() RunStatusPublisher {
+	if r.StatusPublisher != nil {
+		return r.StatusPublisher
+	}
+	return DefaultRunStatusPublisher()
 }
 
 func (r *Runner) fetchReleaseMetadata(ctx context.Context) (ReleaseMetadata, error) {

@@ -46,6 +46,10 @@ describe("OverviewShell", () => {
       ],
     },
     collected_at: "2026-07-14T12:00:00.000000000Z",
+    backup: {
+      status: "never_run",
+      ever_succeeded: false,
+    },
   };
 
   function renderShell(overrides: Partial<ComponentProps<typeof OverviewShell>> = {}) {
@@ -74,7 +78,18 @@ describe("OverviewShell", () => {
     expect(screen.getByText(/1-minute load 0.42/)).toBeInTheDocument();
     expect(screen.getByText(/4 GB used/)).toBeInTheDocument();
     expect(screen.getByText(/State storage/)).toBeInTheDocument();
+    expect(screen.getByText("No backup recorded")).toBeInTheDocument();
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
+  });
+
+  it("renders unavailable backup status explicitly", () => {
+    renderShell({
+      overview: {
+        ...overview,
+        backup: { status: "unavailable" },
+      },
+    });
+    expect(screen.getByText("Backup status could not be read.")).toBeInTheDocument();
   });
 
   it("renders unavailable host metrics explicitly", () => {

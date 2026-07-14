@@ -8,6 +8,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/domain/setting"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
@@ -23,15 +24,21 @@ type HostMetricsCollector interface {
 	Collect(ctx context.Context) hostmetrics.Host
 }
 
+// BackupStatusLoader reads the sanitized backup status read model.
+type BackupStatusLoader interface {
+	Read(ctx context.Context) backupstatus.Backup
+}
+
 // Loader assembles the authenticated overview response.
 type Loader struct {
-	repo        appsettings.Repository
-	readiness   ReadinessChecker
-	hostMetrics HostMetricsCollector
-	version     string
-	commit      string
-	environment string
-	now         func() time.Time
+	repo         appsettings.Repository
+	readiness    ReadinessChecker
+	hostMetrics  HostMetricsCollector
+	backupStatus BackupStatusLoader
+	version      string
+	commit       string
+	environment  string
+	now          func() time.Time
 }
 
 // NewLoader creates an overview loader.
@@ -39,16 +46,18 @@ func NewLoader(
 	repo appsettings.Repository,
 	readiness ReadinessChecker,
 	hostMetrics HostMetricsCollector,
+	backupStatus BackupStatusLoader,
 	version, commit, environment string,
 ) Loader {
 	return Loader{
-		repo:        repo,
-		readiness:   readiness,
-		hostMetrics: hostMetrics,
-		version:     version,
-		commit:      commit,
-		environment: environment,
-		now:         time.Now,
+		repo:         repo,
+		readiness:    readiness,
+		hostMetrics:  hostMetrics,
+		backupStatus: backupStatus,
+		version:      version,
+		commit:       commit,
+		environment:  environment,
+		now:          time.Now,
 	}
 }
 
@@ -80,6 +89,7 @@ func (l Loader) Load(ctx context.Context) (Response, error) {
 		},
 		Readiness:   readiness,
 		Host:        l.hostMetrics.Collect(ctx),
+		Backup:      l.backupStatus.Read(ctx),
 		CollectedAt: collectedAt,
 	}, nil
 }
