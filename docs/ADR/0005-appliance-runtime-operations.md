@@ -295,12 +295,14 @@ contents in logs or operator-visible success output.
    (including copy/manifest/checksum failures before publication).
 7. Prove restart success before reporting backup completion: service **active**,
    local loopback `http://127.0.0.1:<listen_port>/healthz` returns success, and
-   local loopback `/readyz` returns success. This is a **future operational
-   contract only**; no backup command or runbook exists today.
-8. A future implementation must **not** report backup success unless steps 6–7
-   succeed. If restart or either local probe fails, report backup **failure**
-   clearly, preserve a completed artifact only according to the future operator
-   contract, and do **not** claim the appliance returned to service.
+   local loopback `/readyz` returns success. **Implemented (Slice 7.9):**
+   `vyntrio-backup` performs bounded local post-restart verification (50 ms
+   initial delay, 100 ms retry interval, 15 s deadline). Verified in the approved
+   production smoke test (Slice 7.9).
+8. The backup command must **not** report success unless steps 6–7 succeed. If
+   restart or either local probe fails, report backup **failure** clearly,
+   preserve a completed artifact only according to the operator contract, and
+   do **not** claim the appliance returned to service.
 9. On copy/manifest/checksum failure **before** publication: remove temporary
    files, attempt service restart per steps 6–7, exit non-zero if restart or
    local probes fail, and do not leave a restore candidate behind.
@@ -369,6 +371,11 @@ the audit schema without widening this slice.
 ### H. Restore contract (Slice 7.8 — approved for future implementation)
 
 **Status:** architecture contract only. No restore command exists today.
+
+Detailed fail-closed restore **safety requirements** (preflight gates, lifecycle
+ordering, deferrals, and mandatory pre-implementation test categories) are in
+`docs/ops/restore-safety-contract.md`. That document elaborates section H; it does
+not replace this ADR as the architecture authority.
 
 #### H.1 Access model
 
@@ -455,7 +462,8 @@ key management in v1.
 
 The following remain **out of scope** until dedicated future slices:
 
-- backup implementation (script/binary command);
+- restore CLI implementation (see section H and
+  `docs/ops/restore-safety-contract.md`);
 - systemd backup timer or scheduling;
 - retention/pruning;
 - compression;
@@ -545,5 +553,6 @@ The following remain **out of scope** until dedicated future slices:
 - `docs/ADR/0003-sqlite-migrations.md`
 - `docs/ADR/0004-identity-and-access.md`
 - `docs/02_ARCHITECTURE.md`, `docs/17_SECURITY.md`, `docs/19_RELEASE.md`
+- `docs/ops/restore-safety-contract.md` (Slice 7.11 restore safety elaboration)
 - `internal/platform/config/config.go`, `cmd/api/main.go`,
   `internal/infrastructure/persistence/sqlite/sqlite.go`

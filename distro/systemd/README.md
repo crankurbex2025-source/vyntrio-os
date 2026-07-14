@@ -106,15 +106,17 @@ Root operators run **`vyntrio-backup`** on the appliance host. The command:
   finite local retry policy after restart (no public HTTPS check);
 
 Restore remains **not implemented**. See `docs/ADR/0005-appliance-runtime-operations.md`
-section G.
+section G and `docs/ops/restore-safety-contract.md`.
 
 ## Future offline restore (not implemented)
 
-Block 7 Slice 7.8 defines the restore architecture contract. Current deployment
-has **no** restore command or timer.
+Block 7 Slice 7.8 defines the restore architecture contract (ADR-0005 section H).
+Slice 7.11 adds the fail-closed restore safety contract. Current deployment has
+**no** restore command or timer.
 
 When restore is implemented, it will be a **root-operator, offline** action
-governed by a separately approved restore contract and command. No restore
-operator command exists in the current deployment.
+governed by the approved restore safety contract and a future restore command.
+No restore operator command exists in the current deployment.
 
-See `docs/ADR/0005-appliance-runtime-operations.md` sections G and H.
+See `docs/ADR/0005-appliance-runtime-operations.md` sections G and H and
+`docs/ops/restore-safety-contract.md`.

@@ -88,5 +88,6 @@ Ziel `/var/lib/vyntrio/backups/`, Post-Restart-Loopback-Readiness).
 **Beschlossen, noch nicht implementiert:** Restore-CLI. Kein API/UI-Zugriff,
 keine Verschlüsselung/Retention/Cloud/Timer in v1. Konfigurationskopie als
 separater Manifest-Member; zukünftige Geheimnisse in `config.toml` erfordern
-expliziten Operator-Schutz. Autoritativ: `docs/ADR/0005-appliance-runtime-operations.md`
-(Abschnitte G, H).
+expliziten Operator-Schutz. Fail-closed Restore-Sicherheitsanforderungen:
+`docs/ops/restore-safety-contract.md` (Slice 7.11). Autoritativ:
+`docs/ADR/0005-appliance-runtime-operations.md` (Abschnitte G, H).
