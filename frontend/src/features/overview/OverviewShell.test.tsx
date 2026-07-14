@@ -22,6 +22,29 @@ describe("OverviewShell", () => {
       status: "ready",
       database: "ok",
     },
+    host: {
+      cpu: {
+        status: "ok",
+        logical_cores: 4,
+        load_1m: 0.42,
+      },
+      memory: {
+        status: "ok",
+        total_bytes: 8589934592,
+        available_bytes: 4294967296,
+        used_bytes: 4294967296,
+      },
+      filesystems: [
+        {
+          id: "state",
+          status: "ok",
+          total_bytes: 107374182400,
+          available_bytes: 53687091200,
+          used_bytes: 53687091200,
+          fs_type: "ext4",
+        },
+      ],
+    },
     collected_at: "2026-07-14T12:00:00.000000000Z",
   };
 
@@ -43,33 +66,33 @@ describe("OverviewShell", () => {
     return { onOpenSettings, onSignOut };
   }
 
-  it("renders ready overview information", () => {
+  it("renders host metric cards when metrics are available", () => {
     renderShell();
 
-    expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
-    expect(screen.getByText("Ready")).toBeInTheDocument();
-    expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
-    expect(screen.getByText("abc123")).toBeInTheDocument();
-    expect(screen.getByText("development")).toBeInTheDocument();
+    expect(screen.getByText("Host metrics")).toBeInTheDocument();
+    expect(screen.getByText("4 cores")).toBeInTheDocument();
+    expect(screen.getByText(/1-minute load 0.42/)).toBeInTheDocument();
+    expect(screen.getByText(/4 GB used/)).toBeInTheDocument();
+    expect(screen.getByText(/State storage/)).toBeInTheDocument();
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
   });
 
-  it("renders not_ready state without claiming full appliance health", () => {
+  it("renders unavailable host metrics explicitly", () => {
     renderShell({
       overview: {
         ...overview,
-        readiness: {
-          status: "not_ready",
-          database: "error",
+        host: {
+          cpu: { status: "unavailable" },
+          memory: { status: "unavailable" },
+          filesystems: [{ id: "state", status: "unavailable" }],
         },
       },
     });
 
-    expect(screen.getByText("Not ready")).toBeInTheDocument();
-    expect(screen.getByText("Database unavailable")).toBeInTheDocument();
-    expect(
-      screen.getByText(/does not perform recovery actions/i)
-    ).toBeInTheDocument();
+    expect(screen.getAllByText("Unavailable").length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByText("CPU metrics could not be collected")).toBeInTheDocument();
+    expect(screen.getByText("Memory metrics could not be collected")).toBeInTheDocument();
+    expect(screen.getByText("Storage metrics could not be collected")).toBeInTheDocument();
   });
 
   it("invokes settings and sign out actions", () => {

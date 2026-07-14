@@ -8,6 +8,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/domain/setting"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
 const serviceStatusRunning = "running"
@@ -17,10 +18,16 @@ type ReadinessChecker interface {
 	Check(ctx context.Context) health.Result
 }
 
+// HostMetricsCollector assembles read-only host metrics for the overview.
+type HostMetricsCollector interface {
+	Collect(ctx context.Context) hostmetrics.Host
+}
+
 // Loader assembles the authenticated overview response.
 type Loader struct {
 	repo        appsettings.Repository
 	readiness   ReadinessChecker
+	hostMetrics HostMetricsCollector
 	version     string
 	commit      string
 	environment string
@@ -31,11 +38,13 @@ type Loader struct {
 func NewLoader(
 	repo appsettings.Repository,
 	readiness ReadinessChecker,
+	hostMetrics HostMetricsCollector,
 	version, commit, environment string,
 ) Loader {
 	return Loader{
 		repo:        repo,
 		readiness:   readiness,
+		hostMetrics: hostMetrics,
 		version:     version,
 		commit:      commit,
 		environment: environment,
@@ -70,6 +79,7 @@ func (l Loader) Load(ctx context.Context) (Response, error) {
 			Status: serviceStatusRunning,
 		},
 		Readiness:   readiness,
+		Host:        l.hostMetrics.Collect(ctx),
 		CollectedAt: collectedAt,
 	}, nil
 }

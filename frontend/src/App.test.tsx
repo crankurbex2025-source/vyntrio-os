@@ -45,6 +45,29 @@ describe("App", () => {
         database: "ok",
       },
       collected_at: "2026-07-14T12:00:00.000000000Z",
+      host: {
+        cpu: {
+          status: "ok",
+          logical_cores: 4,
+          load_1m: 0.42,
+        },
+        memory: {
+          status: "ok",
+          total_bytes: 8589934592,
+          available_bytes: 4294967296,
+          used_bytes: 4294967296,
+        },
+        filesystems: [
+          {
+            id: "state",
+            status: "ok",
+            total_bytes: 107374182400,
+            available_bytes: 53687091200,
+            used_bytes: 53687091200,
+            fs_type: "ext4",
+          },
+        ],
+      },
     };
   }
 
@@ -302,8 +325,12 @@ describe("App", () => {
           api: { environment: "development" },
           service: { status: "running" },
           readiness: { status: "ready", database: "ok" },
+          host: {
+            cpu: { status: "ok", logical_cores: 1, load_1m: 0.1 },
+            memory: { status: "ok", total_bytes: 1, available_bytes: 0, used_bytes: 2 },
+            filesystems: [{ id: "state", status: "ok", total_bytes: 1, available_bytes: 0, used_bytes: 1 }],
+          },
           collected_at: "2026-07-14T12:00:00.000000000Z",
-          extra: "bad",
         },
       },
     ];

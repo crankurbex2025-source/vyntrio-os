@@ -23,6 +23,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/ui"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
 func main() {
@@ -101,7 +102,14 @@ func main() {
 	sessionResolver := appidentity.NewSessionResolver(sessionAuthRepo)
 	authorizer := ports.NewRBACAuthorizer()
 	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, cfg.Version, cfg.Env)
-	overviewLoader := appoverview.NewLoader(settingsRepo, readiness, cfg.Version, cfg.BuildCommit, cfg.Env)
+	overviewLoader := appoverview.NewLoader(
+		settingsRepo,
+		readiness,
+		hostmetrics.NewCollector(cfg.StateDir, hostmetrics.CollectorDeps{}),
+		cfg.Version,
+		cfg.BuildCommit,
+		cfg.Env,
+	)
 	overviewHandler := handlers.NewOverview(handlers.OverviewDeps{Loader: overviewLoader})
 	settingsHandler := handlers.NewSettings(handlers.SettingsDeps{Loader: settingsLoader})
 	instanceDisplayNameRepo := sqlite.NewInstanceDisplayNameRepository(store.DB())

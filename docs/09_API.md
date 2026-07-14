@@ -57,10 +57,33 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
   - `api`: `{ "environment" }`
   - `service`: `{ "status" }` — `"running"` nur während der Handler ausgeführt wird
   - `readiness`: `{ "status", "database" }` — gleiche Semantik wie `/readyz` (`ready`/`not_ready`, `ok`/`error`)
+  - `host`: CPU-, Speicher- und State-Filesystem-Metriken (Slice 8.3; siehe unten)
   - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
 - **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
 - **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
 - Keine Secrets, Pfade, Config-Inhalte, Backup-Details, Session-Werte oder Rohfehler in der Antwort.
+
+**Zusätzliches Feld `host` (Slice 8.3):**
+
+```json
+"host": {
+  "cpu": { "status": "ok", "logical_cores": 4, "load_1m": 0.42 },
+  "memory": { "status": "ok", "total_bytes": 8589934592, "available_bytes": 4294967296, "used_bytes": 4294967296 },
+  "filesystems": [{
+    "id": "state",
+    "status": "ok",
+    "total_bytes": 107374182400,
+    "available_bytes": 53687091200,
+    "used_bytes": 53687091200,
+    "fs_type": "ext4"
+  }]
+}
+```
+
+- **`host.cpu`:** `logical_cores` (positive Integer), `load_1m` (1-Minuten-Load, nicht CPU-%); bei Fehler nur `"status": "unavailable"`.
+- **`host.memory`:** `total_bytes`, `available_bytes`, `used_bytes` (used = total − available); bei Fehler nur `"status": "unavailable"`.
+- **`host.filesystems`:** genau ein Eintrag mit `"id": "state"` (validierter `state_dir`); optional `fs_type` aus fester Vokabularliste (`ext4`, `xfs`, `btrfs`, `tmpfs`, `other`); nie Pfad, Device oder Mount-Quelle.
+- Host-Metrik-Fehler degradieren **nur** die betroffene Sektion; Overview bleibt **200**. Host-Metriken behaupten keine Appliance-Gesundheit.
 
 ### PATCH `/api/v1/settings/instance`
 

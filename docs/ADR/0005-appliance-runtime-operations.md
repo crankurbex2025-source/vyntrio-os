@@ -175,6 +175,19 @@ Intended v1 layout:
   distribution-tested hardening slice proves compatibility with SQLite,
   networking, DNS, and any future TLS/proxy requirements.
 
+#### E.1 Overview host metrics (Slice 8.3, implemented)
+
+- The API collects read-only host metrics **in-process** for
+  `GET /api/v1/overview` only: CPU logical core count and 1-minute load from
+  bounded `/proc/loadavg` parsing; memory totals from bounded `/proc/meminfo`
+  (`MemTotal`, `MemAvailable`); filesystem capacity via `statfs` **only** on the
+  startup-validated `state_dir` (`/var/lib/vyntrio` in production).
+- Expose only stable IDs (`filesystems[].id = "state"`), never mount paths,
+  devices, UUIDs, backup directories, or mount enumeration.
+- Per-metric collector failure sets that section to `unavailable` and omits
+  numeric fields; overview remains HTTP **200**. No privileged helper, no sandbox
+  relaxation, no `/proc/stat`, no network interface reads, no host inventory API.
+
 ### F. Startup, liveness, readiness and shutdown
 
 - **Fail-closed startup (implemented):** invalid runtime configuration,

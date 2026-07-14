@@ -1,3 +1,33 @@
+export type MetricStatus = "ok" | "unavailable";
+
+export type HostCpuDto = {
+  status: MetricStatus;
+  logical_cores?: number;
+  load_1m?: number;
+};
+
+export type HostMemoryDto = {
+  status: MetricStatus;
+  total_bytes?: number;
+  available_bytes?: number;
+  used_bytes?: number;
+};
+
+export type HostFilesystemDto = {
+  id: "state";
+  status: MetricStatus;
+  total_bytes?: number;
+  available_bytes?: number;
+  used_bytes?: number;
+  fs_type?: "ext4" | "xfs" | "btrfs" | "tmpfs" | "other";
+};
+
+export type HostDto = {
+  cpu: HostCpuDto;
+  memory: HostMemoryDto;
+  filesystems: [HostFilesystemDto];
+};
+
 export type OverviewDto = {
   instance: {
     name: string;
@@ -14,8 +44,11 @@ export type OverviewDto = {
     status: "ready" | "not_ready";
     database: "ok" | "error";
   };
+  host: HostDto;
   collected_at: string;
 };
+
+const FS_TYPES = new Set(["ext4", "xfs", "btrfs", "tmpfs", "other"]);
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -30,10 +63,146 @@ function hasExactKeys(record: Record<string, unknown>, keys: string[]): boolean 
   return expected.every((key, index) => key === actual[index]);
 }
 
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
+function isNonNegativeNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function parseMetricStatus(value: unknown): MetricStatus | null {
+  if (value === "ok" || value === "unavailable") {
+    return value;
+  }
+  return null;
+}
+
+function parseHostCpu(value: unknown): HostCpuDto | null {
+  if (!isPlainRecord(value) || !("status" in value)) {
+    return null;
+  }
+  const status = parseMetricStatus(value.status);
+  if (!status) {
+    return null;
+  }
+  if (status === "unavailable") {
+    return hasExactKeys(value, ["status"]) ? { status } : null;
+  }
+  if (
+    !hasExactKeys(value, ["status", "logical_cores", "load_1m"]) ||
+    !isPositiveInteger(value.logical_cores) ||
+    !isNonNegativeNumber(value.load_1m)
+  ) {
+    return null;
+  }
+  return {
+    status,
+    logical_cores: value.logical_cores,
+    load_1m: value.load_1m,
+  };
+}
+
+function parseHostMemory(value: unknown): HostMemoryDto | null {
+  if (!isPlainRecord(value) || !("status" in value)) {
+    return null;
+  }
+  const status = parseMetricStatus(value.status);
+  if (!status) {
+    return null;
+  }
+  if (status === "unavailable") {
+    return hasExactKeys(value, ["status"]) ? { status } : null;
+  }
+  if (
+    !hasExactKeys(value, ["status", "total_bytes", "available_bytes", "used_bytes"]) ||
+    !isPositiveInteger(value.total_bytes) ||
+    !isNonNegativeInteger(value.available_bytes) ||
+    !isNonNegativeInteger(value.used_bytes) ||
+    value.available_bytes > value.total_bytes ||
+    value.used_bytes !== value.total_bytes - value.available_bytes
+  ) {
+    return null;
+  }
+  return {
+    status,
+    total_bytes: value.total_bytes,
+    available_bytes: value.available_bytes,
+    used_bytes: value.used_bytes,
+  };
+}
+
+function parseHostFilesystem(value: unknown): HostFilesystemDto | null {
+  if (!isPlainRecord(value) || !("status" in value) || value.id !== "state") {
+    return null;
+  }
+  const status = parseMetricStatus(value.status);
+  if (!status) {
+    return null;
+  }
+  if (status === "unavailable") {
+    return hasExactKeys(value, ["id", "status"]) ? { id: "state", status } : null;
+  }
+  const keys = ["id", "status", "total_bytes", "available_bytes", "used_bytes"];
+  const hasFsType = "fs_type" in value;
+  if (hasFsType) {
+    keys.push("fs_type");
+  }
+  if (
+    !hasExactKeys(value, keys) ||
+    !isPositiveInteger(value.total_bytes) ||
+    !isNonNegativeInteger(value.available_bytes) ||
+    !isNonNegativeInteger(value.used_bytes) ||
+    value.available_bytes > value.total_bytes ||
+    value.used_bytes !== value.total_bytes - value.available_bytes
+  ) {
+    return null;
+  }
+  let fsType: HostFilesystemDto["fs_type"] | undefined;
+  if (hasFsType) {
+    if (typeof value.fs_type !== "string" || !FS_TYPES.has(value.fs_type)) {
+      return null;
+    }
+    fsType = value.fs_type as HostFilesystemDto["fs_type"];
+  }
+  return {
+    id: "state",
+    status,
+    total_bytes: value.total_bytes,
+    available_bytes: value.available_bytes,
+    used_bytes: value.used_bytes,
+    ...(fsType ? { fs_type: fsType } : {}),
+  };
+}
+
+function parseHost(value: unknown): HostDto | null {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["cpu", "memory", "filesystems"])) {
+    return null;
+  }
+  const cpu = parseHostCpu(value.cpu);
+  const memory = parseHostMemory(value.memory);
+  if (!cpu || !memory || !Array.isArray(value.filesystems) || value.filesystems.length !== 1) {
+    return null;
+  }
+  const filesystem = parseHostFilesystem(value.filesystems[0]);
+  if (!filesystem) {
+    return null;
+  }
+  return {
+    cpu,
+    memory,
+    filesystems: [filesystem],
+  };
+}
+
 export function parseOverviewDto(payload: unknown): OverviewDto | null {
   if (
     !isPlainRecord(payload) ||
-    !hasExactKeys(payload, ["instance", "api", "service", "readiness", "collected_at"])
+    !hasExactKeys(payload, ["instance", "api", "service", "readiness", "host", "collected_at"])
   ) {
     return null;
   }
@@ -42,6 +211,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
   const api = payload.api;
   const service = payload.service;
   const readiness = payload.readiness;
+  const host = parseHost(payload.host);
   const collectedAt = payload.collected_at;
 
   if (!isPlainRecord(instance) || !hasExactKeys(instance, ["name", "version", "commit"])) {
@@ -54,6 +224,9 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     return null;
   }
   if (!isPlainRecord(readiness) || !hasExactKeys(readiness, ["status", "database"])) {
+    return null;
+  }
+  if (!host) {
     return null;
   }
 
@@ -86,6 +259,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
       status: readiness.status,
       database: readiness.database,
     },
+    host,
     collected_at: collectedAt,
   };
 }
@@ -99,4 +273,21 @@ export function formatOverviewCollectedAt(value: string): string {
     dateStyle: "medium",
     timeStyle: "medium",
   }).format(parsed);
+}
+
+export function formatMetricBytes(value: number): string {
+  if (!Number.isFinite(value) || value < 0) {
+    return "Unavailable";
+  }
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let size = value;
+  let unitIndex = 0;
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+  const precision =
+    size >= 10 || (Number.isInteger(size) && unitIndex > 0) ? 0 : size >= 1 ? 1 : 0;
+  const formatted = precision === 0 ? Math.round(size).toString() : size.toFixed(precision);
+  return `${formatted} ${units[unitIndex]}`;
 }

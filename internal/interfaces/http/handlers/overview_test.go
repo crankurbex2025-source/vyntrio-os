@@ -11,6 +11,7 @@ import (
 
 	appoverview "github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
 const (
@@ -193,6 +194,128 @@ func TestOverviewDatabaseFailureReturns200NotReady(t *testing.T) {
 	}
 }
 
+func TestOverviewDegradedHostMetricsReturn200WithUnavailableSections(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{
+		hostMetrics: unavailableHostMetricsCollector{},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s, want 200", rec.Code, rec.Body.String())
+	}
+
+	assertOverviewCacheControlNoStore(t, rec)
+	assertNoSensitiveOverviewFields(t, rec.Body.Bytes())
+	assertDegradedHostMetricsJSON(t, rec.Body.Bytes())
+
+	got := decodeOverviewResponse(t, rec.Body.Bytes())
+	if got.Readiness.Status != "ready" || got.Readiness.Database != "ok" {
+		t.Fatalf("readiness = %+v, want ready/ok", got.Readiness)
+	}
+	if got.Service.Status != "running" {
+		t.Fatalf("service.status = %q, want running", got.Service.Status)
+	}
+}
+
+type unavailableHostMetricsCollector struct{}
+
+func (unavailableHostMetricsCollector) Collect(context.Context) hostmetrics.Host {
+	return hostmetrics.Host{
+		CPU:    hostmetrics.CPU{Status: hostmetrics.StatusUnavailable},
+		Memory: hostmetrics.Memory{Status: hostmetrics.StatusUnavailable},
+		Filesystems: []hostmetrics.Filesystem{{
+			ID:     hostmetrics.StateFilesystemID,
+			Status: hostmetrics.StatusUnavailable,
+		}},
+	}
+}
+
+func assertDegradedHostMetricsJSON(t *testing.T, body []byte) {
+	t.Helper()
+
+	var payload map[string]json.RawMessage
+	if err := json.Unmarshal(body, &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error: %v body=%s", err, body)
+	}
+	hostRaw, ok := payload["host"]
+	if !ok {
+		t.Fatalf("missing host in %s", body)
+	}
+
+	var host map[string]json.RawMessage
+	if err := json.Unmarshal(hostRaw, &host); err != nil {
+		t.Fatalf("json.Unmarshal(host) error: %v", err)
+	}
+
+	assertUnavailableMetricSection(t, "cpu", host["cpu"], nil)
+	assertUnavailableMetricSection(t, "memory", host["memory"], nil)
+
+	var filesystems []json.RawMessage
+	if err := json.Unmarshal(host["filesystems"], &filesystems); err != nil {
+		t.Fatalf("json.Unmarshal(filesystems) error: %v", err)
+	}
+	if len(filesystems) != 1 {
+		t.Fatalf("filesystems length = %d, want 1", len(filesystems))
+	}
+	assertUnavailableMetricSection(t, "filesystems[0]", filesystems[0], map[string]struct{}{"id": {}})
+
+	bodyLower := strings.ToLower(string(body))
+	for _, forbidden := range []string{
+		`"logical_cores":0`, `"logical_cores":null`,
+		`"load_1m":0`, `"load_1m":null`,
+		`"total_bytes":0`, `"total_bytes":null`,
+		`"available_bytes":0`, `"available_bytes":null`,
+		`"used_bytes":0`, `"used_bytes":null`,
+	} {
+		if strings.Contains(bodyLower, forbidden) {
+			t.Fatalf("response contained forbidden numeric host field %q: %s", forbidden, body)
+		}
+	}
+}
+
+func assertUnavailableMetricSection(
+	t *testing.T,
+	label string,
+	raw json.RawMessage,
+	allowedExtraKeys map[string]struct{},
+) {
+	t.Helper()
+
+	var section map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &section); err != nil {
+		t.Fatalf("json.Unmarshal(%s) error: %v", label, err)
+	}
+	if len(section) != 1+len(allowedExtraKeys) {
+		t.Fatalf("%s keys = %v, want status-only section", label, sectionKeys(section))
+	}
+	if string(section["status"]) != `"unavailable"` {
+		t.Fatalf("%s status = %s, want unavailable", label, section["status"])
+	}
+	for key := range section {
+		if key == "status" {
+			continue
+		}
+		if _, ok := allowedExtraKeys[key]; !ok {
+			t.Fatalf("%s contained unexpected key %q", label, key)
+		}
+	}
+	for key := range allowedExtraKeys {
+		if _, ok := section[key]; !ok {
+			t.Fatalf("%s missing required key %q", label, key)
+		}
+	}
+}
+
+func sectionKeys(section map[string]json.RawMessage) []string {
+	keys := make([]string, 0, len(section))
+	for key := range section {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
 func TestOverviewPreservesHealthEndpointBehavior(t *testing.T) {
 	router := newSettingsRouter(t, settingsRouterOpts{})
 
@@ -235,6 +358,15 @@ func assertOverviewResponseShape(t *testing.T, rec *httptest.ResponseRecorder) {
 	}
 	if got.CollectedAt == "" {
 		t.Fatal("missing collected_at")
+	}
+	if got.Host.CPU.Status == "" {
+		t.Fatalf("host.cpu = %+v", got.Host.CPU)
+	}
+	if got.Host.Memory.Status == "" {
+		t.Fatalf("host.memory = %+v", got.Host.Memory)
+	}
+	if len(got.Host.Filesystems) != 1 || got.Host.Filesystems[0].ID != "state" {
+		t.Fatalf("host.filesystems = %+v", got.Host.Filesystems)
 	}
 }
 

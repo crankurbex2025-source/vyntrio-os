@@ -10,6 +10,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/domain/setting"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
 type mockRepository struct {
@@ -33,6 +34,41 @@ func (m *mockRepository) Set(context.Context, setting.Setting) error {
 
 func (m *mockRepository) ListByNamespace(context.Context, string) ([]setting.Setting, error) {
 	return nil, errors.New("not implemented")
+}
+
+type stubHostCollector struct{}
+
+func (stubHostCollector) Collect(context.Context) hostmetrics.Host {
+	load := 0.12
+	cores := 2
+	total := uint64(2048 * 1024)
+	available := uint64(1024 * 1024)
+	used := uint64(1024 * 1024)
+	fsType := "ext4"
+	fsTotal := uint64(1000)
+	fsAvailable := uint64(400)
+	fsUsed := uint64(600)
+	return hostmetrics.Host{
+		CPU: hostmetrics.CPU{
+			Status:       hostmetrics.StatusOK,
+			LogicalCores: &cores,
+			Load1m:       &load,
+		},
+		Memory: hostmetrics.Memory{
+			Status:         hostmetrics.StatusOK,
+			TotalBytes:     &total,
+			AvailableBytes: &available,
+			UsedBytes:      &used,
+		},
+		Filesystems: []hostmetrics.Filesystem{{
+			ID:             hostmetrics.StateFilesystemID,
+			Status:         hostmetrics.StatusOK,
+			TotalBytes:     &fsTotal,
+			AvailableBytes: &fsAvailable,
+			UsedBytes:      &fsUsed,
+			FSType:         &fsType,
+		}},
+	}
 }
 
 type stubReadiness struct {
@@ -71,6 +107,7 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 	loader := overview.NewLoader(
 		repo,
 		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: true}},
+		stubHostCollector{},
 		"0.2.0-dev",
 		"abc123",
 		"development",
@@ -119,6 +156,7 @@ func TestLoaderMapsDatabaseFailureToNotReady(t *testing.T) {
 	loader := overview.NewLoader(
 		repo,
 		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: false}},
+		stubHostCollector{},
 		"0.2.0-dev",
 		"abc123",
 		"development",

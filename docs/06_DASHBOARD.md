@@ -3,7 +3,7 @@
 ## UX-Ziel
 Das Dashboard ist der zentrale Einstiegspunkt für Systemzustand, Administration und operative Aktionen.
 
-## Implementiert (Block 8, Slice 8.1)
+## Implementiert (Block 8)
 
 Die Control-Center-Overview ist die autorisierte Standard-Landing-View für alle
 Session-Rollen mit `system:health` (Owner, Operator, Read-only).
@@ -19,9 +19,16 @@ Session-Rollen mit `system:health` (Owner, Operator, Read-only).
 - UI-Zustände: loading, 401 login, 403 forbidden, 5xx unavailable, ready, not_ready
 - Dark, premium Appliance-Dashboard-Stil (responsive)
 
-**Explizit zukünftig (nicht in 8.1):**
-- CPU, RAM, Temperatur, Disk, Netzwerk-Metriken
-- Backup-Status und Restore-Aktionen
+**Enthalten in 8.3:**
+- Read-only Host-Metrik-Karten: CPU-Kerne + 1-Minuten-Load, Speicher (total/verfügbar/genutzt),
+  State-Filesystem-Kapazität (`id=state` only)
+- Explizite `Unavailable`-Darstellung pro Metrik; kein Polling, kein Refresh-Control, keine Charts
+- Load average ist nicht CPU-Auslastung; keine Prozentanzeige
+
+**Explizit zukünftig (nicht in 8.1/8.3):**
+- CPU-Auslastung in Prozent, 5m/15m-Load, Temperatur
+- Netzwerk-Metriken
+- Zusätzliche Filesystem-/Mount-IDs, Backup-Status und Restore-Aktionen
 - Warnungen, Alerts, Management-Aktionen
 - WebSocket-Live-Streams und Polling
 - Modul-Navigation / Router-Framework

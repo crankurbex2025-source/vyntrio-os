@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -15,8 +16,8 @@ import (
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appidentity "github.com/crankurbex2025-source/vyntrio-os/internal/application/identity"
-	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
 	appoverview "github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
@@ -24,6 +25,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/cookie"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/handlers"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 )
 
 const (
@@ -43,11 +45,12 @@ type settingsRouter struct {
 }
 
 type settingsRouterOpts struct {
-	authorizer    ports.Authorizer
-	resolver      *appidentity.SessionResolver
-	store         *sqlite.Store
-	routerOpts    []httpapi.RouterOption
-	readinessDB   health.DatabaseChecker
+	authorizer  ports.Authorizer
+	resolver    *appidentity.SessionResolver
+	store       *sqlite.Store
+	routerOpts  []httpapi.RouterOption
+	readinessDB health.DatabaseChecker
+	hostMetrics appoverview.HostMetricsCollector
 }
 
 func newSettingsRouter(t *testing.T, opts settingsRouterOpts) settingsRouter {
@@ -82,7 +85,19 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	}
 	readiness := health.NewReadiness(readinessDB)
 	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, settingsTestVersion, settingsTestEnvironment)
-	overviewLoader := appoverview.NewLoader(settingsRepo, readiness, settingsTestVersion, "test-commit", settingsTestEnvironment)
+	stateDir := filepath.Dir(store.Path())
+	hostMetrics := opts.hostMetrics
+	if hostMetrics == nil {
+		hostMetrics = hostmetrics.NewCollector(stateDir, hostmetrics.CollectorDeps{})
+	}
+	overviewLoader := appoverview.NewLoader(
+		settingsRepo,
+		readiness,
+		hostMetrics,
+		settingsTestVersion,
+		"test-commit",
+		settingsTestEnvironment,
+	)
 
 	hasher, err := appidentity.NewPasswordHasher(appidentity.Argon2idConfig{
 		Memory:      4096,

@@ -62,6 +62,12 @@ Session-Bootstrap über Overview statt Owner-only Settings. Owner-Settings bleib
 separat unter `settings:admin:read`/`write`. Keine Host-Metriken, Polling oder
 WebSockets in 8.1.
 
+**Block 8 / Slice 8.3 (implementiert):** Read-only Host-Metriken im Overview-DTO
+(`host.cpu`, `host.memory`, `host.filesystems[id=state]`) via
+`internal/platform/hostmetrics` — direkte in-process `/proc`- und statfs-Sammlung
+nur auf dem validierten `state_dir`; per-Metrik `unavailable`-Degradation in HTTP 200.
+Kein CPU-%, Netzwerk, Backup, Mount-Inventory oder Privilege-Expansion.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

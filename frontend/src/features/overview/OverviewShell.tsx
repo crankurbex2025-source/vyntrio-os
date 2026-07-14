@@ -1,5 +1,5 @@
 import type { OverviewDto } from "./overviewDto";
-import { formatOverviewCollectedAt } from "./overviewDto";
+import { formatMetricBytes, formatOverviewCollectedAt } from "./overviewDto";
 
 type OverviewShellProps = {
   overview: OverviewDto;
@@ -21,6 +21,7 @@ export function OverviewShell({
   onSignOut,
 }: OverviewShellProps) {
   const isReady = overview.readiness.status === "ready" && overview.readiness.database === "ok";
+  const stateFilesystem = overview.host.filesystems[0];
 
   return (
     <div className="dashboard-layout">
@@ -67,6 +68,72 @@ export function OverviewShell({
             <p className="dashboard-card-value">Running</p>
             <p className="dashboard-card-detail">API process is serving this overview</p>
           </article>
+        </section>
+
+        <section className="dashboard-panel">
+          <h2>Host metrics</h2>
+          <p className="dashboard-panel-note">
+            Load average is not CPU utilization. Metrics are a point-in-time snapshot only.
+          </p>
+          <div className="dashboard-status-grid">
+            <article className="dashboard-info-card">
+              <p className="dashboard-card-label">CPU</p>
+              {overview.host.cpu.status === "ok" ? (
+                <>
+                  <p className="dashboard-card-value">{overview.host.cpu.logical_cores} cores</p>
+                  <p className="dashboard-card-detail">
+                    1-minute load {overview.host.cpu.load_1m?.toFixed(2)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="dashboard-card-value">Unavailable</p>
+                  <p className="dashboard-card-detail">CPU metrics could not be collected</p>
+                </>
+              )}
+            </article>
+
+            <article className="dashboard-info-card">
+              <p className="dashboard-card-label">Memory</p>
+              {overview.host.memory.status === "ok" ? (
+                <>
+                  <p className="dashboard-card-value">
+                    {formatMetricBytes(overview.host.memory.used_bytes ?? 0)} used
+                  </p>
+                  <p className="dashboard-card-detail">
+                    {formatMetricBytes(overview.host.memory.available_bytes ?? 0)} available of{" "}
+                    {formatMetricBytes(overview.host.memory.total_bytes ?? 0)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="dashboard-card-value">Unavailable</p>
+                  <p className="dashboard-card-detail">Memory metrics could not be collected</p>
+                </>
+              )}
+            </article>
+
+            <article className="dashboard-info-card">
+              <p className="dashboard-card-label">State storage</p>
+              {stateFilesystem.status === "ok" ? (
+                <>
+                  <p className="dashboard-card-value">
+                    {formatMetricBytes(stateFilesystem.used_bytes ?? 0)} used
+                  </p>
+                  <p className="dashboard-card-detail">
+                    {formatMetricBytes(stateFilesystem.available_bytes ?? 0)} available of{" "}
+                    {formatMetricBytes(stateFilesystem.total_bytes ?? 0)}
+                    {stateFilesystem.fs_type ? ` · ${stateFilesystem.fs_type}` : null}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="dashboard-card-value">Unavailable</p>
+                  <p className="dashboard-card-detail">Storage metrics could not be collected</p>
+                </>
+              )}
+            </article>
+          </div>
         </section>
 
         <section className="dashboard-panel">
