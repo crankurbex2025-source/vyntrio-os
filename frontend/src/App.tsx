@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { LoginScreen } from "./features/auth/LoginScreen";
+import { OverviewShell } from "./features/overview/OverviewShell";
+import { parseOverviewDto, type OverviewDto } from "./features/overview/overviewDto";
 import { SettingsShell } from "./features/settings/SettingsShell";
 import { parsePublicSettingsDto, type PublicSettingsDto } from "./features/settings/settingsDto";
 import { createApiClient, type ApiClient } from "./lib/api";
@@ -10,10 +12,14 @@ const UPDATE_INSTANCE_VALIDATION_MESSAGE = "Enter a valid instance name.";
 
 type AuthorizedState = {
   kind: "authorized";
-  settings: PublicSettingsDto;
+  overview: OverviewDto;
   csrfToken: string | null;
+  view: "overview" | "settings";
+  settings: PublicSettingsDto | null;
   logoutPending: boolean;
   logoutError: boolean;
+  settingsLoading: boolean;
+  settingsAccessError: boolean;
   editMode: boolean;
   draftDisplayName: string;
   updatePending: boolean;
@@ -49,7 +55,7 @@ function ForbiddenView() {
     <main className="status-wrap">
       <section className="status-card">
         <h1>Vyntrio OS</h1>
-        <p>You do not have access to instance settings.</p>
+        <p>You do not have access to this appliance view.</p>
       </section>
     </main>
   );
@@ -60,7 +66,7 @@ function UnavailableView() {
     <main className="status-wrap">
       <section className="status-card">
         <h1>Vyntrio OS</h1>
-        <p>Instance settings are temporarily unavailable.</p>
+        <p>The appliance overview is temporarily unavailable.</p>
       </section>
     </main>
   );
@@ -75,14 +81,18 @@ export default function App({ apiClient }: AppProps) {
   const [appState, setAppState] = useState<AppState>({ kind: "bootstrapping" });
 
   const buildAuthorizedState = useCallback(
-    (settings: PublicSettingsDto, csrfToken: string | null): AuthorizedState => ({
+    (overview: OverviewDto, csrfToken: string | null): AuthorizedState => ({
       kind: "authorized",
-      settings,
+      overview,
       csrfToken,
+      view: "overview",
+      settings: null,
       logoutPending: false,
       logoutError: false,
+      settingsLoading: false,
+      settingsAccessError: false,
       editMode: false,
-      draftDisplayName: settings.instance.name,
+      draftDisplayName: overview.instance.name,
       updatePending: false,
       updateError: false,
       updateValidationError: false,
@@ -96,10 +106,10 @@ export default function App({ apiClient }: AppProps) {
     };
   }, []);
 
-  const probeSettings = useCallback(
+  const probeOverview = useCallback(
     async (source: "initial" | "post_login", csrfToken: string | null) => {
       const sequence = ++probeSequence.current;
-      const result = await client.requestJson<unknown>("/api/v1/settings");
+      const result = await client.requestJson<unknown>("/api/v1/overview");
       if (!isMounted.current || sequence !== probeSequence.current) {
         return;
       }
@@ -117,28 +127,113 @@ export default function App({ apiClient }: AppProps) {
         return;
       }
 
-      const settings = parsePublicSettingsDto(result.data);
-      if (!settings) {
+      const overview = parseOverviewDto(result.data);
+      if (!overview) {
         setAppState({ kind: "unavailable" });
         return;
       }
 
-      setAppState(buildAuthorizedState(settings, source === "post_login" ? csrfToken : null));
+      setAppState(buildAuthorizedState(overview, source === "post_login" ? csrfToken : null));
     },
     [buildAuthorizedState, client]
   );
 
   useEffect(() => {
-    void probeSettings("initial", null);
-  }, [probeSettings]);
+    void probeOverview("initial", null);
+  }, [probeOverview]);
 
   const handleLoginSuccess = useCallback(
     (csrfToken: string) => {
       setAppState({ kind: "probing_after_login", csrfToken });
-      void probeSettings("post_login", csrfToken);
+      void probeOverview("post_login", csrfToken);
     },
-    [probeSettings]
+    [probeOverview]
   );
+
+  const handleOpenSettings = useCallback(async () => {
+    if (appState.kind !== "authorized") {
+      return;
+    }
+    if (appState.logoutPending || appState.settingsLoading || appState.updatePending) {
+      return;
+    }
+
+    setAppState({
+      ...appState,
+      settingsLoading: true,
+      settingsAccessError: false,
+    });
+
+    const result = await client.requestJson<unknown>("/api/v1/settings");
+    if (!isMounted.current) {
+      return;
+    }
+
+    if (!result.ok) {
+      if (result.error.kind === "unauthorized") {
+        setAppState({ kind: "unauthenticated" });
+        return;
+      }
+      if (result.error.kind === "forbidden") {
+        setAppState((previous) => {
+          if (previous.kind !== "authorized") {
+            return previous;
+          }
+          return {
+            ...previous,
+            settingsLoading: false,
+            settingsAccessError: true,
+            view: "overview",
+          };
+        });
+        return;
+      }
+      setAppState({ kind: "unavailable" });
+      return;
+    }
+
+    const settings = parsePublicSettingsDto(result.data);
+    if (!settings) {
+      setAppState({ kind: "unavailable" });
+      return;
+    }
+
+    setAppState((previous) => {
+      if (previous.kind !== "authorized") {
+        return previous;
+      }
+      return {
+        ...previous,
+        view: "settings",
+        settings,
+        settingsLoading: false,
+        settingsAccessError: false,
+        editMode: false,
+        draftDisplayName: settings.instance.name,
+        updatePending: false,
+        updateError: false,
+        updateValidationError: false,
+      };
+    });
+  }, [appState, client]);
+
+  const handleBackToOverview = useCallback(() => {
+    setAppState((previous) => {
+      if (previous.kind !== "authorized") {
+        return previous;
+      }
+      return {
+        ...previous,
+        view: "overview",
+        settings: null,
+        editMode: false,
+        draftDisplayName: previous.overview.instance.name,
+        updatePending: false,
+        updateError: false,
+        updateValidationError: false,
+      };
+    });
+  }, []);
 
   const handleSignOut = useCallback(async () => {
     if (appState.kind !== "authorized") {
@@ -185,7 +280,10 @@ export default function App({ apiClient }: AppProps) {
 
   const handleStartEdit = useCallback(() => {
     setAppState((previous) => {
-      if (previous.kind !== "authorized" || previous.logoutPending || previous.updatePending) {
+      if (previous.kind !== "authorized" || previous.view !== "settings" || !previous.settings) {
+        return previous;
+      }
+      if (previous.logoutPending || previous.updatePending) {
         return previous;
       }
       return {
@@ -200,7 +298,10 @@ export default function App({ apiClient }: AppProps) {
 
   const handleCancelEdit = useCallback(() => {
     setAppState((previous) => {
-      if (previous.kind !== "authorized" || previous.logoutPending || previous.updatePending) {
+      if (previous.kind !== "authorized" || !previous.settings) {
+        return previous;
+      }
+      if (previous.logoutPending || previous.updatePending) {
         return previous;
       }
       return {
@@ -227,7 +328,7 @@ export default function App({ apiClient }: AppProps) {
   }, []);
 
   const handleSaveDisplayName = useCallback(async () => {
-    if (appState.kind !== "authorized") {
+    if (appState.kind !== "authorized" || appState.view !== "settings" || !appState.settings) {
       return;
     }
     if (!appState.editMode || appState.logoutPending || appState.updatePending) {
@@ -313,6 +414,13 @@ export default function App({ apiClient }: AppProps) {
       return {
         ...previous,
         settings: refreshedSettings,
+        overview: {
+          ...previous.overview,
+          instance: {
+            ...previous.overview.instance,
+            name: refreshedSettings.instance.name,
+          },
+        },
         editMode: false,
         draftDisplayName: refreshedSettings.instance.name,
         updatePending: false,
@@ -333,22 +441,36 @@ export default function App({ apiClient }: AppProps) {
     case "unavailable":
       return <UnavailableView />;
     case "authorized":
+      if (appState.view === "settings" && appState.settings) {
+        return (
+          <SettingsShell
+            settings={appState.settings}
+            editMode={appState.editMode}
+            draftDisplayName={appState.draftDisplayName}
+            isUpdating={appState.updatePending}
+            updateErrorMessage={appState.updateError ? UPDATE_INSTANCE_ERROR_MESSAGE : null}
+            updateValidationMessage={
+              appState.updateValidationError ? UPDATE_INSTANCE_VALIDATION_MESSAGE : null
+            }
+            onStartEdit={handleStartEdit}
+            onCancelEdit={handleCancelEdit}
+            onSaveDisplayName={handleSaveDisplayName}
+            onDraftDisplayNameChange={handleDraftDisplayNameChange}
+            isSigningOut={appState.logoutPending}
+            signOutError={appState.logoutError}
+            onSignOut={handleSignOut}
+            onBackToOverview={handleBackToOverview}
+          />
+        );
+      }
       return (
-        <SettingsShell
-          settings={appState.settings}
-          editMode={appState.editMode}
-          draftDisplayName={appState.draftDisplayName}
-          isUpdating={appState.updatePending}
-          updateErrorMessage={appState.updateError ? UPDATE_INSTANCE_ERROR_MESSAGE : null}
-          updateValidationMessage={
-            appState.updateValidationError ? UPDATE_INSTANCE_VALIDATION_MESSAGE : null
-          }
-          onStartEdit={handleStartEdit}
-          onCancelEdit={handleCancelEdit}
-          onSaveDisplayName={handleSaveDisplayName}
-          onDraftDisplayNameChange={handleDraftDisplayNameChange}
+        <OverviewShell
+          overview={appState.overview}
           isSigningOut={appState.logoutPending}
           signOutError={appState.logoutError}
+          settingsAccessError={appState.settingsAccessError}
+          settingsLoading={appState.settingsLoading}
+          onOpenSettings={handleOpenSettings}
           onSignOut={handleSignOut}
         />
       );

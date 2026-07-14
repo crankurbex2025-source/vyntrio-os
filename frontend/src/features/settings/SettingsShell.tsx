@@ -14,6 +14,7 @@ type SettingsShellProps = {
   isSigningOut: boolean;
   signOutError: boolean;
   onSignOut: () => void;
+  onBackToOverview?: () => void;
 };
 
 export function SettingsShell({
@@ -30,6 +31,7 @@ export function SettingsShell({
   isSigningOut,
   signOutError,
   onSignOut,
+  onBackToOverview,
 }: SettingsShellProps) {
   const controlsDisabled = isSigningOut || isUpdating;
 
@@ -37,6 +39,11 @@ export function SettingsShell({
     <main className="settings-wrap">
       <section className="settings-card">
         <h1>Instance settings</h1>
+        {onBackToOverview ? (
+          <button type="button" className="settings-back-button" onClick={onBackToOverview} disabled={controlsDisabled}>
+            Back to overview
+          </button>
+        ) : null}
 
         <div className="settings-row">
           <span>Name</span>

@@ -10,6 +10,7 @@ REST für Konfiguration und Ressourcen, WebSocket für Live-Events. JSON-only. V
 | POST | `/api/v1/identity/bootstrap` | Loopback | Ersten Owner anlegen (nur wenn keine aktiven Benutzer) |
 | POST | `/api/v1/identity/login` | — | Anmeldung; bei Erfolg **200** mit `{ "csrf_token": "..." }` und `vyntrio_session`-Cookie |
 | POST | `/api/v1/identity/logout` | Session + `X-CSRF-Token` | Session widerrufen und Cookie löschen |
+| GET | `/api/v1/overview` | Session; Permission `system:health` (Owner, Operator, Read-only) | Sichere Appliance-Overview (read-only) |
 | GET | `/api/v1/settings` | Session; Permission `settings:admin:read` (Owner) | Sichere Admin-Settings-Ansicht (read-only) |
 | PATCH | `/api/v1/settings/instance` | Session; Permission `settings:admin:write` (Owner); `X-CSRF-Token` | Instanz-Anzeigename (`display_name`) ändern |
 
@@ -45,6 +46,21 @@ Cache- und Security-Header-Policy: siehe `docs/17_SECURITY.md`;
 Build/Embedding: siehe `docs/19_RELEASE.md`.
 
 Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cookie (`vyntrio_session`, HttpOnly).
+
+### GET `/api/v1/overview`
+
+- **Auth:** Session erforderlich; Permission `system:health` (alle Rollen mit Health-Zugriff).
+- **CSRF:** nicht erforderlich (read-only GET).
+- **Cache:** `Cache-Control: no-store`.
+- **Erfolg:** **200** mit strikt begrenztem DTO:
+  - `instance`: `{ "name", "version", "commit" }`
+  - `api`: `{ "environment" }`
+  - `service`: `{ "status" }` — `"running"` nur während der Handler ausgeführt wird
+  - `readiness`: `{ "status", "database" }` — gleiche Semantik wie `/readyz` (`ready`/`not_ready`, `ok`/`error`)
+  - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
+- **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
+- **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
+- Keine Secrets, Pfade, Config-Inhalte, Backup-Details, Session-Werte oder Rohfehler in der Antwort.
 
 ### PATCH `/api/v1/settings/instance`
 

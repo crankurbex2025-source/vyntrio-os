@@ -46,6 +46,7 @@ func NewRouter(
 	bootstrap *handlers.Bootstrap,
 	login *handlers.Login,
 	logout *handlers.Logout,
+	overview *handlers.Overview,
 	settings *handlers.Settings,
 	updateInstance *handlers.UpdateInstanceSettings,
 	sessionAuth *SessionAuth,
@@ -81,6 +82,13 @@ func NewRouter(
 				middleware.RequireAuthentication,
 				middleware.RequireCSRF,
 			).Post("/identity/logout", logout.ServeHTTP)
+		}
+		if overview != nil && sessionAuth != nil && sessionAuth.Resolver != nil && sessionAuth.Authorizer != nil {
+			r.With(
+				middleware.OptionalAuthentication(sessionAuth.Resolver),
+				middleware.RequireAuthentication,
+				middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionSystemHealth),
+			).Get("/overview", overview.ServeHTTP)
 		}
 		if settings != nil && sessionAuth != nil && sessionAuth.Resolver != nil && sessionAuth.Authorizer != nil {
 			r.With(

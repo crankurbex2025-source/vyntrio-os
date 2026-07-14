@@ -27,7 +27,55 @@ describe("App", () => {
     };
   }
 
-  it("initial mount shows checking state and issues exactly one GET /api/v1/settings with no body or csrf", async () => {
+  function validOverviewPayload() {
+    return {
+      instance: {
+        name: "Vyntrio Home",
+        version: "0.2.0-dev",
+        commit: "abc123",
+      },
+      api: {
+        environment: "development",
+      },
+      service: {
+        status: "running",
+      },
+      readiness: {
+        status: "ready",
+        database: "ok",
+      },
+      collected_at: "2026-07-14T12:00:00.000000000Z",
+    };
+  }
+
+  async function openInstanceSettings() {
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Instance settings" })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Instance settings" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Instance settings" })).toBeInTheDocument();
+    });
+  }
+
+  async function loginAsOwner(requestJson: ReturnType<typeof makeApiClientMock>["requestJson"]) {
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
+    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+    });
+  }
+
+  async function loginAndOpenSettings(requestJson: ReturnType<typeof makeApiClientMock>["requestJson"]) {
+    await loginAsOwner(requestJson);
+    await openInstanceSettings();
+  }
+
+  it("initial mount shows checking state and issues exactly one GET /api/v1/overview with no body or csrf", async () => {
     const { apiClient, requestJson } = makeApiClientMock();
     const pending = new Promise<ApiResult<unknown>>(() => {});
     requestJson.mockReturnValue(pending);
@@ -41,31 +89,129 @@ describe("App", () => {
     await waitFor(() => {
       expect(requestJson).toHaveBeenCalledTimes(1);
     });
-    expect(requestJson).toHaveBeenCalledWith("/api/v1/settings");
+    expect(requestJson).toHaveBeenCalledWith("/api/v1/overview");
     expect(requestJson.mock.calls[0]?.[1]).toBeUndefined();
   });
 
-  it("initial 200 with valid DTO enters authorized readonly settings shell", async () => {
+  it("initial 200 with valid DTO enters authorized overview shell", async () => {
     const { apiClient, requestJson } = makeApiClientMock();
     requestJson.mockResolvedValue({
       ok: true,
       status: 200,
       requestId: "request-ok",
-      data: validSettingsPayload(),
+      data: validOverviewPayload(),
     });
 
     render(<App apiClient={apiClient} />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Instance settings" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
     });
-    expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+    expect(screen.getByText("Vyntrio Control Center")).toBeInTheDocument();
     expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
+    expect(screen.getByText("abc123")).toBeInTheDocument();
     expect(screen.getByText("development")).toBeInTheDocument();
     expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
     expect(screen.queryByText("session")).not.toBeInTheDocument();
     expect(screen.queryByText("role")).not.toBeInTheDocument();
+  });
+
+  it("authorized overview bootstrap never sends a CSRF header on GET /api/v1/overview", async () => {
+    const { apiClient, requestJson } = makeApiClientMock();
+    requestJson.mockResolvedValue({
+      ok: true,
+      status: 200,
+      requestId: "request-ok",
+      data: validOverviewPayload(),
+    });
+
+    render(<App apiClient={apiClient} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+    });
+    expect(requestJson.mock.calls[0]?.[1]).toBeUndefined();
+  });
+
+  it("read-only and operator sessions land on the authorized overview instead of forbidden", async () => {
+    for (const role of ["read-only", "operator"] as const) {
+      const { apiClient, requestJson } = makeApiClientMock();
+      requestJson.mockResolvedValue({
+        ok: true,
+        status: 200,
+        requestId: `request-${role}`,
+        data: validOverviewPayload(),
+      });
+
+      const view = render(<App apiClient={apiClient} />);
+      await waitFor(() => {
+        expect(screen.getByText("Vyntrio Control Center")).toBeInTheDocument();
+      });
+      expect(screen.getByText("Ready")).toBeInTheDocument();
+      expect(
+        screen.queryByText("You do not have access to this appliance view.")
+      ).not.toBeInTheDocument();
+      expect(requestJson).toHaveBeenCalledWith("/api/v1/overview");
+      view.unmount();
+    }
+  });
+
+  it("initial not_ready overview renders truthful status without claiming full appliance health", async () => {
+    const { apiClient, requestJson } = makeApiClientMock();
+    requestJson.mockResolvedValue({
+      ok: true,
+      status: 200,
+      requestId: "request-not-ready",
+      data: {
+        ...validOverviewPayload(),
+        readiness: { status: "not_ready", database: "error" },
+      },
+    });
+
+    render(<App apiClient={apiClient} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Not ready")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Database unavailable")).toBeInTheDocument();
+    expect(
+      screen.getByText(/does not perform recovery actions/i)
+    ).toBeInTheDocument();
+  });
+
+  it("settings access remains Owner-only and surfaces a local error on overview when forbidden", async () => {
+    const { apiClient, requestJson } = makeApiClientMock();
+    requestJson
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-overview",
+        data: validOverviewPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          kind: "forbidden",
+          status: 403,
+          code: "FORBIDDEN",
+          message: "Permission denied",
+          requestId: "request-settings-403",
+        },
+      });
+
+    render(<App apiClient={apiClient} />);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Instance settings" })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Instance settings" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("You do not have access to instance settings.")).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("heading", { name: "Instance settings" })).not.toBeInTheDocument();
+    expect(requestJson.mock.calls[1]).toEqual(["/api/v1/settings"]);
+    expect(requestJson.mock.calls[1]?.[1]).toBeUndefined();
   });
 
   it("initial 401 enters LoginScreen and does not auto-retry", async () => {
@@ -107,7 +253,7 @@ describe("App", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("You do not have access to instance settings.")
+        screen.getByText("You do not have access to this appliance view.")
       ).toBeInTheDocument();
     });
     expect(screen.queryByText("Instance settings")).not.toBeInTheDocument();
@@ -152,7 +298,12 @@ describe("App", () => {
         status: 200,
         requestId: "request-malformed",
         data: {
-          instance: { name: "bad", version: "x" },
+          instance: { name: "bad", version: "x", commit: "y" },
+          api: { environment: "development" },
+          service: { status: "running" },
+          readiness: { status: "ready", database: "ok" },
+          collected_at: "2026-07-14T12:00:00.000000000Z",
+          extra: "bad",
         },
       },
     ];
@@ -164,7 +315,7 @@ describe("App", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("Instance settings are temporarily unavailable.")
+          screen.getByText("The appliance overview is temporarily unavailable.")
         ).toBeInTheDocument();
       });
       expect(screen.queryByText("Instance settings")).not.toBeInTheDocument();
@@ -174,7 +325,7 @@ describe("App", () => {
     }
   });
 
-  it("successful login triggers exactly one post-login GET and enters authorized only after valid settings 200", async () => {
+  it("successful login triggers exactly one post-login GET and enters authorized only after valid overview 200", async () => {
     const { apiClient, requestJson } = makeApiClientMock();
     requestJson
       .mockResolvedValueOnce({
@@ -196,8 +347,8 @@ describe("App", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        requestId: "request-settings",
-        data: validSettingsPayload(),
+        requestId: "request-overview",
+        data: validOverviewPayload(),
       });
 
     render(<App apiClient={apiClient} />);
@@ -215,12 +366,12 @@ describe("App", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Instance settings" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
     });
     expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
 
     expect(requestJson).toHaveBeenCalledTimes(3);
-    expect(requestJson.mock.calls[0]).toEqual(["/api/v1/settings"]);
+    expect(requestJson.mock.calls[0]).toEqual(["/api/v1/overview"]);
     expect(requestJson.mock.calls[1]).toEqual([
       "/api/v1/identity/login",
       {
@@ -231,7 +382,7 @@ describe("App", () => {
         },
       },
     ]);
-    expect(requestJson.mock.calls[2]).toEqual(["/api/v1/settings"]);
+    expect(requestJson.mock.calls[2]).toEqual(["/api/v1/overview"]);
 
     const methods = requestJson.mock.calls.map((call) => call[1]?.method);
     expect(methods.filter((method) => method === "POST")).toHaveLength(1);
@@ -327,7 +478,7 @@ describe("App", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("You do not have access to instance settings.")
+        screen.getByText("You do not have access to this appliance view.")
       ).toBeInTheDocument();
     });
     expect(screen.queryByText("Instance settings")).not.toBeInTheDocument();
@@ -411,7 +562,7 @@ describe("App", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("Instance settings are temporarily unavailable.")
+          screen.getByText("The appliance overview is temporarily unavailable.")
         ).toBeInTheDocument();
       });
       expect(screen.queryByText("Instance settings")).not.toBeInTheDocument();
@@ -420,14 +571,14 @@ describe("App", () => {
     }
   });
 
-  it("sign out action appears only in authorized settings shell", async () => {
+  it("sign out action appears only in authorized overview shell", async () => {
     const { apiClient, requestJson } = makeApiClientMock();
     requestJson
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
         requestId: "request-initial-200",
-        data: validSettingsPayload(),
+        data: validOverviewPayload(),
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -476,7 +627,7 @@ describe("App", () => {
     const forbidden = render(<App apiClient={apiClient} />);
     await waitFor(() => {
       expect(
-        screen.getByText("You do not have access to instance settings.")
+        screen.getByText("You do not have access to this appliance view.")
       ).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
@@ -485,7 +636,7 @@ describe("App", () => {
     const unavailable = render(<App apiClient={apiClient} />);
     await waitFor(() => {
       expect(
-        screen.getByText("Instance settings are temporarily unavailable.")
+        screen.getByText("The appliance overview is temporarily unavailable.")
       ).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
@@ -499,6 +650,12 @@ describe("App", () => {
         ok: true,
         status: 200,
         requestId: "request-initial-200",
+        data: validOverviewPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-settings",
         data: validSettingsPayload(),
       })
       .mockResolvedValueOnce({
@@ -533,9 +690,8 @@ describe("App", () => {
       });
 
     const authorized = render(<App apiClient={apiClient} />);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
-    });
+    await openInstanceSettings();
+    expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
     authorized.unmount();
 
     const unauthenticated = render(<App apiClient={apiClient} />);
@@ -548,7 +704,7 @@ describe("App", () => {
     const forbidden = render(<App apiClient={apiClient} />);
     await waitFor(() => {
       expect(
-        screen.getByText("You do not have access to instance settings.")
+        screen.getByText("You do not have access to this appliance view.")
       ).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: "Edit name" })).not.toBeInTheDocument();
@@ -557,7 +713,7 @@ describe("App", () => {
     const unavailable = render(<App apiClient={apiClient} />);
     await waitFor(() => {
       expect(
-        screen.getByText("Instance settings are temporarily unavailable.")
+        screen.getByText("The appliance overview is temporarily unavailable.")
       ).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: "Edit name" })).not.toBeInTheDocument();
@@ -566,17 +722,22 @@ describe("App", () => {
 
   it("edit mode initializes from server name and cancel discards draft without requests", async () => {
     const { apiClient, requestJson, requestNoContent } = makeApiClientMock();
-    requestJson.mockResolvedValue({
-      ok: true,
-      status: 200,
-      requestId: "request-initial-200",
-      data: validSettingsPayload(),
-    });
+    requestJson
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-initial-200",
+        data: validOverviewPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-settings",
+        data: validSettingsPayload(),
+      });
 
     render(<App apiClient={apiClient} />);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
-    });
+    await openInstanceSettings();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
     const input = screen.getByLabelText("Instance name");
@@ -588,7 +749,7 @@ describe("App", () => {
     expect(screen.queryByLabelText("Instance name")).not.toBeInTheDocument();
     expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
     expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
-    expect(requestJson).toHaveBeenCalledTimes(1);
+    expect(requestJson).toHaveBeenCalledTimes(2);
     expect(requestNoContent).toHaveBeenCalledTimes(0);
   });
 
@@ -619,6 +780,12 @@ describe("App", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        requestId: "request-overview",
+        data: validOverviewPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
         requestId: "request-settings",
         data: validSettingsPayload(),
       })
@@ -634,16 +801,9 @@ describe("App", () => {
       });
 
     render(<App apiClient={apiClient} />);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-    });
-    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await loginAsOwner(requestJson);
+    await openInstanceSettings();
 
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
-    });
     fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
     fireEvent.change(screen.getByLabelText("Instance name"), { target: { value: "Renamed Home" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -655,8 +815,8 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Saving..." }));
     fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
 
-    expect(requestJson).toHaveBeenCalledTimes(4);
-    expect(requestJson.mock.calls[3]).toEqual([
+    expect(requestJson).toHaveBeenCalledTimes(5);
+    expect(requestJson.mock.calls[4]).toEqual([
       "/api/v1/settings/instance",
       {
         method: "PATCH",
@@ -676,7 +836,7 @@ describe("App", () => {
     await waitFor(() => {
       expect(screen.getByText("Renamed Home")).toBeInTheDocument();
     });
-    expect(requestJson).toHaveBeenCalledTimes(5);
+    expect(requestJson).toHaveBeenCalledTimes(6);
   });
 
   it("PATCH success triggers exactly one follow-up GET and updates display only from that DTO", async () => {
@@ -701,6 +861,12 @@ describe("App", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        requestId: "request-overview",
+        data: validOverviewPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
         requestId: "request-settings",
         data: validSettingsPayload(),
       })
@@ -721,16 +887,9 @@ describe("App", () => {
       });
 
     render(<App apiClient={apiClient} />);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-    });
-    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await loginAsOwner(requestJson);
+    await openInstanceSettings();
 
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
-    });
     fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
     fireEvent.change(screen.getByLabelText("Instance name"), { target: { value: "Patched Value" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -742,9 +901,9 @@ describe("App", () => {
     });
     expect(screen.queryByText("Patched Value")).not.toBeInTheDocument();
 
-    expect(requestJson).toHaveBeenCalledTimes(5);
-    expect(requestJson.mock.calls[4]).toEqual(["/api/v1/settings"]);
-    expect(requestJson.mock.calls[4]?.[1]).toBeUndefined();
+    expect(requestJson).toHaveBeenCalledTimes(6);
+    expect(requestJson.mock.calls[5]).toEqual(["/api/v1/settings"]);
+    expect(requestJson.mock.calls[5]?.[1]).toBeUndefined();
     expect(requestNoContent).toHaveBeenCalledTimes(0);
   });
 
@@ -856,6 +1015,12 @@ describe("App", () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
+          requestId: "request-overview",
+          data: validOverviewPayload(),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
           requestId: "request-settings",
           data: validSettingsPayload(),
         })
@@ -863,16 +1028,9 @@ describe("App", () => {
         .mockResolvedValueOnce(patchFailure);
 
       const view = render(<App apiClient={apiClient} />);
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-      });
-      fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-      fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+      await loginAsOwner(requestJson);
+      await openInstanceSettings();
 
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
-      });
       fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
       fireEvent.change(screen.getByLabelText("Instance name"), { target: { value: "Renamed Home" } });
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -885,32 +1043,37 @@ describe("App", () => {
       expect(screen.queryByRole("button", { name: "Saving..." })).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
 
-      expect(requestJson).toHaveBeenCalledTimes(4);
-      fireEvent.click(screen.getByRole("button", { name: "Save" }));
       expect(requestJson).toHaveBeenCalledTimes(5);
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      expect(requestJson).toHaveBeenCalledTimes(6);
       view.unmount();
     }
   });
 
   it("missing in-memory csrf blocks PATCH and shows generic update error with no request", async () => {
     const { apiClient, requestJson } = makeApiClientMock();
-    requestJson.mockResolvedValue({
-      ok: true,
-      status: 200,
-      requestId: "request-initial-200",
-      data: validSettingsPayload(),
-    });
+    requestJson
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-initial-200",
+        data: validOverviewPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        requestId: "request-settings",
+        data: validSettingsPayload(),
+      });
 
     render(<App apiClient={apiClient} />);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
-    });
+    await openInstanceSettings();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
     fireEvent.change(screen.getByLabelText("Instance name"), { target: { value: "Renamed Home" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(requestJson).toHaveBeenCalledTimes(1);
+    expect(requestJson).toHaveBeenCalledTimes(2);
     expect(
       screen.getByText("The instance name could not be updated. Please try again.")
     ).toBeInTheDocument();
@@ -950,7 +1113,7 @@ describe("App", () => {
             requestId: "followup-403",
           },
         },
-        expectText: "You do not have access to instance settings.",
+        expectText: "You do not have access to this appliance view.",
         hideSettings: true,
       },
       {
@@ -965,7 +1128,7 @@ describe("App", () => {
             requestId: "followup-500",
           },
         },
-        expectText: "Instance settings are temporarily unavailable.",
+        expectText: "The appliance overview is temporarily unavailable.",
         hideSettings: true,
       },
       {
@@ -980,7 +1143,7 @@ describe("App", () => {
             requestId: null,
           },
         },
-        expectText: "Instance settings are temporarily unavailable.",
+        expectText: "The appliance overview is temporarily unavailable.",
         hideSettings: true,
       },
       {
@@ -991,7 +1154,7 @@ describe("App", () => {
           requestId: "followup-bad-dto",
           data: { instance: { name: "bad", version: "x" } },
         },
-        expectText: "Instance settings are temporarily unavailable.",
+        expectText: "The appliance overview is temporarily unavailable.",
         hideSettings: true,
       },
     ];
@@ -1018,6 +1181,12 @@ describe("App", () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
+          requestId: "request-overview",
+          data: validOverviewPayload(),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
           requestId: "request-settings",
           data: validSettingsPayload(),
         })
@@ -1030,16 +1199,9 @@ describe("App", () => {
         .mockResolvedValueOnce(tc.followup);
 
       const view = render(<App apiClient={apiClient} />);
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-      });
-      fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-      fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+      await loginAsOwner(requestJson);
+      await openInstanceSettings();
 
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
-      });
       fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
       fireEvent.change(screen.getByLabelText("Instance name"), { target: { value: "Patched Value" } });
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -1055,7 +1217,7 @@ describe("App", () => {
         expect(screen.queryByText("Instance settings")).not.toBeInTheDocument();
       }
       expect(screen.queryByText("Patched Value")).not.toBeInTheDocument();
-      expect(requestJson).toHaveBeenCalledTimes(5);
+      expect(requestJson).toHaveBeenCalledTimes(6);
       view.unmount();
     }
   });
@@ -1082,6 +1244,12 @@ describe("App", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        requestId: "request-overview",
+        data: validOverviewPayload(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
         requestId: "request-settings",
         data: validSettingsPayload(),
       });
@@ -1092,16 +1260,9 @@ describe("App", () => {
     requestNoContent.mockReturnValue(logoutPending);
 
     render(<App apiClient={apiClient} />);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-    });
-    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await loginAsOwner(requestJson);
+    await openInstanceSettings();
 
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
-    });
     fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
 
     await waitFor(() => {
@@ -1110,7 +1271,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Edit name" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
     expect(screen.queryByLabelText("Instance name")).not.toBeInTheDocument();
-    expect(requestJson).toHaveBeenCalledTimes(3);
+    expect(requestJson).toHaveBeenCalledTimes(4);
   });
 
   it("exact 204 logout sends one POST with csrf option, no body, disables duplicates, and returns to login", async () => {
@@ -1135,8 +1296,8 @@ describe("App", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        requestId: "request-settings",
-        data: validSettingsPayload(),
+        requestId: "request-overview",
+        data: validOverviewPayload(),
       });
 
     let resolveLogout:
@@ -1150,12 +1311,7 @@ describe("App", () => {
     requestNoContent.mockReturnValue(logoutPending);
 
     render(<App apiClient={apiClient} />);
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-    });
-    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await loginAsOwner(requestJson);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
@@ -1196,7 +1352,7 @@ describe("App", () => {
       ok: true,
       status: 200,
       requestId: "request-initial-200",
-      data: validSettingsPayload(),
+      data: validOverviewPayload(),
     });
 
     render(<App apiClient={apiClient} />);
@@ -1210,7 +1366,7 @@ describe("App", () => {
     expect(
       screen.getByText("Sign-out could not be completed. Please try again.")
     ).toBeInTheDocument();
-    expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
   });
 
   it("logout 401 and 403 keep authorized state with generic error and allow manual retry", async () => {
@@ -1259,18 +1415,13 @@ describe("App", () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
-          requestId: "request-settings",
-          data: validSettingsPayload(),
+          requestId: "request-overview",
+          data: validOverviewPayload(),
         });
       requestNoContent.mockResolvedValue(logoutFailure);
 
       const view = render(<App apiClient={apiClient} />);
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-      });
-      fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-      fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+      await loginAsOwner(requestJson);
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
@@ -1282,7 +1433,7 @@ describe("App", () => {
           screen.getByText("Sign-out could not be completed. Please try again.")
         ).toBeInTheDocument();
       });
-      expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
       expect(requestNoContent).toHaveBeenCalledTimes(1);
 
@@ -1398,18 +1549,13 @@ describe("App", () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
-          requestId: "request-settings",
-          data: validSettingsPayload(),
+          requestId: "request-overview",
+          data: validOverviewPayload(),
         });
       requestNoContent.mockResolvedValue(logoutFailure);
 
       const view = render(<App apiClient={apiClient} />);
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
-      });
-      fireEvent.change(screen.getByLabelText("Username"), { target: { value: "owner" } });
-      fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
-      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+      await loginAsOwner(requestJson);
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
@@ -1421,7 +1567,7 @@ describe("App", () => {
           screen.getByText("Sign-out could not be completed. Please try again.")
         ).toBeInTheDocument();
       });
-      expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
       expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
       expect(requestNoContent).toHaveBeenCalledTimes(1);

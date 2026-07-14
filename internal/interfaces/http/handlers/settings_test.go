@@ -16,6 +16,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appidentity "github.com/crankurbex2025-source/vyntrio-os/internal/application/identity"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
+	appoverview "github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
@@ -42,10 +43,11 @@ type settingsRouter struct {
 }
 
 type settingsRouterOpts struct {
-	authorizer ports.Authorizer
-	resolver   *appidentity.SessionResolver
-	store      *sqlite.Store
-	routerOpts []httpapi.RouterOption
+	authorizer    ports.Authorizer
+	resolver      *appidentity.SessionResolver
+	store         *sqlite.Store
+	routerOpts    []httpapi.RouterOption
+	readinessDB   health.DatabaseChecker
 }
 
 func newSettingsRouter(t *testing.T, opts settingsRouterOpts) settingsRouter {
@@ -74,7 +76,13 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	}
 	snapshot := appsettings.NewSnapshot(sysSettings)
 	view := appsettings.NewPublicView(snapshot, settingsTestVersion, settingsTestEnvironment)
+	readinessDB := health.DatabaseChecker(store)
+	if opts.readinessDB != nil {
+		readinessDB = opts.readinessDB
+	}
+	readiness := health.NewReadiness(readinessDB)
 	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, settingsTestVersion, settingsTestEnvironment)
+	overviewLoader := appoverview.NewLoader(settingsRepo, readiness, settingsTestVersion, "test-commit", settingsTestEnvironment)
 
 	hasher, err := appidentity.NewPasswordHasher(appidentity.Argon2idConfig{
 		Memory:      4096,
@@ -105,6 +113,7 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	login := handlers.NewLogin(handlers.LoginDeps{Service: loginService, CookiePolicy: cookiePolicy})
 	logout := handlers.NewLogout(handlers.LogoutDeps{Service: logoutService, CookiePolicy: cookiePolicy})
 	settings := handlers.NewSettings(handlers.SettingsDeps{Loader: settingsLoader})
+	overview := handlers.NewOverview(handlers.OverviewDeps{Loader: overviewLoader})
 	instanceDisplayNameRepo := sqlite.NewInstanceDisplayNameRepository(store.DB())
 	updateInstanceService := appsettings.NewUpdateInstanceDisplayNameService(instanceDisplayNameRepo)
 	updateInstance := handlers.NewUpdateInstanceSettings(handlers.UpdateInstanceSettingsDeps{Service: updateInstanceService})
@@ -128,10 +137,11 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	router := httpapi.NewRouter(
 		cfg,
 		slog.Default(),
-		health.NewReadiness(store),
+		readiness,
 		bootstrap,
 		login,
 		logout,
+		overview,
 		settings,
 		updateInstance,
 		&httpapi.SessionAuth{

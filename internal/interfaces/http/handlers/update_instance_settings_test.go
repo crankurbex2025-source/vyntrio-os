@@ -391,7 +391,7 @@ func TestUpdateInstanceDisplayNamePersistenceFailure(t *testing.T) {
 	})
 	resolver := appidentity.NewSessionResolver(sqlite.NewSessionAuthRepository(store.DB()))
 	cfg := config.Config{Env: "development", ReadTimeout: 15 * time.Second}
-	handler := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, logout, settings, updateInstance, &httpapi.SessionAuth{
+	handler := httpapi.NewRouter(cfg, slog.Default(), health.NewReadiness(store), bootstrap, login, logout, nil, settings, updateInstance, &httpapi.SessionAuth{
 		Resolver:   resolver,
 		Authorizer: ports.NewRBACAuthorizer(),
 	})

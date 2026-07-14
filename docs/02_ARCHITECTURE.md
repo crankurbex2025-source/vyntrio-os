@@ -55,6 +55,13 @@ Control Plane läuft lokal auf dem Host. Systemnahe Services werden über system
 Packaging bleibt zukünftige Slice. Docker/OCI, ISO, Kubernetes, Clustering und
 Multi-Node bleiben ausdrücklich zurückgestellt.
 
+**Block 8 / Slice 8.1 (implementiert):** Authentifizierte read-only Appliance-Overview
+(`GET /api/v1/overview`, Permission `system:health`) als Control-Center-Landing;
+Application-Layer-DTO in `internal/application/overview`; React-Overview-Shell mit
+Session-Bootstrap über Overview statt Owner-only Settings. Owner-Settings bleiben
+separat unter `settings:admin:read`/`write`. Keine Host-Metriken, Polling oder
+WebSockets in 8.1.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

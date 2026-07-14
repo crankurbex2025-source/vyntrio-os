@@ -14,6 +14,7 @@ import (
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	appidentity "github.com/crankurbex2025-source/vyntrio-os/internal/application/identity"
+	appoverview "github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
@@ -100,6 +101,8 @@ func main() {
 	sessionResolver := appidentity.NewSessionResolver(sessionAuthRepo)
 	authorizer := ports.NewRBACAuthorizer()
 	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, cfg.Version, cfg.Env)
+	overviewLoader := appoverview.NewLoader(settingsRepo, readiness, cfg.Version, cfg.BuildCommit, cfg.Env)
+	overviewHandler := handlers.NewOverview(handlers.OverviewDeps{Loader: overviewLoader})
 	settingsHandler := handlers.NewSettings(handlers.SettingsDeps{Loader: settingsLoader})
 	instanceDisplayNameRepo := sqlite.NewInstanceDisplayNameRepository(store.DB())
 	updateInstanceService := appsettings.NewUpdateInstanceDisplayNameService(instanceDisplayNameRepo)
@@ -121,6 +124,7 @@ func main() {
 		bootstrapHandler,
 		loginHandler,
 		logoutHandler,
+		overviewHandler,
 		settingsHandler,
 		updateInstanceHandler,
 		&httpapi.SessionAuth{

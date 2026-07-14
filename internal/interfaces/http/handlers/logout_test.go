@@ -537,6 +537,7 @@ func httpapiNewRouter(store *sqlite.Store, bootstrap *handlers.Bootstrap, login 
 		logout,
 		nil,
 		nil,
+		nil,
 		&httpapi.SessionAuth{Resolver: resolver, Authorizer: ports.NewRBACAuthorizer()},
 	)
 }

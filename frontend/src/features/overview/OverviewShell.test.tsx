@@ -1,0 +1,84 @@
+import "@testing-library/jest-dom/vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
+import { describe, expect, it, vi } from "vitest";
+import { OverviewShell } from "./OverviewShell";
+import type { OverviewDto } from "./overviewDto";
+
+describe("OverviewShell", () => {
+  const overview: OverviewDto = {
+    instance: {
+      name: "Vyntrio Home",
+      version: "0.2.0-dev",
+      commit: "abc123",
+    },
+    api: {
+      environment: "development",
+    },
+    service: {
+      status: "running",
+    },
+    readiness: {
+      status: "ready",
+      database: "ok",
+    },
+    collected_at: "2026-07-14T12:00:00.000000000Z",
+  };
+
+  function renderShell(overrides: Partial<ComponentProps<typeof OverviewShell>> = {}) {
+    const onOpenSettings = vi.fn();
+    const onSignOut = vi.fn();
+    render(
+      <OverviewShell
+        overview={overview}
+        isSigningOut={false}
+        signOutError={false}
+        settingsAccessError={false}
+        settingsLoading={false}
+        onOpenSettings={onOpenSettings}
+        onSignOut={onSignOut}
+        {...overrides}
+      />
+    );
+    return { onOpenSettings, onSignOut };
+  }
+
+  it("renders ready overview information", () => {
+    renderShell();
+
+    expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+    expect(screen.getByText("Ready")).toBeInTheDocument();
+    expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
+    expect(screen.getByText("abc123")).toBeInTheDocument();
+    expect(screen.getByText("development")).toBeInTheDocument();
+    expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
+  });
+
+  it("renders not_ready state without claiming full appliance health", () => {
+    renderShell({
+      overview: {
+        ...overview,
+        readiness: {
+          status: "not_ready",
+          database: "error",
+        },
+      },
+    });
+
+    expect(screen.getByText("Not ready")).toBeInTheDocument();
+    expect(screen.getByText("Database unavailable")).toBeInTheDocument();
+    expect(
+      screen.getByText(/does not perform recovery actions/i)
+    ).toBeInTheDocument();
+  });
+
+  it("invokes settings and sign out actions", () => {
+    const { onOpenSettings, onSignOut } = renderShell();
+
+    fireEvent.click(screen.getByRole("button", { name: "Instance settings" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
+    expect(onSignOut).toHaveBeenCalledTimes(1);
+  });
+});
