@@ -25,6 +25,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
 )
 
 func main() {
@@ -108,6 +109,7 @@ func main() {
 		readiness,
 		hostmetrics.NewCollector(cfg.StateDir, hostmetrics.CollectorDeps{}),
 		backupstatus.NewReader(cfg.StateDir, backupstatus.ReaderDeps{}),
+		netpresence.NewCollector(netpresence.CollectorDeps{}),
 		cfg.Version,
 		cfg.BuildCommit,
 		cfg.Env,

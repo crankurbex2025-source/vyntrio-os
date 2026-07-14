@@ -72,6 +72,9 @@ describe("App", () => {
         status: "never_run",
         ever_succeeded: false,
       },
+      network: {
+        status: "available",
+      },
     };
   }
 

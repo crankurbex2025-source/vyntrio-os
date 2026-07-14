@@ -14,6 +14,7 @@ import (
 	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
 )
 
 const (
@@ -432,6 +433,14 @@ func (s stubBackupStatusLoader) Read(context.Context) backupstatus.Backup {
 	return s.status
 }
 
+type stubNetworkPresenceLoader struct {
+	network netpresence.Network
+}
+
+func (s stubNetworkPresenceLoader) Collect(context.Context) netpresence.Network {
+	return s.network
+}
+
 func assertBackupJSON(t *testing.T, body []byte, wantContains ...string) {
 	t.Helper()
 	lower := strings.ToLower(string(body))
@@ -550,6 +559,9 @@ func assertOverviewResponseShape(t *testing.T, rec *httptest.ResponseRecorder) {
 	if got.Backup.Status == "" {
 		t.Fatalf("backup = %+v", got.Backup)
 	}
+	if got.Network.Status == "" {
+		t.Fatalf("network = %+v", got.Network)
+	}
 }
 
 func assertOverviewCacheControlNoStore(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -567,6 +579,9 @@ var forbiddenOverviewJSONKeys = map[string]struct{}{
 	"destination": {}, "preserve": {}, "digest": {}, "manifest": {},
 	"stderr": {}, "stdout": {}, "source_path": {}, "artifact_name": {},
 	"config_path": {}, "state_root": {}, "config.toml": {},
+	"interface": {}, "mac": {}, "address": {}, "ip": {},
+	"route": {}, "gateway": {}, "dns": {}, "mtu": {}, "index": {},
+	"count": {}, "error": {},
 }
 
 var allowedBackupFailureClasses = map[string]struct{}{
@@ -575,6 +590,12 @@ var allowedBackupFailureClasses = map[string]struct{}{
 	backupstatus.FailureHealth:    {},
 	backupstatus.FailureReadiness: {},
 	backupstatus.FailureInternal:  {},
+}
+
+var allowedNetworkStatuses = map[string]struct{}{
+	netpresence.StatusAvailable:   {},
+	netpresence.StatusUnknown:     {},
+	netpresence.StatusUnavailable: {},
 }
 
 var forbiddenOverviewValueSubstrings = []string{
@@ -602,8 +623,14 @@ func scanOverviewJSONValue(value any, parentKeys []string) error {
 	case map[string]any:
 		for key, child := range typed {
 			lowerKey := strings.ToLower(key)
+			if lowerKey == "name" && !isInstanceSection(parentKeys) {
+				return fmt.Errorf("response contained forbidden JSON key %q", key)
+			}
 			if _, forbidden := forbiddenOverviewJSONKeys[lowerKey]; forbidden {
 				return fmt.Errorf("response contained forbidden JSON key %q", key)
+			}
+			if isNetworkSection(parentKeys) && lowerKey != "status" {
+				return fmt.Errorf("network section contained forbidden JSON key %q", key)
 			}
 			if lowerKey == "failure" && isBackupSection(parentKeys) {
 				failure, ok := child.(string)
@@ -612,6 +639,16 @@ func scanOverviewJSONValue(value any, parentKeys []string) error {
 				}
 				if _, allowed := allowedBackupFailureClasses[failure]; !allowed {
 					return fmt.Errorf("backup.failure = %q, want allowed enum", failure)
+				}
+				continue
+			}
+			if lowerKey == "status" && isNetworkSection(parentKeys) {
+				status, ok := child.(string)
+				if !ok {
+					return fmt.Errorf("network.status has unexpected type %T", child)
+				}
+				if _, allowed := allowedNetworkStatuses[status]; !allowed {
+					return fmt.Errorf("network.status = %q, want allowed enum", status)
 				}
 				continue
 			}
@@ -626,18 +663,140 @@ func scanOverviewJSONValue(value any, parentKeys []string) error {
 			}
 		}
 	case string:
-		lower := strings.ToLower(typed)
-		for _, forbidden := range forbiddenOverviewValueSubstrings {
-			if strings.Contains(lower, forbidden) {
-				return fmt.Errorf("response leaked forbidden value substring %q in %q", forbidden, typed)
-			}
+		if err := checkForbiddenOverviewStringValue(typed); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
+func checkForbiddenOverviewStringValue(value string) error {
+	lower := strings.ToLower(value)
+	for _, forbidden := range forbiddenOverviewValueSubstrings {
+		if strings.Contains(lower, forbidden) {
+			return fmt.Errorf("response leaked forbidden value substring %q in %q", forbidden, value)
+		}
+	}
+	if looksLikeIPv4(value) || looksLikeMAC(value) {
+		return fmt.Errorf("response leaked address-like value %q", value)
+	}
+	return nil
+}
+
+func looksLikeIPv4(value string) bool {
+	parts := strings.Split(value, ".")
+	if len(parts) != 4 {
+		return false
+	}
+	for _, part := range parts {
+		if len(part) == 0 || len(part) > 3 {
+			return false
+		}
+		for _, ch := range part {
+			if ch < '0' || ch > '9' {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func looksLikeMAC(value string) bool {
+	parts := strings.Split(value, ":")
+	if len(parts) != 6 {
+		return false
+	}
+	for _, part := range parts {
+		if len(part) != 2 {
+			return false
+		}
+		for _, ch := range part {
+			if (ch < '0' || ch > '9') && (ch < 'a' || ch > 'f') && (ch < 'A' || ch > 'F') {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func isBackupSection(parentKeys []string) bool {
 	return len(parentKeys) == 1 && parentKeys[0] == "backup"
+}
+
+func isInstanceSection(parentKeys []string) bool {
+	return len(parentKeys) == 1 && parentKeys[0] == "instance"
+}
+
+func isNetworkSection(parentKeys []string) bool {
+	return len(parentKeys) == 1 && parentKeys[0] == "network"
+}
+
+func assertNetworkJSON(t *testing.T, body []byte, wantStatus string) {
+	t.Helper()
+
+	var payload map[string]json.RawMessage
+	if err := json.Unmarshal(body, &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error: %v body=%s", err, body)
+	}
+	networkRaw, ok := payload["network"]
+	if !ok {
+		t.Fatalf("missing network in %s", body)
+	}
+	var network map[string]json.RawMessage
+	if err := json.Unmarshal(networkRaw, &network); err != nil {
+		t.Fatalf("json.Unmarshal(network) error: %v", err)
+	}
+	if len(network) != 1 {
+		t.Fatalf("network keys = %v, want status only", sectionKeys(network))
+	}
+	if string(network["status"]) != `"`+wantStatus+`"` {
+		t.Fatalf("network.status = %s, want %q", network["status"], wantStatus)
+	}
+}
+
+func TestOverviewNetworkStatusAvailableSerialization(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{
+		networkPresence: stubNetworkPresenceLoader{network: netpresence.Network{Status: netpresence.StatusAvailable}},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", rec.Code, rec.Body.String())
+	}
+	assertOverviewCacheControlNoStore(t, rec)
+	assertNetworkJSON(t, rec.Body.Bytes(), netpresence.StatusAvailable)
+	assertNoSensitiveOverviewFields(t, rec.Body.Bytes())
+}
+
+func TestOverviewNetworkStatusUnknownSerialization(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{
+		networkPresence: stubNetworkPresenceLoader{network: netpresence.Network{Status: netpresence.StatusUnknown}},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	assertNetworkJSON(t, rec.Body.Bytes(), netpresence.StatusUnknown)
+}
+
+func TestOverviewNetworkStatusUnavailableWithReadyReadiness(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{
+		networkPresence: stubNetworkPresenceLoader{network: netpresence.Unavailable()},
+	})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", rec.Code, rec.Body.String())
+	}
+	got := decodeOverviewResponse(t, rec.Body.Bytes())
+	if got.Readiness.Status != "ready" || got.Readiness.Database != "ok" {
+		t.Fatalf("readiness = %+v", got.Readiness)
+	}
+	assertNetworkJSON(t, rec.Body.Bytes(), netpresence.StatusUnavailable)
 }
 
 func TestDisclosureGuardAllowsArtifactFailureClass(t *testing.T) {
@@ -648,9 +807,72 @@ func TestDisclosureGuardAllowsArtifactFailureClass(t *testing.T) {
 		"readiness":{"status":"ready","database":"ok"},
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"failed","completed_at":"2026-07-14T11:30:00.000000000Z","ever_succeeded":false,"failure":"artifact"},
+		"network":{"status":"available"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	assertNoSensitiveOverviewFields(t, body)
+}
+
+func TestDisclosureGuardAllowsNetworkAvailableStatus(t *testing.T) {
+	body := []byte(`{
+		"instance":{"name":"Vyntrio Home","version":"0.2.0-test","commit":"test-commit"},
+		"api":{"environment":"development"},
+		"service":{"status":"running"},
+		"readiness":{"status":"ready","database":"ok"},
+		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
+		"backup":{"status":"never_run","ever_succeeded":false},
+		"network":{"status":"available"},
+		"collected_at":"2026-07-14T12:00:00.000000000Z"
+	}`)
+	assertNoSensitiveOverviewFields(t, body)
+}
+
+func TestDisclosureGuardRejectsForbiddenInterfaceKey(t *testing.T) {
+	body := []byte(`{
+		"instance":{"name":"Vyntrio Home","version":"0.2.0-test","commit":"test-commit"},
+		"api":{"environment":"development"},
+		"service":{"status":"running"},
+		"readiness":{"status":"ready","database":"ok"},
+		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
+		"backup":{"status":"never_run","ever_succeeded":false},
+		"network":{"status":"available","interface":"eth0"},
+		"collected_at":"2026-07-14T12:00:00.000000000Z"
+	}`)
+	if err := checkNoSensitiveOverviewFields(body); err == nil {
+		t.Fatal("expected disclosure guard failure for forbidden interface key")
+	}
+}
+
+func TestDisclosureGuardRejectsForbiddenNameInNetworkSection(t *testing.T) {
+	body := []byte(`{
+		"instance":{"name":"Vyntrio Home","version":"0.2.0-test","commit":"test-commit"},
+		"api":{"environment":"development"},
+		"service":{"status":"running"},
+		"readiness":{"status":"ready","database":"ok"},
+		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
+		"backup":{"status":"never_run","ever_succeeded":false},
+		"network":{"status":"available","name":"eth0"},
+		"collected_at":"2026-07-14T12:00:00.000000000Z"
+	}`)
+	if err := checkNoSensitiveOverviewFields(body); err == nil {
+		t.Fatal("expected disclosure guard failure for forbidden name key in network section")
+	}
+}
+
+func TestDisclosureGuardRejectsIPAddressValue(t *testing.T) {
+	body := []byte(`{
+		"instance":{"name":"Vyntrio Home","version":"0.2.0-test","commit":"test-commit"},
+		"api":{"environment":"development"},
+		"service":{"status":"running"},
+		"readiness":{"status":"ready","database":"ok"},
+		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
+		"backup":{"status":"never_run","ever_succeeded":false},
+		"network":{"status":"available","detail":"192.168.1.10"},
+		"collected_at":"2026-07-14T12:00:00.000000000Z"
+	}`)
+	if err := checkNoSensitiveOverviewFields(body); err == nil {
+		t.Fatal("expected disclosure guard failure for IP-like value")
+	}
 }
 
 func TestDisclosureGuardRejectsForbiddenPathField(t *testing.T) {
@@ -661,6 +883,7 @@ func TestDisclosureGuardRejectsForbiddenPathField(t *testing.T) {
 		"readiness":{"status":"ready","database":"ok"},
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"failed","completed_at":"2026-07-14T11:30:00.000000000Z","ever_succeeded":false,"failure":"artifact","path":"/var/lib/vyntrio/backups/secret.tar"},
+		"network":{"status":"unknown"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {

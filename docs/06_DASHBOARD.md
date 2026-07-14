@@ -29,9 +29,16 @@ Session-Rollen mit `system:health` (Owner, Operator, Read-only).
 - Read-only lokaler Backup-Status: `never_run`, `succeeded`, `failed`, `unavailable`
 - Keine Backup-/Restore-Aktionen, keine Artefaktdetails, kein Verlauf
 
-**Explizit zukünftig (nicht in 8.1/8.3/8.5):**
+**Enthalten in 8.7:**
+- Read-only Network-Panel mit `available`, `unknown`, `unavailable`
+- `available`: „Local network interface present“ — mindestens eine berechtigte nicht-loopback Schnittstelle erscheint up (Prozess-Sicht); kein Internet-/DNS-/Reachability-Nachweis
+- `unknown`: „Local network presence unclear“ — keine berechtigte Schnittstelle beobachtet; kein Beweis für fehlende Hardware
+- `unavailable`: „Network presence could not be determined.“
+- Keine Aktionen, kein Polling, keine Schnittstellen-/IP-/MAC-Anzeige, keine technischen Rohdetails
+
+**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7):**
 - CPU-Auslastung in Prozent, 5m/15m-Load, Temperatur
-- Netzwerk-Metriken
+- Netzwerk-Metriken (Durchsatz, Pakete, Carrier, Wi-Fi, IP-Adressen)
 - Zusätzliche Filesystem-/Mount-IDs, Backup-Aktionen und Restore-Aktionen
 - Warnungen, Alerts, Management-Aktionen
 - WebSocket-Live-Streams und Polling

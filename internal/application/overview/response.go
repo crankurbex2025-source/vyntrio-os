@@ -3,6 +3,7 @@ package overview
 import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
 )
 
 // Response is the safe authenticated overview DTO for GET /api/v1/overview.
@@ -13,6 +14,7 @@ type Response struct {
 	Readiness   ReadinessSection    `json:"readiness"`
 	Host        hostmetrics.Host    `json:"host"`
 	Backup      backupstatus.Backup `json:"backup"`
+	Network     netpresence.Network `json:"network"`
 	CollectedAt string              `json:"collected_at"`
 }
 

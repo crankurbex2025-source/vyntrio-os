@@ -59,6 +59,7 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
   - `readiness`: `{ "status", "database" }` — gleiche Semantik wie `/readyz` (`ready`/`not_ready`, `ok`/`error`)
   - `host`: CPU-, Speicher- und State-Filesystem-Metriken (Slice 8.3; siehe unten)
   - `backup`: lokaler Backup-Status (Slice 8.5; siehe unten)
+  - `network`: begrenzte Netzwerk-Präsenz (Slice 8.7; siehe unten)
   - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
 - **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
 - **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
@@ -119,6 +120,28 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
 - **`failure`:** nur bei `failed`; grobe Klasse (`artifact`, `restart`, `health`, `readiness`, `internal`) — keine Pfade, Artefaktnamen, Hashes oder Rohfehler.
 - Status beschreibt den **letzten aufgezeichneten** Abschluss; er beweist nicht, dass ein Artefakt noch existiert oder gültig ist.
 - Backup-Status-Fehler degradieren **nur** `backup`; Overview bleibt **200**. Kein Backup-Trigger, keine Artefakt-Enumeration.
+
+**Zusätzliches Feld `network` (Slice 8.7):**
+
+```json
+"network": { "status": "available" }
+```
+
+```json
+"network": { "status": "unknown" }
+```
+
+```json
+"network": { "status": "unavailable" }
+```
+
+- **`network`:** genau ein Schlüssel `status`.
+- **`available`:** Enumeration gelang; mindestens eine berechtigte, nicht-loopback Schnittstelle erscheint administrativ up (aus Sicht dieses API-Prozesses).
+- **`unknown`:** Enumeration gelang; keine berechtigte Schnittstelle beobachtet.
+- **`unavailable`:** Enumeration-, Collector-, Plattform- oder Integritätsfehler.
+- Kein Zeitstempel, Count, Grund, Fehler, Identifier oder Diagnosefeld.
+- Netzwerk-Sammlungsfehler degradieren **nur** `network`; Overview bleibt **200**, sofern die Kern-Assembly gelingt.
+- **Keine Inferenzen:** kein Internet, DNS, Routing, DHCP, LAN-/Public-Reachability, Link-Carrier oder Netzwerkkonfiguration. Keine Schnittstellen-, MAC-, IP- oder Namens-Exposure.
 
 ### PATCH `/api/v1/settings/instance`
 

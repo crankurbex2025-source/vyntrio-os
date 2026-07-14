@@ -10,6 +10,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/domain/setting"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
 )
 
 const serviceStatusRunning = "running"
@@ -29,16 +30,22 @@ type BackupStatusLoader interface {
 	Read(ctx context.Context) backupstatus.Backup
 }
 
+// NetworkPresenceCollector assembles read-only network presence for the overview.
+type NetworkPresenceCollector interface {
+	Collect(ctx context.Context) netpresence.Network
+}
+
 // Loader assembles the authenticated overview response.
 type Loader struct {
-	repo         appsettings.Repository
-	readiness    ReadinessChecker
-	hostMetrics  HostMetricsCollector
-	backupStatus BackupStatusLoader
-	version      string
-	commit       string
-	environment  string
-	now          func() time.Time
+	repo            appsettings.Repository
+	readiness       ReadinessChecker
+	hostMetrics     HostMetricsCollector
+	backupStatus    BackupStatusLoader
+	networkPresence NetworkPresenceCollector
+	version         string
+	commit          string
+	environment     string
+	now             func() time.Time
 }
 
 // NewLoader creates an overview loader.
@@ -47,17 +54,19 @@ func NewLoader(
 	readiness ReadinessChecker,
 	hostMetrics HostMetricsCollector,
 	backupStatus BackupStatusLoader,
+	networkPresence NetworkPresenceCollector,
 	version, commit, environment string,
 ) Loader {
 	return Loader{
-		repo:         repo,
-		readiness:    readiness,
-		hostMetrics:  hostMetrics,
-		backupStatus: backupStatus,
-		version:      version,
-		commit:       commit,
-		environment:  environment,
-		now:          time.Now,
+		repo:            repo,
+		readiness:       readiness,
+		hostMetrics:     hostMetrics,
+		backupStatus:    backupStatus,
+		networkPresence: networkPresence,
+		version:         version,
+		commit:          commit,
+		environment:     environment,
+		now:             time.Now,
 	}
 }
 
@@ -90,6 +99,7 @@ func (l Loader) Load(ctx context.Context) (Response, error) {
 		Readiness:   readiness,
 		Host:        l.hostMetrics.Collect(ctx),
 		Backup:      l.backupStatus.Read(ctx),
+		Network:     l.networkPresence.Collect(ctx),
 		CollectedAt: collectedAt,
 	}, nil
 }

@@ -35,6 +35,12 @@ describe("parseOverviewDto", () => {
     };
   }
 
+  function validNetwork() {
+    return {
+      status: "available" as const,
+    };
+  }
+
   function validPayload() {
     return {
       instance: {
@@ -54,6 +60,7 @@ describe("parseOverviewDto", () => {
       },
       host: validHost(),
       backup: validBackup(),
+      network: validNetwork(),
       collected_at: "2026-07-14T12:00:00.000000000Z",
     };
   }
@@ -113,6 +120,29 @@ describe("parseOverviewDto", () => {
 
   it("rejects unknown top-level fields", () => {
     expect(parseOverviewDto({ ...validPayload(), extra: "x" })).toBeNull();
+  });
+
+  it("accepts all valid network status values", () => {
+    for (const status of ["available", "unknown", "unavailable"] as const) {
+      expect(parseOverviewDto({ ...validPayload(), network: { status } })).toEqual({
+        ...validPayload(),
+        network: { status },
+      });
+    }
+  });
+
+  it("rejects network with invalid status", () => {
+    expect(parseOverviewDto({ ...validPayload(), network: { status: "connected" } })).toBeNull();
+  });
+
+  it("rejects network with missing status", () => {
+    expect(parseOverviewDto({ ...validPayload(), network: {} })).toBeNull();
+  });
+
+  it("rejects network with extra fields", () => {
+    expect(
+      parseOverviewDto({ ...validPayload(), network: { status: "available", interface: "eth0" } })
+    ).toBeNull();
   });
 
   it("formats metric bytes for display", () => {

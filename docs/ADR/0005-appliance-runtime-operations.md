@@ -186,7 +186,10 @@ Intended v1 layout:
   devices, UUIDs, backup directories, or mount enumeration.
 - Per-metric collector failure sets that section to `unavailable` and omits
   numeric fields; overview remains HTTP **200**. No privileged helper, no sandbox
-  relaxation, no `/proc/stat`, no network interface reads, no host inventory API.
+  relaxation, no `/proc/stat`, no host inventory API beyond the bounded reads
+  defined in **E.3** (network presence). **E.1 does not authorize** general
+  network interface enumeration; see **E.3** for the sole approved overview
+  network observation.
 
 #### E.2 Overview backup status (Slice 8.5, implemented)
 
@@ -201,6 +204,26 @@ Intended v1 layout:
   `unavailable` in HTTP **200**. Status records last completion only; it does not
   prove artifact existence or validity.
 - The status sidecar is excluded from backup artifact member allowlists.
+
+#### E.3 Overview network presence (Slice 8.7, implemented)
+
+- For `GET /api/v1/overview` only, the API may call `net.Interfaces()` **in-process**
+  through `internal/platform/netpresence` on Linux builds. This **narrows and supersedes
+  the E.1 prohibition on network interface reads** solely for this bounded observation.
+- Internal collection inspects only each interface's `Flags` (loopback, administratively
+  up) and whether `HardwareAddr` is non-empty. Names, indexes, addresses, MAC values,
+  MTU, carrier, counters, routes, DNS, sockets, probes, polling, helpers, and sandbox
+  relaxation are **forbidden**.
+- Expose only `network.status` ∈ `available` | `unknown` | `unavailable`. Never
+  serialize interface identity, addresses, counts, reasons, or raw errors.
+- `available`: enumeration succeeded and at least one eligible non-loopback interface
+  appears administratively up from this API process's namespace.
+- `unknown`: enumeration succeeded but no eligible interface exists.
+- `unavailable`: enumeration, collector, platform, or integrity failure.
+- Collector failure degrades only `network` in HTTP **200**. The result does not
+  verify internet access, DNS, routing, DHCP, LAN/public reachability, link carrier,
+  or network configuration.
+- Non-Linux builds use a safe stub returning `unavailable`; no real interface inspection.
 
 ### F. Startup, liveness, readiness and shutdown
 

@@ -12,6 +12,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/domain/setting"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
 )
 
 type mockRepository struct {
@@ -80,6 +81,14 @@ func (s stubBackupLoader) Read(context.Context) backupstatus.Backup {
 	return s.status
 }
 
+type stubNetworkCollector struct {
+	network netpresence.Network
+}
+
+func (s stubNetworkCollector) Collect(context.Context) netpresence.Network {
+	return s.network
+}
+
 type stubReadiness struct {
 	result health.Result
 }
@@ -118,6 +127,7 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: true}},
 		stubHostCollector{},
 		stubBackupLoader{status: backupstatus.NeverRun()},
+		stubNetworkCollector{network: netpresence.Network{Status: netpresence.StatusUnknown}},
 		"0.2.0-dev",
 		"abc123",
 		"development",
@@ -147,6 +157,9 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 	if got.Backup.Status != backupstatus.StatusNeverRun {
 		t.Fatalf("backup = %+v", got.Backup)
 	}
+	if got.Network.Status != netpresence.StatusUnknown {
+		t.Fatalf("network = %+v", got.Network)
+	}
 	if got.CollectedAt == "" {
 		t.Fatal("expected collected_at")
 	}
@@ -171,6 +184,7 @@ func TestLoaderMapsDatabaseFailureToNotReady(t *testing.T) {
 		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: false}},
 		stubHostCollector{},
 		stubBackupLoader{status: backupstatus.NeverRun()},
+		stubNetworkCollector{network: netpresence.Unavailable()},
 		"0.2.0-dev",
 		"abc123",
 		"development",
@@ -188,5 +202,39 @@ func TestLoaderMapsDatabaseFailureToNotReady(t *testing.T) {
 	}
 	if got.Service.Status != "running" {
 		t.Fatalf("service.status = %q, want running", got.Service.Status)
+	}
+	if got.Network.Status != netpresence.StatusUnavailable {
+		t.Fatalf("network.status = %q, want unavailable", got.Network.Status)
+	}
+}
+
+func TestLoaderAssemblesNetworkAvailable(t *testing.T) {
+	repo := &mockRepository{
+		byKey: map[string]setting.Setting{
+			setting.KeyHostname: {
+				Namespace: setting.NamespaceSystem,
+				Key:       setting.KeyHostname,
+				Value:     "Vyntrio Home",
+				ValueType: setting.ValueTypeString,
+			},
+		},
+	}
+	loader := overview.NewLoader(
+		repo,
+		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: true}},
+		stubHostCollector{},
+		stubBackupLoader{status: backupstatus.NeverRun()},
+		stubNetworkCollector{network: netpresence.Network{Status: netpresence.StatusAvailable}},
+		"0.2.0-dev",
+		"abc123",
+		"development",
+	)
+
+	got, err := loader.Load(context.Background())
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if got.Network.Status != netpresence.StatusAvailable {
+		t.Fatalf("network.status = %q, want available", got.Network.Status)
 	}
 }

@@ -74,6 +74,12 @@ Kein CPU-%, Netzwerk, Backup-Artefakt-Exposure, Mount-Inventory oder Privilege-E
 unter dem validierten `state_dir`; `vyntrio-backup` ist alleiniger Schreiber.
 Per-Status `unavailable`-Degradation in HTTP 200. Kein Backup-Trigger, keine Artefakt-Enumeration.
 
+**Block 8 / Slice 8.7 (implementiert):** Read-only Netzwerk-Präsenz im Overview-DTO
+(`network.status` ∈ `available` | `unknown` | `unavailable`) via
+`internal/platform/netpresence` — in-process `net.Interfaces()` (Linux) nur Flags und
+HardwareAddr-Präsenz; keine Schnittstellen-/MAC-/IP-Exposure. Per-Sektion
+`unavailable`-Degradation in HTTP 200. Kein Internet-, DNS- oder Reachability-Nachweis.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

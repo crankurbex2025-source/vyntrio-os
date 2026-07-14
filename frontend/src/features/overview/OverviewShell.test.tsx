@@ -50,6 +50,9 @@ describe("OverviewShell", () => {
       status: "never_run",
       ever_succeeded: false,
     },
+    network: {
+      status: "available",
+    },
   };
 
   function renderShell(overrides: Partial<ComponentProps<typeof OverviewShell>> = {}) {
@@ -79,7 +82,32 @@ describe("OverviewShell", () => {
     expect(screen.getByText(/4 GB used/)).toBeInTheDocument();
     expect(screen.getByText(/State storage/)).toBeInTheDocument();
     expect(screen.getByText("No backup recorded")).toBeInTheDocument();
+    expect(screen.getByText("Local network interface present")).toBeInTheDocument();
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
+    expect(screen.queryByText(/eth0|192\.168|mac/i)).not.toBeInTheDocument();
+  });
+
+  it("renders unknown network presence copy", () => {
+    renderShell({
+      overview: {
+        ...overview,
+        network: { status: "unknown" },
+      },
+    });
+    expect(screen.getByText("Local network presence unclear")).toBeInTheDocument();
+    expect(
+      screen.getByText(/No eligible interface was observed from this process/)
+    ).toBeInTheDocument();
+  });
+
+  it("renders unavailable network presence copy", () => {
+    renderShell({
+      overview: {
+        ...overview,
+        network: { status: "unavailable" },
+      },
+    });
+    expect(screen.getByText("Network presence could not be determined.")).toBeInTheDocument();
   });
 
   it("renders unavailable backup status explicitly", () => {

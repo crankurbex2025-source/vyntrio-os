@@ -39,6 +39,12 @@ export type BackupDto = {
   failure?: BackupFailure;
 };
 
+export type NetworkStatus = "available" | "unknown" | "unavailable";
+
+export type NetworkDto = {
+  status: NetworkStatus;
+};
+
 export type OverviewDto = {
   instance: {
     name: string;
@@ -57,6 +63,7 @@ export type OverviewDto = {
   };
   host: HostDto;
   backup: BackupDto;
+  network: NetworkDto;
   collected_at: string;
 };
 
@@ -269,10 +276,30 @@ function parseBackup(value: unknown): BackupDto | null {
   };
 }
 
+function parseNetwork(value: unknown): NetworkDto | null {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["status"])) {
+    return null;
+  }
+  const status = value.status;
+  if (status !== "available" && status !== "unknown" && status !== "unavailable") {
+    return null;
+  }
+  return { status };
+}
+
 export function parseOverviewDto(payload: unknown): OverviewDto | null {
   if (
     !isPlainRecord(payload) ||
-    !hasExactKeys(payload, ["instance", "api", "service", "readiness", "host", "backup", "collected_at"])
+    !hasExactKeys(payload, [
+      "instance",
+      "api",
+      "service",
+      "readiness",
+      "host",
+      "backup",
+      "network",
+      "collected_at",
+    ])
   ) {
     return null;
   }
@@ -283,6 +310,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
   const readiness = payload.readiness;
   const host = parseHost(payload.host);
   const backup = parseBackup(payload.backup);
+  const network = parseNetwork(payload.network);
   const collectedAt = payload.collected_at;
 
   if (!isPlainRecord(instance) || !hasExactKeys(instance, ["name", "version", "commit"])) {
@@ -301,6 +329,9 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     return null;
   }
   if (!backup) {
+    return null;
+  }
+  if (!network) {
     return null;
   }
 
@@ -335,6 +366,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     },
     host,
     backup,
+    network,
     collected_at: collectedAt,
   };
 }

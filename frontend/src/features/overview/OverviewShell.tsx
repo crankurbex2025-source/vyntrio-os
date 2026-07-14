@@ -122,6 +122,39 @@ export function OverviewShell({
         </section>
 
         <section className="dashboard-panel">
+          <h2>Network</h2>
+          <article className="dashboard-info-card">
+            <p className="dashboard-card-label">Network presence</p>
+            {overview.network.status === "available" ? (
+              <>
+                <p className="dashboard-card-value">Local network interface present</p>
+                <p className="dashboard-card-detail">
+                  This process observes at least one non-loopback interface that appears up. This
+                  does not verify internet access, DNS, or reachability.
+                </p>
+              </>
+            ) : null}
+            {overview.network.status === "unknown" ? (
+              <>
+                <p className="dashboard-card-value">Local network presence unclear</p>
+                <p className="dashboard-card-detail">
+                  No eligible interface was observed from this process. This does not prove that
+                  hardware is missing or misconfigured.
+                </p>
+              </>
+            ) : null}
+            {overview.network.status === "unavailable" ? (
+              <>
+                <p className="dashboard-card-value">Unavailable</p>
+                <p className="dashboard-card-detail">
+                  Network presence could not be determined.
+                </p>
+              </>
+            ) : null}
+          </article>
+        </section>
+
+        <section className="dashboard-panel">
           <h2>Host metrics</h2>
           <p className="dashboard-panel-note">
             Load average is not CPU utilization. Metrics are a point-in-time snapshot only.
