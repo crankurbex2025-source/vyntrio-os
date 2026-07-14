@@ -60,6 +60,7 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
   - `host`: CPU-, Speicher- und State-Filesystem-Metriken (Slice 8.3; siehe unten)
   - `backup`: lokaler Backup-Status (Slice 8.5; siehe unten)
   - `network`: begrenzte Netzwerk-Präsenz (Slice 8.7; siehe unten)
+  - `software`: read-only Software-/Release-Metadaten (Slice 8.9; siehe unten)
   - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
 - **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
 - **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
@@ -142,6 +143,29 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
 - Kein Zeitstempel, Count, Grund, Fehler, Identifier oder Diagnosefeld.
 - Netzwerk-Sammlungsfehler degradieren **nur** `network`; Overview bleibt **200**, sofern die Kern-Assembly gelingt.
 - **Keine Inferenzen:** kein Internet, DNS, Routing, DHCP, LAN-/Public-Reachability, Link-Carrier oder Netzwerkkonfiguration. Keine Schnittstellen-, MAC-, IP- oder Namens-Exposure.
+
+**Zusätzliches Feld `software` (Slice 8.9):**
+
+```json
+"software": {
+  "status": "ok",
+  "version": "0.2.0-dev",
+  "commit": "abc123",
+  "channel": "development"
+}
+```
+
+```json
+"software": { "status": "unavailable" }
+```
+
+- **`software`:** read-only Metadaten aus dem laufenden API-Prozess (bereits eingebettete Version/Commit und abgeleiteter Kanal).
+- **`status`:** `ok` oder `unavailable`.
+- **`version`:** nur bei `ok`; eingebettete Anwendungsversion.
+- **`commit`:** optional bei `ok`; Build-/Revisionskennung, wenn materialisiert (kann `unknown` sein).
+- **`channel`:** nur bei `ok`; `development`, `production` oder `unknown` — abgeleitet aus dem bestehenden `api.environment`-Modell, kein Update-Kanal aus dem Netz.
+- Kein Update-Check, kein Paketmanager, keine OS-/Kernel-Inventory, keine Registry-/CI-Metadaten.
+- Fehlende Version → nur `status: unavailable`; Overview bleibt **200**, sofern die Kern-Assembly gelingt.
 
 ### PATCH `/api/v1/settings/instance`
 

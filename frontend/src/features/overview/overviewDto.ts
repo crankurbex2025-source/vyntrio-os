@@ -45,6 +45,17 @@ export type NetworkDto = {
   status: NetworkStatus;
 };
 
+export type SoftwareStatus = "ok" | "unavailable";
+
+export type ReleaseChannel = "development" | "production" | "unknown";
+
+export type SoftwareDto = {
+  status: SoftwareStatus;
+  version?: string;
+  commit?: string;
+  channel?: ReleaseChannel;
+};
+
 export type OverviewDto = {
   instance: {
     name: string;
@@ -64,6 +75,7 @@ export type OverviewDto = {
   host: HostDto;
   backup: BackupDto;
   network: NetworkDto;
+  software: SoftwareDto;
   collected_at: string;
 };
 
@@ -287,6 +299,46 @@ function parseNetwork(value: unknown): NetworkDto | null {
   return { status };
 }
 
+function parseSoftware(value: unknown): SoftwareDto | null {
+  if (!isPlainRecord(value) || !("status" in value)) {
+    return null;
+  }
+  const status = value.status;
+  if (status !== "ok" && status !== "unavailable") {
+    return null;
+  }
+  if (status === "unavailable") {
+    return hasExactKeys(value, ["status"]) ? { status } : null;
+  }
+  const hasCommit = typeof value.commit === "string";
+  const expectedKeys = hasCommit
+    ? ["status", "version", "commit", "channel"]
+    : ["status", "version", "channel"];
+  if (!hasExactKeys(value, expectedKeys)) {
+    return null;
+  }
+  const channel = value.channel;
+  if (
+    typeof value.version !== "string" ||
+    (channel !== "development" && channel !== "production" && channel !== "unknown")
+  ) {
+    return null;
+  }
+  if (typeof value.commit === "string") {
+    return {
+      status,
+      version: value.version,
+      commit: value.commit,
+      channel,
+    };
+  }
+  return {
+    status,
+    version: value.version,
+    channel,
+  };
+}
+
 export function parseOverviewDto(payload: unknown): OverviewDto | null {
   if (
     !isPlainRecord(payload) ||
@@ -298,6 +350,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
       "host",
       "backup",
       "network",
+      "software",
       "collected_at",
     ])
   ) {
@@ -311,6 +364,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
   const host = parseHost(payload.host);
   const backup = parseBackup(payload.backup);
   const network = parseNetwork(payload.network);
+  const software = parseSoftware(payload.software);
   const collectedAt = payload.collected_at;
 
   if (!isPlainRecord(instance) || !hasExactKeys(instance, ["name", "version", "commit"])) {
@@ -332,6 +386,9 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     return null;
   }
   if (!network) {
+    return null;
+  }
+  if (!software) {
     return null;
   }
 
@@ -367,6 +424,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     host,
     backup,
     network,
+    software,
     collected_at: collectedAt,
   };
 }

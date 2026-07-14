@@ -562,6 +562,9 @@ func assertOverviewResponseShape(t *testing.T, rec *httptest.ResponseRecorder) {
 	if got.Network.Status == "" {
 		t.Fatalf("network = %+v", got.Network)
 	}
+	if got.Software.Status == "" {
+		t.Fatalf("software = %+v", got.Software)
+	}
 }
 
 func assertOverviewCacheControlNoStore(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -598,6 +601,17 @@ var allowedNetworkStatuses = map[string]struct{}{
 	netpresence.StatusUnavailable: {},
 }
 
+var allowedSoftwareStatuses = map[string]struct{}{
+	appoverview.SoftwareStatusOK:          {},
+	appoverview.SoftwareStatusUnavailable: {},
+}
+
+var allowedSoftwareChannels = map[string]struct{}{
+	appoverview.ReleaseChannelDevelopment: {},
+	appoverview.ReleaseChannelProduction:  {},
+	appoverview.ReleaseChannelUnknown:     {},
+}
+
 var forbiddenOverviewValueSubstrings = []string{
 	"/var/lib", "/etc/vyntrio", "127.0.0.1", "sqlite", "config.toml",
 	".tar", "sha256", "vyntrio.db",
@@ -632,6 +646,14 @@ func scanOverviewJSONValue(value any, parentKeys []string) error {
 			if isNetworkSection(parentKeys) && lowerKey != "status" {
 				return fmt.Errorf("network section contained forbidden JSON key %q", key)
 			}
+			if isSoftwareSection(parentKeys) {
+				allowed := map[string]struct{}{
+					"status": {}, "version": {}, "commit": {}, "channel": {},
+				}
+				if _, ok := allowed[lowerKey]; !ok {
+					return fmt.Errorf("software section contained forbidden JSON key %q", key)
+				}
+			}
 			if lowerKey == "failure" && isBackupSection(parentKeys) {
 				failure, ok := child.(string)
 				if !ok {
@@ -649,6 +671,26 @@ func scanOverviewJSONValue(value any, parentKeys []string) error {
 				}
 				if _, allowed := allowedNetworkStatuses[status]; !allowed {
 					return fmt.Errorf("network.status = %q, want allowed enum", status)
+				}
+				continue
+			}
+			if lowerKey == "status" && isSoftwareSection(parentKeys) {
+				status, ok := child.(string)
+				if !ok {
+					return fmt.Errorf("software.status has unexpected type %T", child)
+				}
+				if _, allowed := allowedSoftwareStatuses[status]; !allowed {
+					return fmt.Errorf("software.status = %q, want allowed enum", status)
+				}
+				continue
+			}
+			if lowerKey == "channel" && isSoftwareSection(parentKeys) {
+				channel, ok := child.(string)
+				if !ok {
+					return fmt.Errorf("software.channel has unexpected type %T", child)
+				}
+				if _, allowed := allowedSoftwareChannels[channel]; !allowed {
+					return fmt.Errorf("software.channel = %q, want allowed enum", channel)
 				}
 				continue
 			}
@@ -731,6 +773,10 @@ func isNetworkSection(parentKeys []string) bool {
 	return len(parentKeys) == 1 && parentKeys[0] == "network"
 }
 
+func isSoftwareSection(parentKeys []string) bool {
+	return len(parentKeys) == 1 && parentKeys[0] == "software"
+}
+
 func assertNetworkJSON(t *testing.T, body []byte, wantStatus string) {
 	t.Helper()
 
@@ -799,6 +845,38 @@ func TestOverviewNetworkStatusUnavailableWithReadyReadiness(t *testing.T) {
 	assertNetworkJSON(t, rec.Body.Bytes(), netpresence.StatusUnavailable)
 }
 
+func TestOverviewSoftwareStatusOKSerialization(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", rec.Code, rec.Body.String())
+	}
+	assertSoftwareJSON(t, rec.Body.Bytes(), appoverview.SoftwareStatusOK, settingsTestVersion, "test-commit", appoverview.ReleaseChannelDevelopment)
+	assertNoSensitiveOverviewFields(t, rec.Body.Bytes())
+}
+
+func assertSoftwareJSON(t *testing.T, body []byte, wantStatus, wantVersion, wantCommit, wantChannel string) {
+	t.Helper()
+
+	got := decodeOverviewResponse(t, body)
+	if got.Software.Status != wantStatus {
+		t.Fatalf("software.status = %q, want %q", got.Software.Status, wantStatus)
+	}
+	if wantStatus == appoverview.SoftwareStatusOK {
+		if got.Software.Version != wantVersion {
+			t.Fatalf("software.version = %q, want %q", got.Software.Version, wantVersion)
+		}
+		if got.Software.Commit != wantCommit {
+			t.Fatalf("software.commit = %q, want %q", got.Software.Commit, wantCommit)
+		}
+		if got.Software.Channel != wantChannel {
+			t.Fatalf("software.channel = %q, want %q", got.Software.Channel, wantChannel)
+		}
+	}
+}
+
 func TestDisclosureGuardAllowsArtifactFailureClass(t *testing.T) {
 	body := []byte(`{
 		"instance":{"name":"Vyntrio Home","version":"0.2.0-test","commit":"test-commit"},
@@ -808,6 +886,7 @@ func TestDisclosureGuardAllowsArtifactFailureClass(t *testing.T) {
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"failed","completed_at":"2026-07-14T11:30:00.000000000Z","ever_succeeded":false,"failure":"artifact"},
 		"network":{"status":"available"},
+		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	assertNoSensitiveOverviewFields(t, body)
@@ -822,6 +901,7 @@ func TestDisclosureGuardAllowsNetworkAvailableStatus(t *testing.T) {
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"never_run","ever_succeeded":false},
 		"network":{"status":"available"},
+		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	assertNoSensitiveOverviewFields(t, body)
@@ -836,6 +916,7 @@ func TestDisclosureGuardRejectsForbiddenInterfaceKey(t *testing.T) {
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"never_run","ever_succeeded":false},
 		"network":{"status":"available","interface":"eth0"},
+		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {
@@ -852,6 +933,7 @@ func TestDisclosureGuardRejectsForbiddenNameInNetworkSection(t *testing.T) {
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"never_run","ever_succeeded":false},
 		"network":{"status":"available","name":"eth0"},
+		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {
@@ -868,6 +950,7 @@ func TestDisclosureGuardRejectsIPAddressValue(t *testing.T) {
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"never_run","ever_succeeded":false},
 		"network":{"status":"available","detail":"192.168.1.10"},
+		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {
@@ -884,6 +967,7 @@ func TestDisclosureGuardRejectsForbiddenPathField(t *testing.T) {
 		"host":{"cpu":{"status":"unavailable"},"memory":{"status":"unavailable"},"filesystems":[{"id":"state","status":"unavailable"}]},
 		"backup":{"status":"failed","completed_at":"2026-07-14T11:30:00.000000000Z","ever_succeeded":false,"failure":"artifact","path":"/var/lib/vyntrio/backups/secret.tar"},
 		"network":{"status":"unknown"},
+		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {

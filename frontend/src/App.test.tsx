@@ -75,6 +75,12 @@ describe("App", () => {
       network: {
         status: "available",
       },
+      software: {
+        status: "ok",
+        version: "0.2.0-dev",
+        commit: "abc123",
+        channel: "development",
+      },
     };
   }
 
@@ -139,8 +145,7 @@ describe("App", () => {
     });
     expect(screen.getByText("Vyntrio Control Center")).toBeInTheDocument();
     expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
-    expect(screen.getByText("abc123")).toBeInTheDocument();
-    expect(screen.getByText("development")).toBeInTheDocument();
+    expect(screen.getByText(/Build abc123 · development channel/)).toBeInTheDocument();
     expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
     expect(screen.queryByText("session")).not.toBeInTheDocument();

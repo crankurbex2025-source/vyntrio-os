@@ -41,6 +41,15 @@ describe("parseOverviewDto", () => {
     };
   }
 
+  function validSoftware() {
+    return {
+      status: "ok" as const,
+      version: "0.2.0-dev",
+      commit: "abc123",
+      channel: "development" as const,
+    };
+  }
+
   function validPayload() {
     return {
       instance: {
@@ -61,6 +70,7 @@ describe("parseOverviewDto", () => {
       host: validHost(),
       backup: validBackup(),
       network: validNetwork(),
+      software: validSoftware(),
       collected_at: "2026-07-14T12:00:00.000000000Z",
     };
   }
@@ -142,6 +152,26 @@ describe("parseOverviewDto", () => {
   it("rejects network with extra fields", () => {
     expect(
       parseOverviewDto({ ...validPayload(), network: { status: "available", interface: "eth0" } })
+    ).toBeNull();
+  });
+
+  it("accepts unavailable software status without extra fields", () => {
+    expect(parseOverviewDto({ ...validPayload(), software: { status: "unavailable" } })).toEqual({
+      ...validPayload(),
+      software: { status: "unavailable" },
+    });
+  });
+
+  it("rejects software with invalid channel", () => {
+    expect(
+      parseOverviewDto({
+        ...validPayload(),
+        software: {
+          status: "ok",
+          version: "0.2.0-dev",
+          channel: "staging",
+        },
+      })
     ).toBeNull();
   });
 

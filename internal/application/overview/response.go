@@ -15,6 +15,7 @@ type Response struct {
 	Host        hostmetrics.Host    `json:"host"`
 	Backup      backupstatus.Backup `json:"backup"`
 	Network     netpresence.Network `json:"network"`
+	Software    SoftwareSection     `json:"software"`
 	CollectedAt string              `json:"collected_at"`
 }
 

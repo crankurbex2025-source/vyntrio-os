@@ -160,6 +160,15 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 	if got.Network.Status != netpresence.StatusUnknown {
 		t.Fatalf("network = %+v", got.Network)
 	}
+	if got.Software.Status != overview.SoftwareStatusOK {
+		t.Fatalf("software = %+v", got.Software)
+	}
+	if got.Software.Version != "0.2.0-dev" || got.Software.Commit != "abc123" {
+		t.Fatalf("software = %+v", got.Software)
+	}
+	if got.Software.Channel != overview.ReleaseChannelDevelopment {
+		t.Fatalf("software.channel = %q", got.Software.Channel)
+	}
 	if got.CollectedAt == "" {
 		t.Fatal("expected collected_at")
 	}

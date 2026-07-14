@@ -100,6 +100,7 @@ func (l Loader) Load(ctx context.Context) (Response, error) {
 		Host:        l.hostMetrics.Collect(ctx),
 		Backup:      l.backupStatus.Read(ctx),
 		Network:     l.networkPresence.Collect(ctx),
+		Software:    AssembleSoftware(l.version, l.commit, l.environment),
 		CollectedAt: collectedAt,
 	}, nil
 }

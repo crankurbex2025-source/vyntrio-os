@@ -75,6 +75,39 @@ export function OverviewShell({
         </section>
 
         <section className="dashboard-panel">
+          <h2>Software release</h2>
+          <p className="dashboard-panel-note">
+            Read-only metadata from the running API process. This does not check for updates or
+            verify installed packages.
+          </p>
+          <article className="dashboard-info-card">
+            <p className="dashboard-card-label">Release status</p>
+            {overview.software.status === "ok" ? (
+              <>
+                <p className="dashboard-card-value">{overview.software.version}</p>
+                <p className="dashboard-card-detail">
+                  {overview.software.commit
+                    ? `Build ${overview.software.commit}`
+                    : "Build revision not recorded"}
+                  {overview.software.channel === "development"
+                    ? " · development channel"
+                    : null}
+                  {overview.software.channel === "production" ? " · production channel" : null}
+                  {overview.software.channel === "unknown" ? " · channel unknown" : null}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="dashboard-card-value">Unavailable</p>
+                <p className="dashboard-card-detail">
+                  Software release metadata could not be determined.
+                </p>
+              </>
+            )}
+          </article>
+        </section>
+
+        <section className="dashboard-panel">
           <h2>Local backup</h2>
           <p className="dashboard-panel-note">
             Status reflects the last recorded backup attempt only. It does not verify that a
@@ -226,18 +259,6 @@ export function OverviewShell({
             <div className="dashboard-info-row">
               <dt>Instance</dt>
               <dd>{overview.instance.name}</dd>
-            </div>
-            <div className="dashboard-info-row">
-              <dt>Version</dt>
-              <dd>{overview.instance.version}</dd>
-            </div>
-            <div className="dashboard-info-row">
-              <dt>Build</dt>
-              <dd>{overview.instance.commit}</dd>
-            </div>
-            <div className="dashboard-info-row">
-              <dt>Environment</dt>
-              <dd>{overview.api.environment}</dd>
             </div>
             <div className="dashboard-info-row">
               <dt>Collected</dt>

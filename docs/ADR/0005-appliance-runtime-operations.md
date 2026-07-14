@@ -225,6 +225,19 @@ Intended v1 layout:
   or network configuration.
 - Non-Linux builds use a safe stub returning `unavailable`; no real interface inspection.
 
+#### E.4 Overview software release status (Slice 8.9, implemented)
+
+- For `GET /api/v1/overview` only, expose read-only `software` metadata assembled
+  **in-process** from already-materialized application fields: embedded `version`,
+  embedded `commit` when present, and coarse `channel` derived from the existing
+  `api.environment` classification (`development` | `production` | `unknown`).
+- No package manager, updater, OS/kernel inventory, filesystem scans beyond existing
+  loader inputs, commit-history mining, registry/CI metadata, or external connectivity checks.
+- Expose only `software.status` ∈ `ok` | `unavailable` and, when `ok`, `version`,
+  optional `commit`, and `channel`. Missing version maps to `unavailable` in HTTP **200**.
+- This slice does not verify update availability, package integrity, or release provenance
+  beyond what the running binary already embeds.
+
 ### F. Startup, liveness, readiness and shutdown
 
 - **Fail-closed startup (implemented):** invalid runtime configuration,

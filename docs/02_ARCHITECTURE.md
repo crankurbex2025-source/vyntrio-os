@@ -80,6 +80,11 @@ Per-Status `unavailable`-Degradation in HTTP 200. Kein Backup-Trigger, keine Art
 HardwareAddr-Präsenz; keine Schnittstellen-/MAC-/IP-Exposure. Per-Sektion
 `unavailable`-Degradation in HTTP 200. Kein Internet-, DNS- oder Reachability-Nachweis.
 
+**Block 8 / Slice 8.9 (implementiert):** Read-only Software-/Release-Status im Overview-DTO
+(`software.status`, optional `version`, `commit`, `channel`) — materialisiert nur aus
+bereits lokaler Loader-Metadaten (eingebettete Version/Commit, Kanal aus `api.environment`);
+kein Update-Check, keine Paket- oder Host-Inventory.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

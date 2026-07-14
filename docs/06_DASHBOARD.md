@@ -36,7 +36,11 @@ Session-Rollen mit `system:health` (Owner, Operator, Read-only).
 - `unavailable`: „Network presence could not be determined.“
 - Keine Aktionen, kein Polling, keine Schnittstellen-/IP-/MAC-Anzeige, keine technischen Rohdetails
 
-**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7):**
+**Enthalten in 8.9:**
+- Read-only Software-/Release-Karte: Version, optionale Build-Revision, Kanal (`development`/`production`/`unknown`)
+- Kein Update-Check, keine Paket-/OS-Inventory, keine Admin-Aktionen
+
+**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7/8.9):**
 - CPU-Auslastung in Prozent, 5m/15m-Load, Temperatur
 - Netzwerk-Metriken (Durchsatz, Pakete, Carrier, Wi-Fi, IP-Adressen)
 - Zusätzliche Filesystem-/Mount-IDs, Backup-Aktionen und Restore-Aktionen
