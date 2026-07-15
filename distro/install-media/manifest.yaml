@@ -3,6 +3,7 @@
 # This file is not consumed by any build or installer in Slice 9.3.
 # Build I/O contract: distro/install-media/build-contract.md (Slice 9.5).
 # Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7).
+# Bootability contract: distro/install-media/bootability-contract.md (Slice 9.9).
 
 schema_version: vyntrio-install-media-manifest-v1
 media_role: install

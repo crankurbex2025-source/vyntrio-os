@@ -22,6 +22,10 @@ assembles the local disposable tree `distro/install-media/envelope/` with
 deferred placeholders only. This does **not** produce ISO/USB images or write to
 target disk paths.
 
+**Slice 9.9 (scaffold):** `distro/install-media/bootability-contract.md` and
+`bootability-manifest.yaml` define the bootable initialization boundary beyond
+envelope assembly. This is declarative only.
+
 Recovery-image envelope is a **separate future contract** under
 `distro/recovery-media/` — not defined here.
 
@@ -122,6 +126,8 @@ The following require future implementation slices after 9.8:
 ## 8. Related documents
 
 - `distro/install-media/envelope-manifest.yaml` — declarative layer inventory
+- `distro/install-media/bootability-contract.md` — bootable initialization boundary
+- `distro/install-media/bootability-manifest.yaml` — bootability layer inventory
 - `distro/install-media/build-contract.md` — install-image build I/O contract
 - `distro/install-media/manifest.yaml` — payload authority
 - `docs/ADR/0006-appliance-install-recovery-media.md`

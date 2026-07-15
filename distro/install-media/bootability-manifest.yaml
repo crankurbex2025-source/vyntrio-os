@@ -1,0 +1,148 @@
+# Declarative install-image bootability manifest (scaffold only).
+# Authority: docs/ADR/0006-appliance-install-recovery-media.md (install media)
+# Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7)
+# Envelope assembly: scripts/assemble-install-media-envelope.sh (Slice 9.8)
+# Bootability contract: distro/install-media/bootability-contract.md (Slice 9.9)
+# Not consumed by any bootloader, kernel, or ISO/USB builder in Slice 9.9.
+
+schema_version: vyntrio-install-media-bootability-v1
+media_role: install
+
+description: >
+  Bootable initialization contract for install images. Defines what must be added
+  to a local envelope before it becomes a bootable ISO/USB deliverable. Does not
+  execute boot loaders, live-root builds, partitioning, or installer logic.
+
+separate_from:
+  recovery_media: distro/recovery-media/
+  installer_execution: deferred
+  target_disk_state:
+    - /var/lib/vyntrio/
+    - deployed /etc/vyntrio/config.toml on a running appliance
+  note: >
+    Bootable initialization packages firmware-handoff and live-runtime layers.
+    It does not install payloads to disk, seed bootstrap state, or run services.
+
+envelope_input:
+  repository_path: distro/install-media/envelope/
+  producer: make install-media-envelope
+  script: scripts/assemble-install-media-envelope.sh
+  disposable: true
+  committed: false
+  required_layers:
+    - boot
+    - live_root
+    - payload
+  note: >
+    Slice 9.8 assembles the envelope tree locally. Bootability initialization
+    consumes this tree; it does not replace payload staging (Slice 9.6).
+
+# What bootable initialization adds beyond Slice 9.8 envelope assembly.
+bootability_additions:
+  boot_layer:
+    status: deferred
+    replaces: boot/LAYER.txt
+    on_media_path: boot/
+    future_artifacts:
+      - bootloader_config
+      - kernel_image
+      - initrd_image
+    purpose: Firmware handoff to a minimal live runtime (UEFI/BIOS deferred)
+    executable_build: false
+
+  live_root_layer:
+    status: deferred
+    replaces: live_root/LAYER.txt
+    on_media_path: live_root/
+    future_artifacts:
+      - minimal_root_filesystem
+      - live_init_system
+      - future_installer_host_runtime
+    purpose: Host environment for future install execution only
+    executable_build: false
+    excludes:
+      - appliance_sqlite_state
+      - owner_credentials
+      - bootstrap_tokens
+      - license_files
+      - backup_artifacts
+      - instance_secrets
+      - recovery_media_tooling
+      - preinstalled_target_disk_payloads
+
+  image_envelope:
+    status: deferred
+    future_outputs:
+      - bootable_iso_file
+      - raw_usb_image_file
+    purpose: Ephemeral distribution artifact referencing populated boot/live_root/payload
+    executable_build: false
+
+initialization_flow:
+  current_slice: "9.9"
+  steps:
+    - id: stage_payload
+      status: implemented
+      slice: "9.6"
+      action: Copy manifest payloads to distro/install-media/staging/payload/
+    - id: assemble_envelope
+      status: implemented
+      slice: "9.8"
+      action: Assemble local envelope at distro/install-media/envelope/
+    - id: initialize_boot_layer
+      status: deferred
+      action: Populate boot/ with bootloader, kernel, and initrd references
+    - id: initialize_live_root
+      status: deferred
+      action: Populate live_root/ with minimal live filesystem
+    - id: validate_bootable_layout
+      status: deferred
+      action: Verify boot/live_root/payload layout before image emission
+    - id: emit_bootable_image
+      status: deferred
+      action: Produce bootable ISO or raw USB image file from initialized envelope
+
+deferred_executable_slices:
+  - boot_loader_uefi_bios_configuration
+  - live_root_filesystem_composition
+  - iso_or_usb_image_generation
+  - bootable_initialization_makefile_target
+  - vyntrio_installer_execution
+
+excluded_from_bootable_image:
+  - appliance_sqlite_state
+  - owner_credentials
+  - bootstrap_tokens
+  - license_files
+  - backup_artifacts
+  - instance_secrets
+  - recovery_media_manifest_and_tooling
+  - combined_install_recovery_image
+  - target_disk_persistent_state
+
+metadata_files:
+  - id: envelope-record
+    path: ENVELOPE.txt
+    location: distro/install-media/envelope/
+    slice: "9.8"
+    shipped_on_image: false
+    purpose: Local envelope assembly provenance
+
+  - id: bootability-record
+    path: BOOTABILITY.txt
+    location: deferred
+    shipped_on_image: false
+    purpose: Future local bootability initialization provenance
+
+  - id: bootability-record-yaml
+    path: bootability-record.yaml
+    location: deferred
+    shipped_on_image: deferred
+    purpose: Future build record for bootable image emission
+
+post_bootability_handoff:
+  installer_execution: deferred
+  payload_copy_to_target_disk: deferred
+  bootstrap: ADR-0004
+  persistent_state: target_disk_only
+  restore_procedure: docs/ops/restore-safety-contract.md

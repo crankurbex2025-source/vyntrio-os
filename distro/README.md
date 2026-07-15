@@ -39,6 +39,11 @@ deklarative Schichten (`boot/`, `live_root/`, `payload/`); Verweis auf
 konsumiert gestagte Payloads; `boot/`/`live_root/` nur Platzhalter; kein ISO/USB,
 kein Zielplatten-Schreiben.
 
+**Block 9 / Slice 9.9:** Bootability-Initialisierungs-Gerüst in
+`distro/install-media/bootability-contract.md` und `bootability-manifest.yaml` —
+deklarative Grenze für bootfähige ISO/USB nach Envelope-Assembly; kein Bootloader,
+kein Live-Root, kein Installer-Lauf.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

@@ -16,9 +16,10 @@ sections B, D, E). Runtime paths and ownership remain `docs/ADR/0005-appliance-r
 | Payload staging (`make install-media-stage`) | **Implemented (Slice 9.6)** — local `staging/payload/` only |
 | Live/boot envelope (`envelope-manifest.yaml`) | **Scaffold (Slice 9.7)** — declarative layer contract |
 | Envelope assembly (`make install-media-envelope`) | **Implemented (Slice 9.8)** — local `envelope/` only |
+| Bootability contract (`bootability-manifest.yaml`) | **Scaffold (Slice 9.9)** — declarative boot init boundary |
 | Config template (`config.toml.template`) | **Scaffold** — operator-edited at install |
-| Boot/live environment build | **Not started** — deferred after envelope scaffold |
-| ISO/USB build pipeline | **Not started** — deferred after envelope scaffold |
+| Boot/live layer population | **Not started** — deferred after bootability scaffold |
+| ISO/USB image emission | **Not started** — deferred after bootability scaffold |
 | `vyntrio-installer` behavior | **Not started** — `cmd/installer` is a stub |
 | Recovery media | **Separate deliverable** — not under `install-media/` |
 
@@ -49,6 +50,8 @@ distro/
 │   ├── manifest.yaml       ← declarative payload list
 │   ├── envelope-manifest.yaml  ← live/boot envelope layers (Slice 9.7)
 │   ├── envelope-contract.md    ← envelope boundary contract (Slice 9.7)
+│   ├── bootability-manifest.yaml ← bootable init layers (Slice 9.9)
+│   ├── bootability-contract.md   ← bootable init boundary (Slice 9.9)
 │   ├── build-contract.md   ← install-image build I/O (Slice 9.5)
 │   ├── config.toml.template
 │   └── staging/            ← local disposable payload staging (Slice 9.6, gitignored)
@@ -63,7 +66,7 @@ distro/
 ```
 
 Future build slices may populate `boot/` and `live_root/` inside the image
-envelope per `envelope-manifest.yaml`; nothing in Slice 9.7 executes or packages them.
+envelope per `bootability-manifest.yaml`; nothing in Slice 9.9 executes boot logic.
 
 ## Payload sources
 
@@ -104,6 +107,8 @@ of this install-media tree.
 - `distro/install-media/build-contract.md` — install-image build I/O contract
 - `distro/install-media/envelope-contract.md` — live/boot envelope contract (Slice 9.7)
 - `distro/install-media/envelope-manifest.yaml` — envelope layer inventory (Slice 9.7)
+- `distro/install-media/bootability-contract.md` — bootable initialization contract (Slice 9.9)
+- `distro/install-media/bootability-manifest.yaml` — bootability layer inventory (Slice 9.9)
 - `scripts/stage-install-media.sh` — local payload staging (Slice 9.6)
 - `scripts/assemble-install-media-envelope.sh` — local envelope assembly (Slice 9.8)
 - `distro/systemd/README.md` — current manual install path

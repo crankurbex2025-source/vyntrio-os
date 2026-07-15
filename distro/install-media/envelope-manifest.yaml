@@ -4,7 +4,8 @@
 # Build I/O contract: distro/install-media/build-contract.md
 # Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7)
 # Assembly: scripts/assemble-install-media-envelope.sh (Slice 9.8)
-# Not consumed by any ISO/USB image builder in Slice 9.8.
+# Bootability contract: distro/install-media/bootability-contract.md (Slice 9.9)
+# Not consumed by any ISO/USB image builder in Slice 9.9.
 
 schema_version: vyntrio-install-media-envelope-v1
 media_role: install
@@ -94,11 +95,13 @@ assembly_flow:
     - id: emit_image
       status: deferred
       action: Produce bootable ISO or raw USB image file
+      bootability_authority: distro/install-media/bootability-manifest.yaml
 
 deferred_executable_slices:
   - iso_or_usb_image_generation
   - boot_loader_uefi_bios_configuration
   - live_root_filesystem_composition
+  - bootable_initialization_makefile_target
   - vyntrio_installer_execution
 
 excluded_from_envelope:

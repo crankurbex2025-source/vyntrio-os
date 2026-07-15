@@ -25,6 +25,10 @@ assembles the local disposable tree `distro/install-media/envelope/` (`boot/`,
 `live_root/`, `payload/`). `boot/` and `live_root/` are deferred placeholders only.
 This does **not** produce ISO/USB images, boot layers, or target-disk writes.
 
+**Slice 9.9 (scaffold):** `distro/install-media/bootability-contract.md` and
+`bootability-manifest.yaml` define what bootable initialization adds beyond envelope
+assembly. This is declarative only.
+
 There is **no** install-image envelope builder, ISO generator, USB writer, or CI
 image publication job yet.
 
@@ -131,6 +135,8 @@ Additionally excluded from **install-image** build inputs:
 | `distro/install-media/envelope-manifest.yaml` | **Envelope layer authority** (boot/live_root/payload) — Slice 9.7 |
 | `distro/install-media/envelope-contract.md` | Envelope boundary contract — Slice 9.7 |
 | `scripts/assemble-install-media-envelope.sh` | Local envelope assembly (Slice 9.8) |
+| `distro/install-media/bootability-manifest.yaml` | **Bootability authority** — Slice 9.9 |
+| `distro/install-media/bootability-contract.md` | Bootable initialization boundary — Slice 9.9 |
 | `distro/install-media/config.toml.template` | Shipped as template; installed to `/etc/vyntrio/config.toml` on target |
 | `distro/install-media/README.md` | Human overview; not consumed by tooling |
 | `distro/recovery-media/` | **Out of scope** — separate image build contract (future slice) |
@@ -179,5 +185,7 @@ after `vyntrio-api.service` starts on the installed host with an empty database.
 - `distro/install-media/README.md`
 - `distro/install-media/envelope-contract.md`
 - `distro/install-media/envelope-manifest.yaml`
+- `distro/install-media/bootability-contract.md`
+- `distro/install-media/bootability-manifest.yaml`
 - `distro/recovery-media/README.md`
 - `docs/19_RELEASE.md` — `make build` / binary deliverable

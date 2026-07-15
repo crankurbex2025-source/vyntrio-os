@@ -131,6 +131,12 @@ Staging; deklarativ nur; kein ISO/USB-Generator, kein Boot/Live-Root-Lauf.
 Manifest-Payloads; `boot/`/`live_root/` Platzhalter; kein ISO/USB, kein
 Zielplatten-Schreiben.
 
+**Block 9 / Slice 9.9 (Gerüst, dokumentiert):** Bootability-Initialisierungs-
+Gerüst in `distro/install-media/bootability-contract.md` und
+`bootability-manifest.yaml` — definiert bootfähige Initialisierung über
+Envelope-Assembly hinaus; Bootability ≠ Installation; deklarativ nur; kein
+Bootloader/Live-Root/ISO-Generator.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.
