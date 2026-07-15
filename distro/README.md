@@ -57,6 +57,10 @@ Zielplatten-Schreiben.
 `make installer-mutation-stub`; fail-closed ohne Preflight; kein
 Zielplatten-Schreiben.
 
+**Block 10 / Slice 10.6:** Erste Ziel-Mutation — leere State-Verzeichnisse in
+`distro/installer/target-sandbox/` via `make installer-mutate-directories`;
+preflight-gated; kein Host-Pfad-Schreiben, kein Payload-Copy.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

@@ -160,6 +160,11 @@ Zielplatten-Schreiben.
 Layout-Plan, schreibt nur lokales `dry-run/MUTATION_STUB.txt`; kein
 Zielplatten-Schreiben.
 
+**Block 10 / Slice 10.6 (implementiert):** Erste Ziel-Mutation — leere State-
+Verzeichnisse unter `distro/installer/target-sandbox/` via
+`make installer-mutate-directories`; preflight-gated; kein Host-`/etc`/`/var/lib`,
+kein Payload-Copy.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.
