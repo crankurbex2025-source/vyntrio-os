@@ -11,6 +11,8 @@ import {
   PublicReleaseStrip,
   PublicSectionBand,
 } from "../components";
+import { PreviewPageMotion } from "./motion";
+import "./motion/preview-motion.css";
 import { buildPreviewShellProps } from "./previewShellConfig";
 import { usePreviewDocumentLang } from "./usePreviewDocumentLang";
 
@@ -27,6 +29,7 @@ function LandingPreviewContent() {
         ],
       })}
     >
+      <PreviewPageMotion>
       <PublicSectionBand tone="elevated" id="product">
         <PublicHeroLayout
           hero={
@@ -127,6 +130,7 @@ function LandingPreviewContent() {
           headingId="preview-final-cta-heading"
         />
       </PublicSectionBand>
+      </PreviewPageMotion>
     </PublicPreviewShell>
   );
 }

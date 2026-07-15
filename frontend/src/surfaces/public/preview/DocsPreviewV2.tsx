@@ -8,6 +8,8 @@ import {
   PublicReleaseStrip,
   PublicSectionBand,
 } from "../components";
+import { PreviewPageMotion } from "./motion";
+import "./motion/preview-motion.css";
 import { buildPreviewShellProps } from "./previewShellConfig";
 import { usePreviewDocumentLang } from "./usePreviewDocumentLang";
 
@@ -17,6 +19,7 @@ function DocsPreviewContent() {
 
   return (
     <PublicPreviewShell {...buildPreviewShellProps(messages)}>
+      <PreviewPageMotion>
       <PublicSectionBand tone="elevated">
         <PublicHeroSection
           eyebrow={messages.docsPage.hero.eyebrow}
@@ -70,6 +73,7 @@ function DocsPreviewContent() {
           headingId="preview-docs-inline-cta-heading"
         />
       </PublicSectionBand>
+      </PreviewPageMotion>
     </PublicPreviewShell>
   );
 }

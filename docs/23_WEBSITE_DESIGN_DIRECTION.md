@@ -53,11 +53,13 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 - Future: URL prefix `/de`, `/en` in slice 11R.3+
 - **No machine translation pipeline**
 
-## Motion (deferred to 11R.5)
+## Motion (Block 11R.5)
 
-- GSAP + `@gsap/react` + ScrollTrigger + Lenis
-- `prefers-reduced-motion` mandatory
-- No fake live metric animation
+- GSAP + `@gsap/react` + ScrollTrigger on `/design-preview/*` only
+- `PreviewPageMotion` — hero stagger on load, section reveals on scroll
+- **Lenis deferred** — native scroll keeps anchor links and reduced-motion behavior predictable
+- `prefers-reduced-motion` mandatory — no GSAP setup when enabled
+- No fake live metric animation, no looping decoration
 
 ## Block 11R slice map
 
@@ -67,7 +69,7 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 | **11R.2** | **Implemented** | Reusable public components in `surfaces/public/components/` |
 | **11R.3** | **Implemented** | Preview landing v2 section architecture on `/design-preview/landing` |
 | **11R.4** | **Implemented** | Public component system for download/docs preview surfaces |
-| 11R.5 | Planned | GSAP motion layer |
+| **11R.5** | **Implemented** | Restrained GSAP motion layer on `/design-preview/*` |
 | 11R.6 | Planned | Appliance token convergence |
 | 11R.7 | Planned | PWA manifest |
 | 11R.8 | Planned | Cutover `/` → v2 |
@@ -79,6 +81,7 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 - Routed: `/design-preview/download` (`DownloadPreviewV2.tsx`)
 - Routed: `/design-preview/docs` (`DocsPreviewV2.tsx`)
 - Shared shell config: `surfaces/public/preview/previewShellConfig.ts`
+- Motion scope: `surfaces/public/preview/motion/PreviewPageMotion.tsx`
 - Static moodboard: `frontend/design-preview/direction-board.html` (not embedded)
 
 ## Coherence rule

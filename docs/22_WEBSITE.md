@@ -46,6 +46,7 @@ frontend/npm run build → make ui-stage → go:embed → vyntrio-api
 | **11R.2** | **Implemented** | Reusable public components under `surfaces/public/components/` |
 | **11R.3** | **Implemented** | Preview landing v2 section architecture on `/design-preview/landing` |
 | **11R.4** | **Implemented** | Download/docs preview surfaces + extended public components |
+| **11R.5** | **Implemented** | Restrained GSAP motion on `/design-preview/*` |
 | 11.2 | Planned | Shared design tokens + UI primitives |
 | 11.3 | Planned | Download & docs entry pages |
 | 11.4 | Planned | Auth decoupling — session probe only on `/app/*` |
