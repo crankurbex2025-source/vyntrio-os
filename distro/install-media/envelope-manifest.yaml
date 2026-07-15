@@ -1,0 +1,131 @@
+# Declarative install-image live/boot envelope manifest (scaffold only).
+# Authority: docs/ADR/0006-appliance-install-recovery-media.md (install media)
+# Payload inventory: distro/install-media/manifest.yaml
+# Build I/O contract: distro/install-media/build-contract.md
+# Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7)
+# Not consumed by any executable envelope builder in Slice 9.7.
+
+schema_version: vyntrio-install-media-envelope-v1
+media_role: install
+
+description: >
+  Live/boot envelope contract for install images. Defines how boot, live_root,
+  and payload layers compose a future bootable ISO/USB. Does not execute builds,
+  boot loaders, partitioning, or installer logic.
+
+separate_from:
+  recovery_media: distro/recovery-media/
+  target_disk_state:
+    - /var/lib/vyntrio/
+    - deployed /etc/vyntrio/config.toml on a running appliance
+  note: >
+    Envelope carries install-time artifacts only. Persistent state and secrets
+    are created on the target disk at install time (ADR-0005, ADR-0004).
+
+staging_input:
+  repository_path: distro/install-media/staging/
+  payload_subtree: payload/
+  producer: make install-media-stage
+  script: scripts/stage-install-media.sh
+  disposable: true
+  committed: false
+  note: >
+    Slice 9.6 produces the payload subtree locally. A future envelope builder
+    will read staged payloads; it does not write to target disk paths.
+
+# Conceptual on-media layout for a future bootable install image.
+envelope_layout:
+  boot: boot/
+  live_root: live_root/
+  payload: payload/
+
+envelope_layers:
+  boot:
+    status: deferred
+    on_media_path: boot/
+    purpose: Bootloader, kernel, and initrd for firmware handoff (UEFI/BIOS deferred)
+    repository_scaffold: none
+    executable_build: false
+
+  live_root:
+    status: deferred
+    on_media_path: live_root/
+    purpose: Minimal live runtime that hosts future install execution
+    repository_scaffold: none
+    executable_build: false
+    excludes:
+      - appliance_sqlite_state
+      - owner_credentials
+      - bootstrap_tokens
+      - license_files
+      - backup_artifacts
+      - instance_secrets
+      - recovery_media_tooling
+
+  payload:
+    status: scaffold_reference
+    on_media_path: payload/
+    authority: distro/install-media/manifest.yaml
+    staging_source: distro/install-media/staging/payload/
+    purpose: Greenfield install artifacts copied to target disk at install time
+    executable_staging: true
+    staging_slice: "9.6"
+    note: Only manifest-listed payloads; no secrets or persistent DB on media.
+
+# Future envelope assembly wraps staging payload inside boot/live layers.
+assembly_flow:
+  current_slice: "9.7"
+  steps:
+    - id: stage_payload
+      status: implemented
+      slice: "9.6"
+      action: Copy manifest payloads to distro/install-media/staging/payload/
+    - id: compose_live_root
+      status: deferred
+      action: Build minimal live root filesystem for installer host
+    - id: compose_boot
+      status: deferred
+      action: Add bootloader, kernel, initrd referencing live_root
+    - id: embed_payload
+      status: deferred
+      action: Place staged payload/ inside image envelope without target-disk writes
+    - id: emit_image
+      status: deferred
+      action: Produce bootable ISO or raw USB image file
+
+deferred_executable_slices:
+  - iso_or_usb_image_generation
+  - boot_loader_uefi_bios_configuration
+  - live_root_filesystem_composition
+  - envelope_assembly_makefile_target
+  - vyntrio_installer_execution
+
+excluded_from_envelope:
+  - appliance_sqlite_state
+  - owner_credentials
+  - bootstrap_tokens
+  - license_files
+  - backup_artifacts
+  - instance_secrets
+  - recovery_media_manifest_and_tooling
+  - combined_install_recovery_image
+
+metadata_files:
+  - id: staging-record
+    path: STAGING.txt
+    location: distro/install-media/staging/
+    slice: "9.6"
+    shipped_on_image: false
+    purpose: Local staging provenance; not part of bootable envelope output
+
+  - id: envelope-record
+    path: envelope-record.yaml
+    location: deferred
+    shipped_on_image: deferred
+    purpose: Future build record (version, commit, schema_version references)
+
+post_envelope_handoff:
+  install_execution: deferred
+  bootstrap: ADR-0004
+  persistent_state: target_disk_only
+  restore_procedure: docs/ops/restore-safety-contract.md

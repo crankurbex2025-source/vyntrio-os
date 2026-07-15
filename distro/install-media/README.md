@@ -14,9 +14,10 @@ sections B, D, E). Runtime paths and ownership remain `docs/ADR/0005-appliance-r
 | Layout manifest (`manifest.yaml`) | **Scaffold** — declarative only |
 | Build contract (`build-contract.md`) | **Contract** — install-image I/O boundary (Slice 9.5) |
 | Payload staging (`make install-media-stage`) | **Implemented (Slice 9.6)** — local `staging/payload/` only |
+| Live/boot envelope (`envelope-manifest.yaml`) | **Scaffold (Slice 9.7)** — declarative layer contract only |
 | Config template (`config.toml.template`) | **Scaffold** — operator-edited at install |
-| Boot/live environment | **Not started** — future slice |
-| ISO/USB build pipeline | **Not started** — future slice |
+| Boot/live environment build | **Not started** — deferred after envelope scaffold |
+| ISO/USB build pipeline | **Not started** — deferred after envelope scaffold |
 | `vyntrio-installer` behavior | **Not started** — `cmd/installer` is a stub |
 | Recovery media | **Separate deliverable** — not under `install-media/` |
 
@@ -42,17 +43,22 @@ sections B, D, E). Runtime paths and ownership remain `docs/ADR/0005-appliance-r
 
 ```
 distro/
-├── install-media/          ← this scaffold (payload contract)
+├── install-media/          ← this scaffold (payload + envelope contract)
 │   ├── README.md
 │   ├── manifest.yaml       ← declarative payload list
-│   └── config.toml.template
+│   ├── envelope-manifest.yaml  ← live/boot envelope layers (Slice 9.7)
+│   ├── envelope-contract.md    ← envelope boundary contract (Slice 9.7)
+│   ├── build-contract.md   ← install-image build I/O (Slice 9.5)
+│   ├── config.toml.template
+│   └── staging/            ← local disposable payload staging (Slice 9.6, gitignored)
+│       └── payload/
 ├── systemd/                ← runtime deployment artifacts (Block 7.3)
 │   └── …
 └── README.md
 ```
 
-Future build slices may add `distro/install-media/boot/` or external build roots;
-nothing in this slice executes or packages them.
+Future build slices may populate `boot/` and `live_root/` inside the image
+envelope per `envelope-manifest.yaml`; nothing in Slice 9.7 executes or packages them.
 
 ## Payload sources
 
@@ -91,5 +97,7 @@ of this install-media tree.
 - `docs/ops/restore-safety-contract.md` — in-place restore (not install)
 - `distro/recovery-media/README.md` — recovery media (separate deliverable)
 - `distro/install-media/build-contract.md` — install-image build I/O contract
+- `distro/install-media/envelope-contract.md` — live/boot envelope contract (Slice 9.7)
+- `distro/install-media/envelope-manifest.yaml` — envelope layer inventory (Slice 9.7)
 - `scripts/stage-install-media.sh` — local payload staging (Slice 9.6)
 - `distro/systemd/README.md` — current manual install path

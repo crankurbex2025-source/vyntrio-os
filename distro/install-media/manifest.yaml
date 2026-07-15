@@ -2,6 +2,7 @@
 # Authority: docs/ADR/0006-appliance-install-recovery-media.md
 # This file is not consumed by any build or installer in Slice 9.3.
 # Build I/O contract: distro/install-media/build-contract.md (Slice 9.5).
+# Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7).
 
 schema_version: vyntrio-install-media-manifest-v1
 media_role: install
@@ -21,10 +22,13 @@ excluded_from_media:
   - instance_secrets
 
 # Conceptual layout for future image build slices (not populated in 9.3).
+# Layer authority: distro/install-media/envelope-manifest.yaml (Slice 9.7).
 media_layout:
+  envelope_authority: envelope-manifest.yaml
   boot: deferred
   live_root: deferred
   payload_root: payload/
+  staging_input: distro/install-media/staging/payload/
 
 target_disk_paths:
   - path: /usr/bin

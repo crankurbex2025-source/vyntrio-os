@@ -120,6 +120,11 @@ Ein-/Ausschlüsse und Verweis auf `manifest.yaml`; kein ISO/USB-Generator.
 Manifest-Payloads nach `distro/install-media/staging/payload/`; kein Boot/ISO,
 kein Zielplatten-Schreiben.
 
+**Block 9 / Slice 9.7 (Gerüst, dokumentiert):** Live/Boot-Envelope-Gerüst in
+`distro/install-media/envelope-contract.md` und `envelope-manifest.yaml` —
+definiert `boot/`, `live_root/`, `payload/`-Schichten und Bezug zum lokalen
+Staging; deklarativ nur; kein ISO/USB-Generator, kein Boot/Live-Root-Lauf.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

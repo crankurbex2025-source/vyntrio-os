@@ -29,6 +29,11 @@ Manifeste bleiben deklarativ (noch kein Builder).
 (`scripts/stage-install-media.sh` → `distro/install-media/staging/payload/`);
 nur Manifest-Payloads; kein ISO/USB, kein Zielplatten-Schreiben.
 
+**Block 9 / Slice 9.7:** Live/Boot-Envelope-Gerüst in
+`distro/install-media/envelope-contract.md` und `envelope-manifest.yaml` —
+deklarative Schichten (`boot/`, `live_root/`, `payload/`); Verweis auf
+`staging/payload/`; kein ISO/USB-Builder, kein Boot/Live-Root-Lauf.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

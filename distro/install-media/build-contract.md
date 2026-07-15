@@ -15,6 +15,10 @@ manifest-listed payloads into the local disposable tree
 `distro/install-media/staging/payload/`. This does **not** produce ISO/USB
 images, boot layers, or target-disk writes.
 
+**Slice 9.7 (scaffold):** `distro/install-media/envelope-contract.md` and
+`envelope-manifest.yaml` define the live/boot envelope layers and how staged
+`payload/` is wrapped into a future bootable image. This is declarative only.
+
 There is **no** install-image envelope builder, ISO generator, USB writer, or CI
 image publication job yet.
 
@@ -26,7 +30,7 @@ Recovery-image build is a **separate future contract** under
 The future **install-image build** assembles a bootable deliverable (ISO or
 raw USB image) that carries:
 
-1. A minimal live/boot layer (future slice — not specified here).
+1. A minimal live/boot layer (envelope scaffold in Slice 9.7; build deferred).
 2. A **`payload/`** tree matching `distro/install-media/manifest.yaml` entries
    ready to be copied onto a **target disk** during greenfield install.
 3. No appliance persistent state, secrets, or Owner credentials.
@@ -118,6 +122,8 @@ Additionally excluded from **install-image** build inputs:
 | Scaffold | Role in build flow |
 |----------|-------------------|
 | `distro/install-media/manifest.yaml` | **Payload authority** for install image `payload/` staging |
+| `distro/install-media/envelope-manifest.yaml` | **Envelope layer authority** (boot/live_root/payload) — Slice 9.7 |
+| `distro/install-media/envelope-contract.md` | Envelope boundary contract — Slice 9.7 |
 | `distro/install-media/config.toml.template` | Shipped as template; installed to `/etc/vyntrio/config.toml` on target |
 | `distro/install-media/README.md` | Human overview; not consumed by tooling |
 | `distro/recovery-media/` | **Out of scope** — separate image build contract (future slice) |
@@ -164,5 +170,7 @@ after `vyntrio-api.service` starts on the installed host with an empty database.
 - `docs/ADR/0004-identity-and-access.md`
 - `docs/ops/restore-safety-contract.md`
 - `distro/install-media/README.md`
+- `distro/install-media/envelope-contract.md`
+- `distro/install-media/envelope-manifest.yaml`
 - `distro/recovery-media/README.md`
 - `docs/19_RELEASE.md` — `make build` / binary deliverable
