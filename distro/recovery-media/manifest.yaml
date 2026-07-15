@@ -1,0 +1,70 @@
+# Declarative recovery-media payload manifest (scaffold only).
+# Authority: docs/ADR/0006-appliance-install-recovery-media.md (sections C, H)
+# Restore mutation rules: docs/ops/restore-safety-contract.md (not implemented)
+# This file is not consumed by any build or recovery tool in Slice 9.4.
+
+schema_version: vyntrio-recovery-media-manifest-v1
+media_role: recovery
+
+description: >
+  Offline recovery USB/ISO tooling contract. Lists recovery-environment payloads
+  that may run from a live boot image to support future root-only restore
+  procedures. Does not define boot loader, partitioning, or restore execution.
+
+separate_from:
+  install_media: distro/install-media/
+  note: Install and recovery are distinct deliverables per ADR-0006 section D.
+
+# Must never be embedded in generic recovery media.
+excluded_from_media:
+  - appliance_sqlite_state
+  - owner_credentials
+  - bootstrap_tokens
+  - license_files
+  - backup_artifacts
+  - authoritative_config_copies
+  - greenfield_install_payloads
+  - install_config_templates
+
+# Conceptual layout for future image build slices (not populated in 9.4).
+media_layout:
+  boot: deferred
+  live_root: deferred
+  tooling_root: tooling/
+
+# Tooling runs FROM the recovery live environment — not installed like greenfield payloads.
+live_environment_tooling:
+  - id: vyntrio-restore
+    build_output: deferred
+    note: >
+      Future root-only restore CLI (Block 7). No cmd/restore/ in repository yet.
+      When implemented, recovery media may ship a pinned binary version here.
+
+target_disk_interaction:
+  read_only_reference_paths:
+    - path: /var/lib/vyntrio/backups/
+      purpose: operator-selected completed backup artifacts (read/validate only until restore runs)
+      artifact_pattern: vyntrio-backup-v1_<UTC-timestamp>.tar
+  mutable_paths_when_restore_implemented:
+    - path: /var/lib/vyntrio/
+      purpose: SQLite state restore targets per restore-safety-contract section 5.2
+    - path: /etc/vyntrio/config.toml
+      purpose: optional config member restore — policy-controlled per section 7
+
+restore_procedure_authority: docs/ops/restore-safety-contract.md
+
+explicit_non_payloads:
+  - distro/install-media/config.toml.template
+  - distro/systemd/vyntrio-api.service
+  - distro/systemd/vyntrio.sysusers
+  - distro/systemd/vyntrio.tmpfiles.conf
+  - bin/vyntrio-api
+  note: >
+    Recovery media is not a substitute for install media. Service units and
+    greenfield config templates belong to distro/install-media/ only.
+
+deferred_slices:
+  - bootable_recovery_iso_or_usb_image
+  - vyntrio_restore_cli_implementation
+  - offline_restore_execution
+  - recovery_live_environment_packaging

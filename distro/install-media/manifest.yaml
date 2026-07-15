@@ -87,5 +87,4 @@ deferred_slices:
   - bootable_iso_or_usb_image
   - disk_partitioning_and_filesystem_layout
   - vyntrio_installer_execution
-  - recovery_media_scaffold
   - install_progress_reporting

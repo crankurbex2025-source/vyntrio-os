@@ -204,6 +204,7 @@ approved slices:
 ### Follow-up
 
 - [x] Block 9 Slice 9.3: `distro/install-media/` scaffold (layout manifest, no execution)
+- [x] Block 9 Slice 9.4: `distro/recovery-media/` scaffold (tooling manifest, no execution)
 - [ ] ISO/live-USB build pipeline slice
 - [ ] `vyntrio-installer` implementation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)
@@ -227,6 +228,8 @@ approved slices:
 - `docs/ops/restore-safety-contract.md` — in-place restore procedure (not implemented)
 - `docs/02_ARCHITECTURE.md` — Block 9 contract summary
 - `distro/README.md` — `distro/` scope vs delivery media
+- `distro/install-media/README.md` — install media scaffold
+- `distro/recovery-media/README.md` — recovery media scaffold
 - `distro/systemd/README.md` — current manual install path
 - `docs/15_LICENSE.md` — license USB (separate from Block 9)
 - `cmd/installer/main.go` — stub entrypoint (Phase 0.2 placeholder)

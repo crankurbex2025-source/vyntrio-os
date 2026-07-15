@@ -17,6 +17,10 @@ Deliverable vom Install-Medium.
 `distro/install-media/` (`manifest.yaml`, `config.toml.template`, README) —
 Payload-Vertrag nur; kein Boot, keine Partitionierung, kein Installer-Lauf.
 
+**Block 9 / Slice 9.4:** Deklaratives Recovery-Media-Gerüst unter
+`distro/recovery-media/` (`manifest.yaml`, README) — Offline-Recovery-Tooling-
+Vertrag nur; getrennt von `install-media/`; kein Restore-CLI, kein Boot/ISO-Build.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

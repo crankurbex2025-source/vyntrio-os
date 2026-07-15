@@ -77,9 +77,9 @@ Installation steps for systemd artifacts remain documented in
 
 ## Recovery media
 
-Recovery boot USB/ISO is a **separate deliverable** per ADR-0006 section C. It
-is intentionally **not** scaffolded here. Future work belongs under a dedicated
-`distro/recovery-media/` tree in a later slice.
+Recovery boot USB/ISO is a **separate deliverable** per ADR-0006 section C,
+scaffolded under `distro/recovery-media/` (Block 9, Slice 9.4). It is not part
+of this install-media tree.
 
 ## Related
 
@@ -87,4 +87,5 @@ is intentionally **not** scaffolded here. Future work belongs under a dedicated
 - `docs/ADR/0005-appliance-runtime-operations.md` — sections D, E
 - `docs/ADR/0004-identity-and-access.md` — post-install bootstrap
 - `docs/ops/restore-safety-contract.md` — in-place restore (not install)
+- `distro/recovery-media/README.md` — recovery media (separate deliverable)
 - `distro/systemd/README.md` — current manual install path

@@ -106,6 +106,11 @@ Gerüst in `distro/install-media/` (`manifest.yaml`, Config-Template, README) �
 listet Payloads und Zielpfade; referenziert `distro/systemd/*`; kein Boot/ISO-
 Build, keine Partitionierung, kein Installer-Lauf.
 
+**Block 9 / Slice 9.4 (Gerüst, dokumentiert):** Deklaratives Recovery-Media-
+Gerüst in `distro/recovery-media/` (`manifest.yaml`, README) — listet Offline-
+Recovery-Tooling und Zielplatten-Interaktion; getrennt von Install-Media; kein
+Restore-CLI, kein Boot/ISO-Build.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.
