@@ -1,0 +1,91 @@
+# Declarative installer preflight manifest (scaffold only).
+# Authority: docs/ADR/0007-appliance-installer-contract.md (section D)
+# Not consumed by production installer logic in Slice 10.3.
+
+schema_version: vyntrio-installer-preflight-v1
+media_role: install
+
+description: >
+  Read-only preflight checks before install execution. Validates install-media
+  context and payload inventory. Does not mutate target disk or run bootstrap.
+
+contract: docs/ADR/0007-appliance-installer-contract.md
+
+# Local development uses assembled install envelope as media context stand-in.
+media_context:
+  envelope_root: distro/install-media/envelope/
+  payload_subtree: payload/
+  envelope_record: ENVELOPE.txt
+  required_media_role: install
+  producer: make install-media-envelope
+
+payload_inventory:
+  authority: distro/install-media/manifest.yaml
+  required_files:
+    - usr/bin/vyntrio-api
+    - usr/bin/vyntrio-backup
+    - etc/systemd/system/vyntrio-api.service
+    - usr/lib/sysusers.d/vyntrio.conf
+    - etc/tmpfiles.d/vyntrio.conf
+    - etc/vyntrio/config.toml
+
+excluded_payload_patterns:
+  - "*.db"
+  - "*.sqlite"
+  - "*.sqlite3"
+  - "*.tar"
+  - "*.tar.gz"
+  - "*.tgz"
+  - "*license*"
+  - "*bootstrap*token*"
+  - "vyntrio-restore"
+
+recovery_separation:
+  forbidden_payload_paths:
+    - recovery-media/
+  forbidden_payload_basenames:
+    - vyntrio-restore
+
+checks:
+  - id: media_role
+    adr_reference: ADR-0007 section D
+    status: implemented
+    slice: "10.3"
+
+  - id: payload_presence
+    adr_reference: ADR-0007 section D
+    status: implemented
+    slice: "10.3"
+
+  - id: payload_inventory
+    adr_reference: ADR-0007 section D
+    status: implemented
+    slice: "10.3"
+
+  - id: media_exclusions
+    adr_reference: ADR-0007 section D
+    status: implemented
+    slice: "10.3"
+
+  - id: recovery_separation
+    adr_reference: ADR-0007 section D
+    status: implemented
+    slice: "10.3"
+
+  - id: bootstrap_boundary
+    adr_reference: ADR-0007 section D
+    status: implemented
+    slice: "10.3"
+    note: Read-only scan only; installer does not invoke bootstrap endpoints.
+
+  - id: target_disk
+    adr_reference: ADR-0007 section D
+    status: deferred
+    note: Target block device and operator intent checks deferred to later slice.
+
+deferred_slices:
+  - target_disk_accessibility
+  - operator_reprovision_confirmation
+  - install_payload_copy
+  - service_enablement
+  - bootstrap_handoff

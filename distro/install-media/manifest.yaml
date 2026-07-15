@@ -4,6 +4,7 @@
 # Build I/O contract: distro/install-media/build-contract.md (Slice 9.5).
 # Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7).
 # Bootability contract: distro/install-media/bootability-contract.md (Slice 9.9).
+# Installer contract: docs/ADR/0007-appliance-installer-contract.md (Block 10).
 
 schema_version: vyntrio-install-media-manifest-v1
 media_role: install
@@ -85,6 +86,7 @@ payloads:
 
 post_install_handoff:
   bootstrap: ADR-0004
+  installer_contract: ADR-0007
   service_unit: vyntrio-api.service
   persistent_state: empty_until_bootstrap
   manual_install_reference: distro/systemd/README.md

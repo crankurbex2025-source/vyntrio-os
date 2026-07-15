@@ -211,6 +211,7 @@ approved slices:
 - [x] Block 9 Slice 9.8: local install-media envelope assembly (`make install-media-envelope`)
 - [x] Block 9 Slice 9.9: install-image bootability initialization scaffold (`bootability-contract.md`, `bootability-manifest.yaml`)
 - [ ] ISO/live-USB bootable image build slice (executable builder)
+- [x] Block 10 Slice 10.2: formal installer contract (`docs/ADR/0007-appliance-installer-contract.md`)
 - [ ] `vyntrio-installer` implementation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)
 - [ ] Recovery media image slice (tooling host for Block 7 restore when implemented)
@@ -239,6 +240,7 @@ approved slices:
 - `distro/install-media/envelope-manifest.yaml` — envelope layer inventory (Slice 9.7)
 - `distro/install-media/bootability-contract.md` — bootable initialization contract (Slice 9.9)
 - `distro/install-media/bootability-manifest.yaml` — bootability layer inventory (Slice 9.9)
+- `docs/ADR/0007-appliance-installer-contract.md` — installer execution contract (Block 10)
 - `distro/recovery-media/README.md` — recovery media scaffold
 - `distro/systemd/README.md` — current manual install path
 - `docs/15_LICENSE.md` — license USB (separate from Block 9)

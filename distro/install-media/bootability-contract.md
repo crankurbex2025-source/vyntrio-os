@@ -114,6 +114,7 @@ The following require future implementation slices after 9.9:
 - `distro/install-media/build-contract.md` — install-image build I/O contract
 - `distro/install-media/manifest.yaml` — payload authority
 - `docs/ADR/0006-appliance-install-recovery-media.md`
+- `docs/ADR/0007-appliance-installer-contract.md` — installer execution contract (Block 10)
 - `docs/ADR/0005-appliance-runtime-operations.md`
 - `docs/ADR/0004-identity-and-access.md`
 - `docs/ops/restore-safety-contract.md`

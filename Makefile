@@ -7,7 +7,7 @@ NPM ?= npm
 # ui-stage; never committed. Go compilation fails if this input is absent.
 UI_STAGE_DIR := internal/interfaces/http/ui/dist
 
-.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope run-api docs-check clean sqlc-generate generate
+.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope installer-preflight test-installer-preflight run-api docs-check clean sqlc-generate generate
 
 help:
 	@echo "Vyntrio OS — development commands"
@@ -25,6 +25,8 @@ help:
 	@echo "  make test-install-media-stage  Verify install-media staging output"
 	@echo "  make install-media-envelope  Assemble local install-media envelope"
 	@echo "  make test-install-media-envelope  Verify install-media envelope assembly"
+	@echo "  make installer-preflight  Run read-only installer preflight checks"
+	@echo "  make test-installer-preflight  Verify installer preflight behavior"
 	@echo "  make run-api       Run API server (cmd/api)"
 	@echo "  make docs-check    Validate documentation structure"
 	@echo "  make sqlc-generate Regenerate sqlc query code"
@@ -79,6 +81,12 @@ install-media-envelope: install-media-stage
 
 test-install-media-envelope: install-media-envelope
 	@./tests/installmedia/envelope_test.sh
+
+installer-preflight: install-media-envelope
+	@./scripts/installer-preflight.sh
+
+test-installer-preflight: installer-preflight
+	@./tests/installer/preflight_test.sh
 
 run-api:
 	@$(GO) run ./cmd/api

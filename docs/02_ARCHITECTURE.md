@@ -137,6 +137,18 @@ Gerüst in `distro/install-media/bootability-contract.md` und
 Envelope-Assembly hinaus; Bootability ≠ Installation; deklarativ nur; kein
 Bootloader/Live-Root/ISO-Generator.
 
+**Block 10 / Slice 10.1 (Audit, dokumentiert):** Read-only Installer-Vertrags-
+Audit — Grenze zwischen Media-Erstellung (Block 9) und Install-Ausführung
+(Block 10) aus ADR-0004/0005/0006 abgeleitet; kein Installer-Code.
+
+**Block 10 / Slice 10.2 (Vertrag, dokumentiert):** Formeller Installer-Vertrag
+in `docs/ADR/0007-appliance-installer-contract.md` — Preflight, Zielplatten-
+Allowlist, Bootstrap-Handoff, Ausschlüsse; kein Installer-Implementierung.
+
+**Block 10 / Slice 10.3 (implementiert):** Read-only Installer-Preflight via
+`make installer-preflight` — validiert Install-Media-Kontext und Payload-
+Inventar gegen ADR-0007; kein Zielplatten-Schreiben, kein Bootstrap.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

@@ -44,6 +44,10 @@ kein Zielplatten-Schreiben.
 deklarative Grenze für bootfähige ISO/USB nach Envelope-Assembly; kein Bootloader,
 kein Live-Root, kein Installer-Lauf.
 
+**Block 10 / Slice 10.3:** Read-only Installer-Preflight unter `distro/installer/`
+via `make installer-preflight`; validiert Envelope/Payload gegen ADR-0007; kein
+Zielplatten-Schreiben, kein Bootstrap.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

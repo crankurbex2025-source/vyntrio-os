@@ -157,7 +157,8 @@ Until an executable builder lands, operators continue to use the manual path in
 ## 8. Post-build / post-install handoff (unchanged)
 
 Install-image build ends when a bootable artifact exists. **Install execution**
-(deferred) copies `payload/` to target disk. **Bootstrap** (ADR-0004) runs only
+(deferred) copies `payload/` to target disk per `docs/ADR/0007-appliance-installer-contract.md`.
+**Bootstrap** (ADR-0004) runs only
 after `vyntrio-api.service` starts on the installed host with an empty database.
 
 ## 9. Out of scope for Slice 9.5 and the first executable build slice
@@ -188,4 +189,5 @@ after `vyntrio-api.service` starts on the installed host with an empty database.
 - `distro/install-media/bootability-contract.md`
 - `distro/install-media/bootability-manifest.yaml`
 - `distro/recovery-media/README.md`
+- `docs/ADR/0007-appliance-installer-contract.md`
 - `docs/19_RELEASE.md` — `make build` / binary deliverable
