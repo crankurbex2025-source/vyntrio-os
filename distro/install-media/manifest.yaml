@@ -1,6 +1,7 @@
 # Declarative install-media payload manifest (scaffold only).
 # Authority: docs/ADR/0006-appliance-install-recovery-media.md
 # This file is not consumed by any build or installer in Slice 9.3.
+# Build I/O contract: distro/install-media/build-contract.md (Slice 9.5).
 
 schema_version: vyntrio-install-media-manifest-v1
 media_role: install

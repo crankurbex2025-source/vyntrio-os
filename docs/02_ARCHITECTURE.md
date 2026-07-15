@@ -111,6 +111,11 @@ Gerüst in `distro/recovery-media/` (`manifest.yaml`, README) — listet Offline
 Recovery-Tooling und Zielplatten-Interaktion; getrennt von Install-Media; kein
 Restore-CLI, kein Boot/ISO-Build.
 
+**Block 9 / Slice 9.5 (Vertrag, dokumentiert):** Install-Image-Build-Vertrag in
+`distro/install-media/build-contract.md` — definiert Build-Inputs/Outputs,
+Ein-/Ausschlüsse und Verweis auf `manifest.yaml`; Scaffolds noch nicht von
+Tooling konsumiert; kein ISO/USB-Generator.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

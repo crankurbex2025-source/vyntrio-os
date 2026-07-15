@@ -12,6 +12,7 @@ sections B, D, E). Runtime paths and ownership remain `docs/ADR/0005-appliance-r
 | Item | State |
 |------|--------|
 | Layout manifest (`manifest.yaml`) | **Scaffold** — declarative only |
+| Build contract (`build-contract.md`) | **Contract** — install-image I/O boundary (Slice 9.5); no builder |
 | Config template (`config.toml.template`) | **Scaffold** — operator-edited at install |
 | Boot/live environment | **Not started** — future slice |
 | ISO/USB build pipeline | **Not started** — future slice |
@@ -88,4 +89,5 @@ of this install-media tree.
 - `docs/ADR/0004-identity-and-access.md` — post-install bootstrap
 - `docs/ops/restore-safety-contract.md` — in-place restore (not install)
 - `distro/recovery-media/README.md` — recovery media (separate deliverable)
+- `distro/install-media/build-contract.md` — install-image build I/O contract
 - `distro/systemd/README.md` — current manual install path

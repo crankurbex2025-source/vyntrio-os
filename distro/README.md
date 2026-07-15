@@ -21,6 +21,10 @@ Payload-Vertrag nur; kein Boot, keine Partitionierung, kein Installer-Lauf.
 `distro/recovery-media/` (`manifest.yaml`, README) — Offline-Recovery-Tooling-
 Vertrag nur; getrennt von `install-media/`; kein Restore-CLI, kein Boot/ISO-Build.
 
+**Block 9 / Slice 9.5:** Install-Image-Build-Vertrag in
+`distro/install-media/build-contract.md` — Inputs/Outputs und Ein-/Ausschlüsse;
+Manifeste bleiben deklarativ (noch kein Builder).
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1
