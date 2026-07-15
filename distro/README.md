@@ -53,6 +53,10 @@ Zielplatten-Schreiben, kein Bootstrap.
 Validierung via `make installer-layout-plan`; Partitionierung deferred; kein
 Zielplatten-Schreiben.
 
+**Block 10 / Slice 10.5:** Preflight-gated Mutation-Dry-Run-Stub via
+`make installer-mutation-stub`; fail-closed ohne Preflight; kein
+Zielplatten-Schreiben.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

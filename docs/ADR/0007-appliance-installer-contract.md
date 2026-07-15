@@ -222,6 +222,7 @@ scope for Block 10 installer implementation.
 - [x] Block 10 Slice 10.2: formal installer contract (this ADR)
 - [x] Block 10 Slice 10.3: installer preflight scaffold (`make installer-preflight`)
 - [x] Block 10 Slice 10.4: installer target-layout scaffold (`target-layout-manifest.yaml`)
+- [x] Block 10 Slice 10.5: preflight-gated mutation dry-run stub (`make installer-mutation-stub`)
 - [ ] Partition/filesystem executable slice
 - [ ] `vyntrio-installer` target-disk mutation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)
@@ -255,4 +256,5 @@ scope for Block 10 installer implementation.
 - `distro/installer/target-layout-contract.md` — layout planning boundary (Slice 10.4)
 - `scripts/installer-preflight.sh` — read-only preflight (Slice 10.3)
 - `scripts/validate-installer-layout-plan.sh` — read-only layout plan validation (Slice 10.4)
+- `scripts/installer-mutation-stub.sh` — preflight-gated mutation dry-run stub (Slice 10.5)
 - Block 10, Slice 10.1 audit (conversation record)

@@ -7,7 +7,7 @@ NPM ?= npm
 # ui-stage; never committed. Go compilation fails if this input is absent.
 UI_STAGE_DIR := internal/interfaces/http/ui/dist
 
-.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope installer-preflight test-installer-preflight installer-layout-plan test-installer-layout-plan run-api docs-check clean sqlc-generate generate
+.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope installer-preflight test-installer-preflight installer-layout-plan test-installer-layout-plan installer-mutation-stub test-installer-mutation-stub run-api docs-check clean sqlc-generate generate
 
 help:
 	@echo "Vyntrio OS — development commands"
@@ -29,6 +29,8 @@ help:
 	@echo "  make test-installer-preflight  Verify installer preflight behavior"
 	@echo "  make installer-layout-plan  Validate installer target-layout manifest"
 	@echo "  make test-installer-layout-plan  Verify layout plan validation"
+	@echo "  make installer-mutation-stub  Run preflight-gated mutation dry-run stub"
+	@echo "  make test-installer-mutation-stub  Verify mutation stub behavior"
 	@echo "  make run-api       Run API server (cmd/api)"
 	@echo "  make docs-check    Validate documentation structure"
 	@echo "  make sqlc-generate Regenerate sqlc query code"
@@ -96,6 +98,12 @@ installer-layout-plan:
 test-installer-layout-plan: installer-layout-plan
 	@./tests/installer/layout_plan_test.sh
 
+installer-mutation-stub: install-media-envelope
+	@./scripts/installer-mutation-stub.sh
+
+test-installer-mutation-stub: installer-mutation-stub
+	@./tests/installer/mutation_stub_test.sh
+
 run-api:
 	@$(GO) run ./cmd/api
 
@@ -106,7 +114,7 @@ clean:
 	@rm -rf bin dist coverage.out coverage.html
 	@rm -rf frontend/dist frontend/build frontend/.next
 	@rm -rf "$(ROOT)/$(UI_STAGE_DIR)"
-	@rm -rf distro/install-media/staging distro/install-media/envelope
+	@rm -rf distro/install-media/staging distro/install-media/envelope distro/installer/dry-run
 	@echo "Clean complete."
 
 sqlc-generate:

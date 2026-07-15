@@ -48,6 +48,7 @@ build/output/
 distro/output/
 distro/install-media/staging/
 distro/install-media/envelope/
+distro/installer/dry-run/
 *.iso
 *.img
 

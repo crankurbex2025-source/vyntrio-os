@@ -155,6 +155,11 @@ definiert Allowlist-Pfade und leere State-Verzeichnisse; Partitionierung
 deferred; read-only Validierung via `make installer-layout-plan`; kein
 Zielplatten-Schreiben.
 
+**Block 10 / Slice 10.5 (implementiert):** Preflight-gated Mutation-Dry-Run-Stub via
+`make installer-mutation-stub` — erfordert erfolgreiches Preflight, konsumiert
+Layout-Plan, schreibt nur lokales `dry-run/MUTATION_STUB.txt`; kein
+Zielplatten-Schreiben.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.
