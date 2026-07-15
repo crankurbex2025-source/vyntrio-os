@@ -1,13 +1,17 @@
 # frontend
 
-React + TypeScript web dashboard for Vyntrio OS administration.
+React + TypeScript web UI for Vyntrio OS — public product surface and appliance control center.
 
-## Toolchain foundation
+## Surfaces (Block 11)
 
-This slice provides the authenticated Control-Center frontend. On boot it probes
-`GET /api/v1/overview` for session authorization, renders the read-only overview
-for roles with `system:health`, and loads Owner-only instance settings through a
-separate `GET /api/v1/settings` flow.
+| Route | Surface | Description |
+|-------|---------|-------------|
+| `/` | Public | Static landing page (no API) |
+| `/download` | Public | Honest placeholder — install media not yet linked |
+| `/login` | Auth | Sign in to your appliance |
+| `/app` | Appliance | Session probe, read-only overview, Owner settings |
+
+See `docs/22_WEBSITE.md` for the Block 11 track contract.
 
 ## Local commands
 
@@ -21,8 +25,10 @@ npm run test:run
 npm run build
 ```
 
+Open `http://localhost:5173/` for the landing page. Appliance flow: `/app` or `/login`.
+
 ## Rules
 
-- No secrets in frontend bundles.
+- Public surfaces must not import `lib/api` or show fake operational data.
 - CSRF tokens stay in memory only for mutating requests; overview GET sends no CSRF header.
-- No product dashboard modules beyond Slice 8.1 overview and existing Owner settings.
+- Appliance UI shows only data from real API endpoints (Block 8 honesty contract).

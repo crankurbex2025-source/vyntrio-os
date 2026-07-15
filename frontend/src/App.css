@@ -1,18 +1,3 @@
-:root {
-  color-scheme: dark;
-  --dashboard-bg: #0b1220;
-  --dashboard-bg-elevated: #111827;
-  --dashboard-panel: #151f31;
-  --dashboard-border: rgba(148, 163, 184, 0.18);
-  --dashboard-text: #e5eefb;
-  --dashboard-muted: #94a3b8;
-  --dashboard-accent: #6366f1;
-  --dashboard-accent-soft: rgba(99, 102, 241, 0.16);
-  --dashboard-ready: #22c55e;
-  --dashboard-not-ready: #f59e0b;
-  --dashboard-danger: #f87171;
-}
-
 * {
   box-sizing: border-box;
 }

@@ -3,6 +3,10 @@
 ## Architektur
 React + TypeScript mit Feature-Oriented Structure.
 
+**Block 11 / Slice 11.1 (implementiert):** Router-basierte Surfaces im bestehenden
+`frontend/`-Paket — public (`/`), auth (`/login`), appliance (`/app/*`). Details:
+`docs/22_WEBSITE.md`.
+
 ## Produktions-Auslieferung (v1, implementiert)
 
 Der produktive Vite-Build (`frontend/dist`) wird über `make ui-stage` nach
@@ -18,13 +22,16 @@ Details: `docs/09_API.md`, `docs/17_SECURITY.md`, `docs/19_RELEASE.md`.
 - Live-Daten als Streams behandeln.
 - Accessibility und Fehlerzustände als Pflichtbestandteil.
 
-## Strukturen
-- app/
-- pages/
-- widgets/
-- features/
-- entities/
-- shared/
+## Strukturen (aktuell, Slice 11.1)
+- `app/` — Router und Layouts
+- `surfaces/public/` — statische Marketing-Seiten (kein API-Import)
+- `surfaces/auth/` — Login-Einstieg
+- `surfaces/appliance/` — Session-Probe, Overview, Settings
+- `features/` — bestehende Feature-Module (auth, overview, settings)
+- `shared/` — Theme-Tokens und minimale UI-Primitives
+- `lib/api/` — API-Client (nur Appliance-Surface)
+
+Langfristig geplant (noch nicht vollständig): `pages/`, `widgets/`, `entities/`.
 
 ## UI-Funktionen
 - Dashboard Widgets

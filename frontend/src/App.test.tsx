@@ -1,8 +1,17 @@
 import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import App from "./App";
 import type { ApiClient, ApiResult } from "./lib/api";
+
+function renderApplianceApp(apiClient: ApiClient) {
+  return render(
+    <MemoryRouter initialEntries={["/app"]}>
+      <App apiClient={apiClient} />
+    </MemoryRouter>
+  );
+}
 
 describe("App", () => {
   function makeApiClientMock() {
@@ -122,7 +131,7 @@ describe("App", () => {
     const pending = new Promise<ApiResult<unknown>>(() => {});
     requestJson.mockReturnValue(pending);
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     expect(screen.getByText("Checking session...")).toBeInTheDocument();
     expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
@@ -144,7 +153,7 @@ describe("App", () => {
       data: validOverviewPayload(),
     });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
@@ -167,7 +176,7 @@ describe("App", () => {
       data: validOverviewPayload(),
     });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
@@ -185,7 +194,7 @@ describe("App", () => {
         data: validOverviewPayload(),
       });
 
-      const view = render(<App apiClient={apiClient} />);
+      const view = renderApplianceApp(apiClient);
       await waitFor(() => {
         expect(screen.getByText("Vyntrio Control Center")).toBeInTheDocument();
       });
@@ -212,7 +221,7 @@ describe("App", () => {
       },
     });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(screen.getAllByText("Degraded").length).toBeGreaterThanOrEqual(1);
@@ -243,7 +252,7 @@ describe("App", () => {
         },
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Instance settings" })).toBeInTheDocument();
     });
@@ -270,7 +279,7 @@ describe("App", () => {
       },
     });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
@@ -292,7 +301,7 @@ describe("App", () => {
       },
     });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(
@@ -358,7 +367,7 @@ describe("App", () => {
     for (const failure of failures) {
       const { apiClient, requestJson } = makeApiClientMock();
       requestJson.mockResolvedValue(failure);
-      const view = render(<App apiClient={apiClient} />);
+      const view = renderApplianceApp(apiClient);
 
       await waitFor(() => {
         expect(
@@ -398,7 +407,7 @@ describe("App", () => {
         data: validOverviewPayload(),
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
@@ -466,7 +475,7 @@ describe("App", () => {
         },
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
@@ -513,7 +522,7 @@ describe("App", () => {
         },
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
@@ -597,7 +606,7 @@ describe("App", () => {
         })
         .mockResolvedValueOnce(failure);
 
-      const view = render(<App apiClient={apiClient} />);
+      const view = renderApplianceApp(apiClient);
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
@@ -658,20 +667,20 @@ describe("App", () => {
         },
       });
 
-    const authorized = render(<App apiClient={apiClient} />);
+    const authorized = renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
     });
     authorized.unmount();
 
-    const unauthenticated = render(<App apiClient={apiClient} />);
+    const unauthenticated = renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
     unauthenticated.unmount();
 
-    const forbidden = render(<App apiClient={apiClient} />);
+    const forbidden = renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(
         screen.getByText("You do not have access to this appliance view.")
@@ -680,7 +689,7 @@ describe("App", () => {
     expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
     forbidden.unmount();
 
-    const unavailable = render(<App apiClient={apiClient} />);
+    const unavailable = renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(
         screen.getByText("The appliance overview is temporarily unavailable.")
@@ -736,19 +745,19 @@ describe("App", () => {
         },
       });
 
-    const authorized = render(<App apiClient={apiClient} />);
+    const authorized = renderApplianceApp(apiClient);
     await openInstanceSettings();
     expect(screen.getByRole("button", { name: "Edit name" })).toBeInTheDocument();
     authorized.unmount();
 
-    const unauthenticated = render(<App apiClient={apiClient} />);
+    const unauthenticated = renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: "Edit name" })).not.toBeInTheDocument();
     unauthenticated.unmount();
 
-    const forbidden = render(<App apiClient={apiClient} />);
+    const forbidden = renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(
         screen.getByText("You do not have access to this appliance view.")
@@ -757,7 +766,7 @@ describe("App", () => {
     expect(screen.queryByRole("button", { name: "Edit name" })).not.toBeInTheDocument();
     forbidden.unmount();
 
-    const unavailable = render(<App apiClient={apiClient} />);
+    const unavailable = renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(
         screen.getByText("The appliance overview is temporarily unavailable.")
@@ -783,7 +792,7 @@ describe("App", () => {
         data: validSettingsPayload(),
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await openInstanceSettings();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
@@ -847,7 +856,7 @@ describe("App", () => {
         },
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await loginAsOwner(requestJson);
     await openInstanceSettings();
 
@@ -933,7 +942,7 @@ describe("App", () => {
         },
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await loginAsOwner(requestJson);
     await openInstanceSettings();
 
@@ -1074,7 +1083,7 @@ describe("App", () => {
         .mockResolvedValueOnce(patchFailure)
         .mockResolvedValueOnce(patchFailure);
 
-      const view = render(<App apiClient={apiClient} />);
+      const view = renderApplianceApp(apiClient);
       await loginAsOwner(requestJson);
       await openInstanceSettings();
 
@@ -1113,7 +1122,7 @@ describe("App", () => {
         data: validSettingsPayload(),
       });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await openInstanceSettings();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit name" }));
@@ -1245,7 +1254,7 @@ describe("App", () => {
         })
         .mockResolvedValueOnce(tc.followup);
 
-      const view = render(<App apiClient={apiClient} />);
+      const view = renderApplianceApp(apiClient);
       await loginAsOwner(requestJson);
       await openInstanceSettings();
 
@@ -1306,7 +1315,7 @@ describe("App", () => {
     );
     requestNoContent.mockReturnValue(logoutPending);
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await loginAsOwner(requestJson);
     await openInstanceSettings();
 
@@ -1357,7 +1366,7 @@ describe("App", () => {
     );
     requestNoContent.mockReturnValue(logoutPending);
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await loginAsOwner(requestJson);
 
     await waitFor(() => {
@@ -1402,7 +1411,7 @@ describe("App", () => {
       data: validOverviewPayload(),
     });
 
-    render(<App apiClient={apiClient} />);
+    renderApplianceApp(apiClient);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
     });
@@ -1467,7 +1476,7 @@ describe("App", () => {
         });
       requestNoContent.mockResolvedValue(logoutFailure);
 
-      const view = render(<App apiClient={apiClient} />);
+      const view = renderApplianceApp(apiClient);
       await loginAsOwner(requestJson);
 
       await waitFor(() => {
@@ -1601,7 +1610,7 @@ describe("App", () => {
         });
       requestNoContent.mockResolvedValue(logoutFailure);
 
-      const view = render(<App apiClient={apiClient} />);
+      const view = renderApplianceApp(apiClient);
       await loginAsOwner(requestJson);
 
       await waitFor(() => {
