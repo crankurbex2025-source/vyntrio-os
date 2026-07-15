@@ -7,6 +7,7 @@ export type PublicControlSurfaceShowcaseProps = {
   sectionDescription?: string;
   sectionHeadingId?: string;
   frameHeadingId?: string;
+  framed?: boolean;
 } & Omit<PublicControlSurfaceFrameProps, "headingId">;
 
 export function PublicControlSurfaceShowcase({
@@ -15,17 +16,22 @@ export function PublicControlSurfaceShowcase({
   sectionDescription,
   sectionHeadingId,
   frameHeadingId,
+  framed = false,
   ...frameProps
 }: PublicControlSurfaceShowcaseProps) {
+  const frame = (
+    <PublicControlSurfaceFrame {...frameProps} headingId={frameHeadingId} variant="showcase" />
+  );
+
   return (
-    <div className="vyn-public-surface-showcase">
+    <div className={framed ? "vyn-public-surface-showcase vyn-public-surface-showcase-framed" : "vyn-public-surface-showcase"}>
       <PublicSectionIntro
         eyebrow={eyebrow}
         heading={sectionHeading}
         description={sectionDescription}
         headingId={sectionHeadingId}
       />
-      <PublicControlSurfaceFrame {...frameProps} headingId={frameHeadingId} variant="showcase" />
+      {framed ? <div className="vyn-public-surface-showcase-mount">{frame}</div> : frame}
     </div>
   );
 }

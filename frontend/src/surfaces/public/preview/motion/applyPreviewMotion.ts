@@ -26,12 +26,11 @@ function revealSection(gsapLib: GsapInstance, section: HTMLElement, offsetY?: nu
 
 function animateHeroBlock(gsapLib: GsapInstance, heroSection: HTMLElement): void {
   const profile = getPreviewMotionProfile();
-  const hero = heroSection.querySelector(".vyn-public-hero");
-  if (hero) {
-    const heroParts = gsapLib.utils.toArray<HTMLElement>(
-      ".vyn-public-eyebrow, h1, .vyn-public-hero-description, .vyn-public-cta-stack",
-      hero
-    );
+  const heroParts = gsapLib.utils.toArray<HTMLElement>(
+    ".vyn-public-signal-path-step, .vyn-public-eyebrow, h1, .vyn-public-hero-description, .vyn-public-cta-stack",
+    heroSection
+  );
+  if (heroParts.length > 0) {
     gsapLib.from(heroParts, {
       opacity: 0,
       y: profile.heroOffsetY,
@@ -39,6 +38,23 @@ function animateHeroBlock(gsapLib: GsapInstance, heroSection: HTMLElement): void
       stagger: PREVIEW_MOTION.hero.stagger,
       ease: "power2.out",
     });
+  }
+
+  const hero = heroSection.querySelector(".vyn-public-hero");
+  if (hero) {
+    const accentLine = hero.querySelector<HTMLElement>(".vyn-public-hero-accent-line");
+    if (accentLine) {
+      gsapLib.fromTo(
+        accentLine,
+        { scaleX: 0.35, opacity: 0.5 },
+        {
+          scaleX: 1,
+          opacity: 1,
+          duration: 0.5,
+          ease: "power2.out",
+        }
+      );
+    }
   }
 
   const companion = heroSection.querySelector(".vyn-public-surface");
@@ -61,6 +77,7 @@ function animatePillarSection(gsapLib: GsapInstance, section: HTMLElement): void
     section
   );
   const pillars = gsapLib.utils.toArray<HTMLElement>(".vyn-public-pillar", section);
+  const glyphs = gsapLib.utils.toArray<HTMLElement>(".vyn-public-pillar-glyph-wrap", section);
 
   if (introTargets.length > 0) {
     gsapLib.from(introTargets, {
@@ -83,6 +100,21 @@ function animatePillarSection(gsapLib: GsapInstance, section: HTMLElement): void
       y: profile.pillarOffsetY,
       duration: PREVIEW_MOTION.pillar.duration,
       stagger: PREVIEW_MOTION.pillar.stagger,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: section,
+        start: "top 82%",
+        once: true,
+      },
+    });
+  }
+
+  if (glyphs.length > 0) {
+    gsapLib.from(glyphs, {
+      opacity: 0,
+      scale: 0.92,
+      duration: 0.45,
+      stagger: 0.08,
       ease: "power2.out",
       scrollTrigger: {
         trigger: section,

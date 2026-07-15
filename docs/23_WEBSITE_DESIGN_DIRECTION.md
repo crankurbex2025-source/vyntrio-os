@@ -63,6 +63,8 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 - Visual references: restrained grain/depth from [animated-electrician](https://github.com/Ismail-Khan-Dev/animated-electrician); appliance density from [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA); homelab theme discipline from [theme.park](https://github.com/themepark-dev/theme.park)
 - Responsive: fluid `clamp()` gutters/spacing, `auto-fit`/`minmax()` grids, container queries on preview sections (`public-responsive.css`); layout reference patterns from [innovate-tech-landing](https://github.com/CodeWithKarol/innovate-tech-landing) and GitHub.com layout kit (bento/grid rhythm, not visual clone)
 - Performance: preview routes and GSAP motion load via `React.lazy` + `Suspense`; Vite `manualChunks` isolates `preview-gsap` from the shipped `/` entry path
+- Landing visual (11R.7): chassis line-art, hero accent rule, section surface variants (`hero` / `statement` / `finale`), sticky blurred header — references from [theme.park Unraid base](https://github.com/themepark-dev/theme.park/blob/master/css/base/unraid/unraid-base.css) and [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA) panel density
+- Landing visual/media (11R.8): signal-path storytelling, pillar glyphs, surface bezel lamps, framed showcase mount — references from [Rackula](https://github.com/RackulaLives/Rackula), [rackpad](https://github.com/Kobii-git/rackpad), [tinyDC](https://github.com/GoodrichDev/tinydc.net) rack composition (product-relevant, not cloned)
 - No fake live metric animation, no looping decoration
 
 ## Block 11R slice map

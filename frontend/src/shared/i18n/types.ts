@@ -44,6 +44,10 @@ export type PublicMessages = {
     ctaSignIn: string;
     ctaSignInHint: string;
   };
+  heroStory: {
+    ariaLabel: string;
+    steps: Array<{ label: string; detail: string }>;
+  };
   release: {
     label: string;
     title: string;
@@ -68,6 +72,10 @@ export type PublicMessages = {
     panelLabel: string;
     panelNote: string;
     rows: Array<{ label: string; value: string }>;
+    bezel: {
+      powerLabel: string;
+      linkLabel: string;
+    };
   };
   productStatus: {
     eyebrow: string;

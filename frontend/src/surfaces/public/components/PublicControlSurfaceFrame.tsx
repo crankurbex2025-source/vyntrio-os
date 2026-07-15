@@ -11,6 +11,8 @@ export type PublicControlSurfaceFrameProps = {
   rows: PublicSurfaceRow[];
   headingId?: string;
   variant?: "compact" | "showcase";
+  chassis?: boolean;
+  bezel?: { powerLabel: string; linkLabel: string };
 };
 
 export function PublicControlSurfaceFrame({
@@ -21,14 +23,26 @@ export function PublicControlSurfaceFrame({
   rows,
   headingId = "public-surface-heading",
   variant = "compact",
+  chassis = false,
+  bezel,
 }: PublicControlSurfaceFrameProps) {
-  const surfaceClass =
-    variant === "showcase"
-      ? "vyn-public-surface vyn-public-surface-showcase-frame"
-      : "vyn-public-surface";
+  const surfaceClass = [
+    variant === "showcase" ? "vyn-public-surface vyn-public-surface-showcase-frame" : "vyn-public-surface",
+    chassis ? "vyn-public-surface-chassis" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <aside className={surfaceClass} aria-labelledby={headingId}>
+      {bezel ? (
+        <div className="vyn-public-surface-bezel" aria-hidden="true">
+          <span className="vyn-public-surface-bezel-lamp vyn-public-surface-bezel-lamp-standby" />
+          <span className="vyn-public-surface-bezel-power">{bezel.powerLabel}</span>
+          <span className="vyn-public-surface-bezel-lamp vyn-public-surface-bezel-lamp-off" />
+          <span className="vyn-public-surface-bezel-link">{bezel.linkLabel}</span>
+        </div>
+      ) : null}
       <div className="vyn-public-surface-header">
         <h2 id={headingId}>{heading}</h2>
         <p>{subheading}</p>

@@ -25,6 +25,7 @@ export type PublicPreviewShellProps = {
   navAriaLabel?: string;
   anchorLinks?: PublicFooterLink[];
   premiumSurface?: boolean;
+  shellVariant?: "default" | "landing";
 };
 
 export function PublicPreviewShell({
@@ -43,9 +44,18 @@ export function PublicPreviewShell({
   navAriaLabel = "Public navigation",
   anchorLinks,
   premiumSurface = false,
+  shellVariant = "default",
 }: PublicPreviewShellProps) {
+  const shellClass = [
+    "vyn-public-shell",
+    premiumSurface ? "vyn-public-shell-premium" : "",
+    shellVariant === "landing" ? "vyn-public-shell-landing" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={premiumSurface ? "vyn-public-shell vyn-public-shell-premium" : "vyn-public-shell"}>
+    <div className={shellClass}>
       <p className="vyn-public-banner" role="status">
         {banner}
       </p>

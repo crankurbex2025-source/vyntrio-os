@@ -14,11 +14,19 @@
   "hero": {
     "eyebrow": "Vyntrio OS",
     "title": "Was läuft auf deinem Server?",
-    "description": "Vyntrio OS läuft auf deiner Hardware. Storage, Dienste und Verwaltung bleiben auf dem Gerät — ohne Cloud-Zwischenschicht.",
+    "description": "Lokale Appliance-Plattform auf deiner Hardware. Storage, Dienste und Verwaltung bleiben auf dem Gerät.",
     "ctaDownload": "Release & Download",
     "ctaDownloadHint": "Installationsmedien folgen, sobald veröffentlicht",
     "ctaSignIn": "Am Gerät anmelden",
     "ctaSignInHint": "Für bestehende Vyntrio-Appliances"
+  },
+  "heroStory": {
+    "ariaLabel": "Appliance-Signalweg von Hardware zum Control Center",
+    "steps": [
+      { "label": "Hardware", "detail": "Dein Server" },
+      { "label": "Vyntrio OS", "detail": "Appliance-Betrieb" },
+      { "label": "Control Center", "detail": "Nach Anmeldung" }
+    ]
   },
   "release": {
     "label": "Release-Status",
@@ -28,7 +36,7 @@
   "pillars": {
     "eyebrow": "Appliance-Plattform",
     "heading": "Storage, Dienste, Kontrolle",
-    "intro": "Eine Appliance vereint drei Bereiche: persistenter Datenträger, Host-Dienste und die lokale Verwaltung direkt auf dem Gerät.",
+    "intro": "Drei Schichten auf einem Gerät: Platte, Prozesse, Verwaltung — ohne getrennte Cloud-Schicht.",
     "storage": {
       "tag": "Storage",
       "title": "Zustand auf der Platte",
@@ -48,13 +56,17 @@
   "surfaceShowcase": {
     "eyebrow": "Kontrollfläche",
     "heading": "Die Verwaltungsoberfläche im Überblick",
-    "intro": "Statische Vorschau des Control Centers — gleiche Oberfläche wie nach dem Login, aber ohne Live-Daten."
+    "intro": "So sieht das Control Center aus — statisch, ohne Live-Daten, aber mit derselben Oberfläche wie nach dem Login."
   },
   "surfacePreview": {
     "heading": "Vyntrio Control Center",
     "subheading": "Vorschau — nicht verbunden",
     "panelLabel": "Overview",
     "panelNote": "Instanzname, Bereitschaft und Module erscheinen erst nach erfolgreicher Anmeldung an einer echten Appliance.",
+    "bezel": {
+      "powerLabel": "Standby",
+      "linkLabel": "Nicht verbunden"
+    },
     "rows": [
       { "label": "Instanz", "value": "—" },
       { "label": "Bereitschaft", "value": "Nach Login" },

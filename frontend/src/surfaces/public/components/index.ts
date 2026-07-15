@@ -1,4 +1,9 @@
+export { PublicApplianceChassisArt } from "./PublicApplianceChassisArt";
+export { PublicApplianceSignalPath } from "./PublicApplianceSignalPath";
+export type { PublicApplianceSignalStep } from "./PublicApplianceSignalPath";
 export { PublicControlSurfaceFrame } from "./PublicControlSurfaceFrame";
+export { PublicPillarGlyph } from "./PublicPillarGlyph";
+export type { PublicPillarGlyphKind } from "./PublicPillarGlyph";
 export { PublicControlSurfaceShowcase } from "./PublicControlSurfaceShowcase";
 export { PublicDocsSection } from "./PublicDocsSection";
 export { PublicDownloadPanel } from "./PublicDownloadPanel";

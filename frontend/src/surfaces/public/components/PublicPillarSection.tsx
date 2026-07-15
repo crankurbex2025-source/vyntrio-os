@@ -1,8 +1,11 @@
+import { PublicPillarGlyph, type PublicPillarGlyphKind } from "./PublicPillarGlyph";
+
 export type PublicPillar = {
   tag?: string;
   title: string;
   body: string;
   featured?: boolean;
+  glyph?: PublicPillarGlyphKind;
 };
 
 export type PublicPillarSectionProps = {
@@ -11,6 +14,7 @@ export type PublicPillarSectionProps = {
   intro?: string;
   pillars: PublicPillar[];
   headingId?: string;
+  showGlyphs?: boolean;
 };
 
 export function PublicPillarSection({
@@ -19,6 +23,7 @@ export function PublicPillarSection({
   intro,
   pillars,
   headingId = "public-pillars-heading",
+  showGlyphs = false,
 }: PublicPillarSectionProps) {
   return (
     <section className="vyn-public-pillar-section" aria-labelledby={headingId}>
@@ -35,6 +40,11 @@ export function PublicPillarSection({
               pillar.featured ? "vyn-public-pillar vyn-public-pillar-featured" : "vyn-public-pillar"
             }
           >
+            {showGlyphs && pillar.glyph ? (
+              <div className="vyn-public-pillar-glyph-wrap">
+                <PublicPillarGlyph kind={pillar.glyph} />
+              </div>
+            ) : null}
             {pillar.tag ? <p className="vyn-public-pillar-tag">{pillar.tag}</p> : null}
             <h3>{pillar.title}</h3>
             <p>{pillar.body}</p>

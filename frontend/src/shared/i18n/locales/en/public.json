@@ -14,11 +14,19 @@
   "hero": {
     "eyebrow": "Vyntrio OS",
     "title": "What runs on your server?",
-    "description": "Vyntrio OS runs on your hardware. Storage, services, and administration stay on the device — no cloud layer in between.",
+    "description": "A local appliance platform on your hardware. Storage, services, and administration stay on the device.",
     "ctaDownload": "Release & download",
     "ctaDownloadHint": "Install media ships when publicly released",
     "ctaSignIn": "Sign in to your appliance",
     "ctaSignInHint": "For existing Vyntrio appliances"
+  },
+  "heroStory": {
+    "ariaLabel": "Appliance signal path from hardware to control center",
+    "steps": [
+      { "label": "Hardware", "detail": "Your server" },
+      { "label": "Vyntrio OS", "detail": "Appliance runtime" },
+      { "label": "Control center", "detail": "After sign-in" }
+    ]
   },
   "release": {
     "label": "Release status",
@@ -28,7 +36,7 @@
   "pillars": {
     "eyebrow": "Appliance platform",
     "heading": "Storage, services, control",
-    "intro": "One appliance brings together three areas: persistent disk, host services, and local administration on the device itself.",
+    "intro": "Three layers on one device: disk, processes, administration — no separate cloud layer.",
     "storage": {
       "tag": "Storage",
       "title": "State on disk",
@@ -48,13 +56,17 @@
   "surfaceShowcase": {
     "eyebrow": "Control surface",
     "heading": "The admin surface at a glance",
-    "intro": "Static control-center preview — same UI as after sign-in, without live data."
+    "intro": "This is what the control center looks like — static, no live data, same surface as after sign-in."
   },
   "surfacePreview": {
     "heading": "Vyntrio Control Center",
     "subheading": "Preview — not connected",
     "panelLabel": "Overview",
     "panelNote": "Instance name, readiness, and modules appear only after successful sign-in to a real appliance.",
+    "bezel": {
+      "powerLabel": "Standby",
+      "linkLabel": "Not connected"
+    },
     "rows": [
       { "label": "Instance", "value": "—" },
       { "label": "Readiness", "value": "After sign-in" },

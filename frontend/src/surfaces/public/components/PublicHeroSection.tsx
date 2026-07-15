@@ -12,6 +12,7 @@ export type PublicHeroSectionProps = {
   ctaSignInTo?: string;
   titleId?: string;
   variant?: "default" | "lead" | "compact";
+  accentLine?: boolean;
 };
 
 export function PublicHeroSection({
@@ -26,6 +27,7 @@ export function PublicHeroSection({
   ctaSignInTo = "/login",
   titleId = "public-hero-title",
   variant = "default",
+  accentLine = false,
 }: PublicHeroSectionProps) {
   const heroClass =
     variant === "lead"
@@ -38,6 +40,7 @@ export function PublicHeroSection({
 
   return (
     <div className={heroClass}>
+      {accentLine ? <span className="vyn-public-hero-accent-line" aria-hidden="true" /> : null}
       <p className="vyn-public-eyebrow">{eyebrow}</p>
       <h1 id={titleId}>{title}</h1>
       <p className="vyn-public-hero-description">{description}</p>
