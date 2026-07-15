@@ -1,4 +1,6 @@
 export { PublicApplianceChassisArt } from "./PublicApplianceChassisArt";
+export { PublicApplianceJourney } from "./PublicApplianceJourney";
+export type { PublicApplianceJourneyStep } from "./PublicApplianceJourney";
 export { PublicApplianceSignalPath } from "./PublicApplianceSignalPath";
 export type { PublicApplianceSignalStep } from "./PublicApplianceSignalPath";
 export { PublicControlSurfaceFrame } from "./PublicControlSurfaceFrame";
@@ -14,6 +16,8 @@ export { PublicHonestyBlock } from "./PublicHonestyBlock";
 export { PublicInlineCtaBand } from "./PublicInlineCtaBand";
 export { PublicPillarSection } from "./PublicPillarSection";
 export { PublicPreviewShell } from "./PublicPreviewShell";
+export { PublicPreviewPageContext } from "./PublicPreviewPageContext";
+export type { PublicPreviewContextLink } from "./PublicPreviewPageContext";
 export { PublicProductStatusBlock } from "./PublicProductStatusBlock";
 export { PublicReleaseStrip } from "./PublicReleaseStrip";
 export { PublicResourceList } from "./PublicResourceList";

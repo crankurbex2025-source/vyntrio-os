@@ -65,6 +65,7 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 - Performance: preview routes and GSAP motion load via `React.lazy` + `Suspense`; Vite `manualChunks` isolates `preview-gsap` from the shipped `/` entry path
 - Landing visual (11R.7): chassis line-art, hero accent rule, section surface variants (`hero` / `statement` / `finale`), sticky blurred header — references from [theme.park Unraid base](https://github.com/themepark-dev/theme.park/blob/master/css/base/unraid/unraid-base.css) and [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA) panel density
 - Landing visual/media (11R.8): signal-path storytelling, pillar glyphs, surface bezel lamps, framed showcase mount — references from [Rackula](https://github.com/RackulaLives/Rackula), [rackpad](https://github.com/Kobii-git/rackpad), [tinyDC](https://github.com/GoodrichDev/tinydc.net) rack composition (product-relevant, not cloned)
+- Product story (11R.9): shared preview context nav, install/operate journey modules, cross-route product CSS — references from [theme.park Unraid](https://github.com/themepark-dev/theme.park), [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA), homelab ops patterns from [UniFi Homelab Ops](https://github.com/merlijntishauser/unifi-homelab-ops)
 - No fake live metric animation, no looping decoration
 
 ## Block 11R slice map

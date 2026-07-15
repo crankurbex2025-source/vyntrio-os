@@ -70,6 +70,45 @@ function animateHeroBlock(gsapLib: GsapInstance, heroSection: HTMLElement): void
   }
 }
 
+function animateJourneySection(gsapLib: GsapInstance, section: HTMLElement): void {
+  const profile = getPreviewMotionProfile();
+  const intro = gsapLib.utils.toArray<HTMLElement>(
+    ".vyn-public-eyebrow, .vyn-public-section-title, .vyn-public-journey-intro",
+    section
+  );
+  const steps = gsapLib.utils.toArray<HTMLElement>(".vyn-public-journey-step", section);
+
+  if (intro.length > 0) {
+    gsapLib.from(intro, {
+      opacity: 0,
+      y: PREVIEW_MOTION.intro.offsetY,
+      duration: PREVIEW_MOTION.intro.duration,
+      stagger: 0.06,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: section,
+        start: "top 86%",
+        once: true,
+      },
+    });
+  }
+
+  if (steps.length > 0) {
+    gsapLib.from(steps, {
+      opacity: 0,
+      y: profile.pillarOffsetY,
+      duration: PREVIEW_MOTION.pillar.duration,
+      stagger: 0.08,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: section,
+        start: "top 84%",
+        once: true,
+      },
+    });
+  }
+}
+
 function animatePillarSection(gsapLib: GsapInstance, section: HTMLElement): void {
   const profile = getPreviewMotionProfile();
   const introTargets = gsapLib.utils.toArray<HTMLElement>(
@@ -199,7 +238,14 @@ export function applyDefaultPreviewMotion(gsapLib: GsapInstance, scope: HTMLElem
     });
   }
 
-  scrollSections.forEach((section) => revealSection(gsapLib, section));
+  scrollSections.forEach((section) => {
+    if (section.querySelector(".vyn-public-appliance-journey")) {
+      animateJourneySection(gsapLib, section);
+      return;
+    }
+
+    revealSection(gsapLib, section);
+  });
 }
 
 export function applyLandingPreviewMotion(gsapLib: GsapInstance, scope: HTMLElement): void {
@@ -212,6 +258,11 @@ export function applyLandingPreviewMotion(gsapLib: GsapInstance, scope: HTMLElem
   animateHeroBlock(gsapLib, heroSection);
 
   scrollSections.forEach((section) => {
+    if (section.querySelector(".vyn-public-appliance-journey")) {
+      animateJourneySection(gsapLib, section);
+      return;
+    }
+
     if (section.querySelector(".vyn-public-pillars")) {
       animatePillarSection(gsapLib, section);
       return;

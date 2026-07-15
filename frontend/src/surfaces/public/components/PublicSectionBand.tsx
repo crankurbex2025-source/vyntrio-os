@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 export type PublicSectionBandProps = {
   children: ReactNode;
   tone?: "default" | "elevated" | "inset";
-  surface?: "default" | "hero" | "statement" | "finale" | "capabilities";
+  surface?: "default" | "hero" | "statement" | "finale" | "capabilities" | "journey" | "route-hero" | "artifact";
   id?: string;
 };
 

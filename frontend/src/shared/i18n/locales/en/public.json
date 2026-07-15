@@ -14,7 +14,7 @@
   "hero": {
     "eyebrow": "Vyntrio OS",
     "title": "What runs on your server?",
-    "description": "A local appliance platform on your hardware. Storage, services, and administration stay on the device.",
+    "description": "Appliance platform for your host. Storage, services, and administration run on the device — not in someone else's cloud.",
     "ctaDownload": "Release & download",
     "ctaDownloadHint": "Install media ships when publicly released",
     "ctaSignIn": "Sign in to your appliance",
@@ -23,9 +23,79 @@
   "heroStory": {
     "ariaLabel": "Appliance signal path from hardware to control center",
     "steps": [
-      { "label": "Hardware", "detail": "Your server" },
-      { "label": "Vyntrio OS", "detail": "Appliance runtime" },
-      { "label": "Control center", "detail": "After sign-in" }
+      { "label": "Hardware", "detail": "Physical host" },
+      { "label": "Vyntrio OS", "detail": "Appliance on device" },
+      { "label": "Control center", "detail": "Local after sign-in" }
+    ]
+  },
+  "previewContext": {
+    "ariaLabel": "Product areas in the preview",
+    "landing": "Product",
+    "download": "Release",
+    "docs": "Documentation"
+  },
+  "installJourney": {
+    "eyebrow": "Install path",
+    "heading": "From install media to a running appliance",
+    "intro": "Planned first-boot flow — no invented media or timelines.",
+    "ariaLabel": "Install phases for Vyntrio OS",
+    "steps": [
+      {
+        "phase": "01",
+        "title": "Create boot media",
+        "body": "USB or equivalent from the published install image — only once it exists.",
+        "status": "Pending"
+      },
+      {
+        "phase": "02",
+        "title": "Install on target hardware",
+        "body": "EFI-capable x86_64 host as the appliance target, not a container-only setup.",
+        "status": "Planned"
+      },
+      {
+        "phase": "03",
+        "title": "Sign in on the device",
+        "body": "Login directly on the appliance, same-origin — no foreign admin cloud.",
+        "status": "Constant"
+      },
+      {
+        "phase": "04",
+        "title": "Open control center",
+        "body": "Read-only overview with real API data; more modules only when the appliance supports them.",
+        "status": "After sign-in"
+      }
+    ]
+  },
+  "operateJourney": {
+    "eyebrow": "Operations path",
+    "heading": "Day-to-day after installation",
+    "intro": "How docs and the control center work together — server operations, not SaaS ops.",
+    "ariaLabel": "Operations phases for Vyntrio OS",
+    "steps": [
+      {
+        "phase": "01",
+        "title": "Set up storage",
+        "body": "Pools, shares, and persistent state under a clear boundary on the device.",
+        "status": "Planned"
+      },
+      {
+        "phase": "02",
+        "title": "Manage services",
+        "body": "Start and monitor systemd-managed host processes on the hardware itself.",
+        "status": "Planned"
+      },
+      {
+        "phase": "03",
+        "title": "Check status",
+        "body": "Overview and future modules only with real API data — never marketing metrics.",
+        "status": "Constant"
+      },
+      {
+        "phase": "04",
+        "title": "Release changes",
+        "body": "Version changes only through published media and documented steps.",
+        "status": "Pending"
+      }
     ]
   },
   "release": {
@@ -93,8 +163,8 @@
   "downloadPage": {
     "hero": {
       "eyebrow": "Release",
-      "title": "Install media for Vyntrio OS",
-      "description": "Preview of the release page. No install file is linked yet."
+      "title": "Install media and artifact status",
+      "description": "Release area for verified install images — no published file yet."
     },
     "panel": {
       "heading": "Artifact status",
@@ -139,8 +209,8 @@
   "docsPage": {
     "hero": {
       "eyebrow": "Documentation",
-      "title": "Appliance knowledge, structured not scattered",
-      "description": "Planned docs for install and day-to-day operation — static in this preview, with no search and no invented articles."
+      "title": "Documentation for install and operations",
+      "description": "Planned topics for setup and day-to-day use — static in this preview, no live search."
     },
     "sections": [
       {
@@ -200,6 +270,6 @@
     "download": "Release",
     "docs": "Documentation",
     "signIn": "Sign in",
-    "previewNote": "Design preview Block 11R.5+ — lazy-loaded, not in the `/` bundle"
+    "previewNote": "Design preview Block 11R.9 — lazy-loaded, not in the `/` bundle"
   }
 }

@@ -14,7 +14,7 @@
   "hero": {
     "eyebrow": "Vyntrio OS",
     "title": "Was läuft auf deinem Server?",
-    "description": "Lokale Appliance-Plattform auf deiner Hardware. Storage, Dienste und Verwaltung bleiben auf dem Gerät.",
+    "description": "Appliance-Plattform für deinen Host. Storage, Dienste und Verwaltung laufen auf dem Gerät — nicht in einer fremden Cloud.",
     "ctaDownload": "Release & Download",
     "ctaDownloadHint": "Installationsmedien folgen, sobald veröffentlicht",
     "ctaSignIn": "Am Gerät anmelden",
@@ -23,9 +23,79 @@
   "heroStory": {
     "ariaLabel": "Appliance-Signalweg von Hardware zum Control Center",
     "steps": [
-      { "label": "Hardware", "detail": "Dein Server" },
-      { "label": "Vyntrio OS", "detail": "Appliance-Betrieb" },
-      { "label": "Control Center", "detail": "Nach Anmeldung" }
+      { "label": "Hardware", "detail": "Physischer Host" },
+      { "label": "Vyntrio OS", "detail": "Appliance auf dem Gerät" },
+      { "label": "Control Center", "detail": "Lokal nach Anmeldung" }
+    ]
+  },
+  "previewContext": {
+    "ariaLabel": "Produktbereiche in der Vorschau",
+    "landing": "Produkt",
+    "download": "Release",
+    "docs": "Dokumentation"
+  },
+  "installJourney": {
+    "eyebrow": "Installationsweg",
+    "heading": "Vom Medium zur laufenden Appliance",
+    "intro": "Geplanter Ablauf für die erste Inbetriebnahme — ohne erfundene Medien oder Zeitangaben.",
+    "ariaLabel": "Installationsphasen für Vyntrio OS",
+    "steps": [
+      {
+        "phase": "01",
+        "title": "Boot-Medium erstellen",
+        "body": "USB oder vergleichbares Medium aus dem veröffentlichten Install-Image — erst wenn es existiert.",
+        "status": "Ausstehend"
+      },
+      {
+        "phase": "02",
+        "title": "Auf Zielhardware installieren",
+        "body": "EFI-fähiger x86_64-Host als Appliance-Ziel, nicht als Container-only Setup.",
+        "status": "Geplant"
+      },
+      {
+        "phase": "03",
+        "title": "Lokal am Gerät anmelden",
+        "body": "Login direkt an der Appliance, same-origin — keine fremde Admin-Cloud.",
+        "status": "Konstant"
+      },
+      {
+        "phase": "04",
+        "title": "Control Center öffnen",
+        "body": "Read-only Overview mit echten API-Daten; weitere Module nur bei unterstützter Appliance.",
+        "status": "Nach Login"
+      }
+    ]
+  },
+  "operateJourney": {
+    "eyebrow": "Betriebsweg",
+    "heading": "Nach der Installation im Alltag",
+    "intro": "Wie Doku und Control Center zusammenspielen — orientiert am Server-Betrieb, nicht an SaaS-Ops.",
+    "ariaLabel": "Betriebsphasen für Vyntrio OS",
+    "steps": [
+      {
+        "phase": "01",
+        "title": "Storage einrichten",
+        "body": "Pools, Shares und persistenter Zustand unter klarer Betriebsgrenze auf dem Gerät.",
+        "status": "Geplant"
+      },
+      {
+        "phase": "02",
+        "title": "Dienste verwalten",
+        "body": "Systemd-geführte Host-Prozesse direkt auf der Hardware starten und überwachen.",
+        "status": "Geplant"
+      },
+      {
+        "phase": "03",
+        "title": "Status prüfen",
+        "body": "Overview und spätere Module nur mit echten API-Daten — nie mit Marketing-Metriken.",
+        "status": "Konstant"
+      },
+      {
+        "phase": "04",
+        "title": "Release-Wechsel",
+        "body": "Versionswechsel nur über veröffentlichte Medien und dokumentierte Schritte.",
+        "status": "Ausstehend"
+      }
     ]
   },
   "release": {
@@ -93,8 +163,8 @@
   "downloadPage": {
     "hero": {
       "eyebrow": "Release",
-      "title": "Installationsmedien für Vyntrio OS",
-      "description": "Vorschau der Release-Seite. Es ist noch keine Installationsdatei verlinkt."
+      "title": "Installationsmedien und Artefakt-Status",
+      "description": "Release-Bereich für verifizierte Install-Images — aktuell ohne veröffentlichte Datei."
     },
     "panel": {
       "heading": "Artefakt-Status",
@@ -139,8 +209,8 @@
   "docsPage": {
     "hero": {
       "eyebrow": "Dokumentation",
-      "title": "Appliance-Wissen, strukturiert statt verstreut",
-      "description": "Geplante Doku für Installation und Betrieb — statisch in dieser Vorschau, ohne Suche und ohne erfundene Artikel."
+      "title": "Dokumentation für Installation und Betrieb",
+      "description": "Geplante Themen für Setup und Alltag — statisch in dieser Vorschau, ohne Live-Suche."
     },
     "sections": [
       {
@@ -200,6 +270,6 @@
     "download": "Release",
     "docs": "Dokumentation",
     "signIn": "Anmelden",
-    "previewNote": "Design-Vorschau Block 11R.5+ — lazy geladen, nicht im `/`-Bundle"
+    "previewNote": "Design-Vorschau Block 11R.9 — lazy geladen, nicht im `/`-Bundle"
   }
 }

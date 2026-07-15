@@ -48,6 +48,26 @@ export type PublicMessages = {
     ariaLabel: string;
     steps: Array<{ label: string; detail: string }>;
   };
+  previewContext: {
+    ariaLabel: string;
+    landing: string;
+    download: string;
+    docs: string;
+  };
+  installJourney: {
+    eyebrow: string;
+    heading: string;
+    intro: string;
+    ariaLabel: string;
+    steps: Array<{ phase: string; title: string; body: string; status: string }>;
+  };
+  operateJourney: {
+    eyebrow: string;
+    heading: string;
+    intro: string;
+    ariaLabel: string;
+    steps: Array<{ phase: string; title: string; body: string; status: string }>;
+  };
   release: {
     label: string;
     title: string;

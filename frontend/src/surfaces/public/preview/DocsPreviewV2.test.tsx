@@ -17,7 +17,7 @@ describe("DocsPreviewV2", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Appliance-Wissen, strukturiert statt verstreut" })
+      screen.getByRole("heading", { name: "Dokumentation für Installation und Betrieb" })
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Erste Schritte" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Appliance im Alltag" })).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe("DocsPreviewV2", () => {
     fireEvent.click(screen.getByRole("button", { name: "EN" }));
 
     expect(
-      screen.getByRole("heading", { name: "Appliance knowledge, structured not scattered" })
+      screen.getByRole("heading", { name: "Documentation for install and operations" })
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "First steps" })).toBeInTheDocument();
   });

@@ -1,6 +1,7 @@
 import { I18nProvider, useI18n } from "../../../shared/i18n/I18nProvider";
 import {
   PublicApplianceChassisArt,
+  PublicApplianceJourney,
   PublicApplianceSignalPath,
   PublicControlSurfaceFrame,
   PublicControlSurfaceShowcase,
@@ -8,6 +9,7 @@ import {
   PublicHeroLayout,
   PublicHeroSection,
   PublicPillarSection,
+  PublicPreviewPageContext,
   PublicPreviewShell,
   PublicProductStatusBlock,
   PublicReleaseStrip,
@@ -16,6 +18,8 @@ import {
 import { PreviewPageMotion } from "./motion";
 import "./motion/preview-motion.css";
 import "./public-landing-visual.css";
+import "./public-preview-product.css";
+import { buildPreviewContextLinks } from "./previewContextConfig";
 import { buildPreviewShellProps } from "./previewShellConfig";
 import { usePreviewDocumentLang } from "./usePreviewDocumentLang";
 
@@ -33,9 +37,14 @@ function LandingPreviewContent() {
       })}
       shellVariant="landing"
     >
-      <div className="vyn-public-landing-page">
+      <div className="vyn-public-landing-page vyn-public-preview-page">
         <PreviewPageMotion variant="landing">
           <PublicSectionBand tone="elevated" surface="hero" id="product">
+            <PublicPreviewPageContext
+              ariaLabel={messages.previewContext.ariaLabel}
+              links={buildPreviewContextLinks(messages)}
+              currentKey="landing"
+            />
             <PublicApplianceSignalPath
               steps={[...messages.heroStory.steps]}
               ariaLabel={messages.heroStory.ariaLabel}
@@ -79,6 +88,17 @@ function LandingPreviewContent() {
               title={messages.release.title}
               body={messages.release.body}
               titleId="preview-release-title"
+            />
+          </PublicSectionBand>
+
+          <PublicSectionBand tone="inset" surface="journey" id="install-journey">
+            <PublicApplianceJourney
+              eyebrow={messages.installJourney.eyebrow}
+              heading={messages.installJourney.heading}
+              intro={messages.installJourney.intro}
+              steps={[...messages.installJourney.steps]}
+              ariaLabel={messages.installJourney.ariaLabel}
+              headingId="preview-install-journey-heading"
             />
           </PublicSectionBand>
 

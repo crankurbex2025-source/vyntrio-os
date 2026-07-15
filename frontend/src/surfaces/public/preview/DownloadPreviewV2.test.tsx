@@ -17,7 +17,7 @@ describe("DownloadPreviewV2", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Installationsmedien für Vyntrio OS" })
+      screen.getByRole("heading", { name: "Installationsmedien und Artefakt-Status" })
     ).toBeInTheDocument();
     expect(screen.getByText("Nicht veröffentlicht")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Zur Vorschau-Startseite" })).toHaveAttribute(
@@ -35,7 +35,7 @@ describe("DownloadPreviewV2", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "EN" }));
 
-    expect(screen.getByRole("heading", { name: "Install media for Vyntrio OS" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Install media and artifact status" })).toBeInTheDocument();
     expect(screen.getByText("Not published")).toBeInTheDocument();
   });
 });
