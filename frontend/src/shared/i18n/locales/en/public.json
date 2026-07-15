@@ -2,8 +2,10 @@
   "previewBanner": "Design preview — not the production homepage. Route / stays on Slice 11.1 until Block 11R.8 cutover.",
   "brand": "Vyntrio",
   "nav": {
+    "previewLanding": "Home",
     "home": "Product",
     "capabilities": "Capabilities",
+    "docs": "Documentation",
     "download": "Release",
     "signIn": "Sign in",
     "localeDe": "DE",
@@ -76,10 +78,116 @@
     "ctaDownload": "Go to release area",
     "ctaSignIn": "Sign in to appliance"
   },
+  "downloadPage": {
+    "hero": {
+      "eyebrow": "Release",
+      "title": "Install media for Vyntrio OS",
+      "description": "This preview shows the intended release surface — with clear availability, no invented images, and no silent placeholder download."
+    },
+    "panel": {
+      "heading": "Artifact status",
+      "intro": "All entries are static. There is currently no published file to download.",
+      "rows": [
+        { "label": "Install image", "value": "Not published" },
+        { "label": "Checksum", "value": "—" },
+        { "label": "Release channel", "value": "Not open yet" },
+        { "label": "Verification", "value": "Pending" }
+      ],
+      "note": "When media is available, verified artifacts with checksums and release notes will appear here — not before."
+    },
+    "requirements": {
+      "eyebrow": "Requirements",
+      "heading": "What you need to install",
+      "intro": "Planned minimum requirements for a target appliance device — without invented compatibility promises.",
+      "items": [
+        {
+          "title": "x86_64 hardware with EFI",
+          "description": "Target platform is a dedicated host or server — not container-only deployment.",
+          "statusLabel": "Planned"
+        },
+        {
+          "title": "Bootable install medium",
+          "description": "USB or comparable first-boot path — depends on the image published later.",
+          "statusLabel": "Pending"
+        },
+        {
+          "title": "Local network access",
+          "description": "Initial setup and the control center run same-origin on the appliance, not through a foreign cloud.",
+          "statusLabel": "Constant"
+        }
+      ]
+    },
+    "inlineCta": {
+      "heading": "Back to product preview",
+      "body": "Release details stay on this page. For appliance structure context, start on the preview homepage.",
+      "primary": "Go to preview homepage",
+      "secondary": "Go to documentation"
+    }
+  },
+  "docsPage": {
+    "hero": {
+      "eyebrow": "Documentation",
+      "title": "Appliance knowledge, structured not scattered",
+      "description": "Planned documentation surface for install, operations, and honest product boundaries — static in this preview, with no live search and no invented articles."
+    },
+    "sections": [
+      {
+        "eyebrow": "Getting started",
+        "heading": "First steps",
+        "intro": "Planned topics from install media to first sign-in on the device.",
+        "items": [
+          {
+            "title": "Install workflow",
+            "description": "Steps from boot medium to a reachable appliance — ships with real media.",
+            "statusLabel": "Planned"
+          },
+          {
+            "title": "First sign-in",
+            "description": "Local device login and transition into the control center with real API data.",
+            "statusLabel": "Planned"
+          },
+          {
+            "title": "Release notes",
+            "description": "Version-specific changes only after an actual release — not before.",
+            "statusLabel": "Pending"
+          }
+        ]
+      },
+      {
+        "eyebrow": "Operations",
+        "heading": "Appliance in daily use",
+        "intro": "Documentation for storage, services, and control — oriented like a server product, not a SaaS dashboard.",
+        "items": [
+          {
+            "title": "Storage & shares",
+            "description": "Pools, shares, and persistent state under a clear operations boundary.",
+            "statusLabel": "Planned"
+          },
+          {
+            "title": "Host services",
+            "description": "Manage systemd-driven processes directly on the hardware.",
+            "statusLabel": "Planned"
+          },
+          {
+            "title": "Control center",
+            "description": "Read-only overview and future modules only when the appliance actually provides them.",
+            "statusLabel": "Constant"
+          }
+        ]
+      }
+    ],
+    "inlineCta": {
+      "heading": "Continue to release preview",
+      "body": "Documentation and install media stay separate. For artifact status, switch to the release area.",
+      "primary": "Go to release preview",
+      "secondary": "Go to preview homepage"
+    }
+  },
   "footer": {
     "tagline": "Vyntrio OS — homelab appliance for storage, services, and control.",
     "download": "Release",
+    "docs": "Documentation",
     "signIn": "Sign in",
-    "previewNote": "Design preview Block 11R.3"
+    "previewNote": "Design preview Block 11R.4"
   }
 }

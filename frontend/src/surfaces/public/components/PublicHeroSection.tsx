@@ -4,14 +4,14 @@ export type PublicHeroSectionProps = {
   eyebrow: string;
   title: string;
   description: string;
-  ctaDownloadLabel: string;
+  ctaDownloadLabel?: string;
   ctaDownloadHint?: string;
   ctaDownloadTo?: string;
-  ctaSignInLabel: string;
+  ctaSignInLabel?: string;
   ctaSignInHint?: string;
   ctaSignInTo?: string;
   titleId?: string;
-  variant?: "default" | "lead";
+  variant?: "default" | "lead" | "compact";
 };
 
 export function PublicHeroSection({
@@ -28,27 +28,39 @@ export function PublicHeroSection({
   variant = "default",
 }: PublicHeroSectionProps) {
   const heroClass =
-    variant === "lead" ? "vyn-public-hero vyn-public-hero-lead" : "vyn-public-hero";
+    variant === "lead"
+      ? "vyn-public-hero vyn-public-hero-lead"
+      : variant === "compact"
+        ? "vyn-public-hero vyn-public-hero-compact"
+        : "vyn-public-hero";
+
+  const showCtas = Boolean(ctaDownloadLabel || ctaSignInLabel);
 
   return (
     <div className={heroClass}>
       <p className="vyn-public-eyebrow">{eyebrow}</p>
       <h1 id={titleId}>{title}</h1>
       <p className="vyn-public-hero-description">{description}</p>
-      <div className="vyn-public-cta-stack">
-        <div className="vyn-public-cta-item">
-          <Link className="vyn-public-btn vyn-public-btn-primary" to={ctaDownloadTo}>
-            {ctaDownloadLabel}
-          </Link>
-          {ctaDownloadHint ? <p className="vyn-public-cta-hint">{ctaDownloadHint}</p> : null}
+      {showCtas ? (
+        <div className="vyn-public-cta-stack">
+          {ctaDownloadLabel ? (
+            <div className="vyn-public-cta-item">
+              <Link className="vyn-public-btn vyn-public-btn-primary" to={ctaDownloadTo}>
+                {ctaDownloadLabel}
+              </Link>
+              {ctaDownloadHint ? <p className="vyn-public-cta-hint">{ctaDownloadHint}</p> : null}
+            </div>
+          ) : null}
+          {ctaSignInLabel ? (
+            <div className="vyn-public-cta-item">
+              <Link className="vyn-public-btn vyn-public-btn-secondary" to={ctaSignInTo}>
+                {ctaSignInLabel}
+              </Link>
+              {ctaSignInHint ? <p className="vyn-public-cta-hint">{ctaSignInHint}</p> : null}
+            </div>
+          ) : null}
         </div>
-        <div className="vyn-public-cta-item">
-          <Link className="vyn-public-btn vyn-public-btn-secondary" to={ctaSignInTo}>
-            {ctaSignInLabel}
-          </Link>
-          {ctaSignInHint ? <p className="vyn-public-cta-hint">{ctaSignInHint}</p> : null}
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }

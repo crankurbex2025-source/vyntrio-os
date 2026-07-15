@@ -11,6 +11,7 @@ export type PublicFooterLink = {
 export type PublicPreviewShellProps = {
   banner: string;
   brand: string;
+  brandTo?: string;
   downloadLabel: string;
   downloadTo?: string;
   signInLabel: string;
@@ -18,6 +19,7 @@ export type PublicPreviewShellProps = {
   footerTagline: string;
   footerNote?: string;
   footerLinks?: PublicFooterLink[];
+  routeLinks?: PublicFooterLink[];
   children: ReactNode;
   navAriaLabel?: string;
   anchorLinks?: PublicFooterLink[];
@@ -26,6 +28,7 @@ export type PublicPreviewShellProps = {
 export function PublicPreviewShell({
   banner,
   brand,
+  brandTo,
   downloadLabel,
   downloadTo = "/download",
   signInLabel,
@@ -33,6 +36,7 @@ export function PublicPreviewShell({
   footerTagline,
   footerNote,
   footerLinks,
+  routeLinks,
   children,
   navAriaLabel = "Public navigation",
   anchorLinks,
@@ -45,8 +49,19 @@ export function PublicPreviewShell({
 
       <header className="vyn-public-header">
         <div className="vyn-public-header-inner">
-          <span className="vyn-public-brand">{brand}</span>
+          {brandTo ? (
+            <Link className="vyn-public-brand" to={brandTo}>
+              {brand}
+            </Link>
+          ) : (
+            <span className="vyn-public-brand">{brand}</span>
+          )}
           <nav className="vyn-public-nav" aria-label={navAriaLabel}>
+            {routeLinks?.map((link) => (
+              <Link key={link.to} to={link.to}>
+                {link.label}
+              </Link>
+            ))}
             {anchorLinks?.map((link) => (
               <a key={link.to} href={link.to}>
                 {link.label}

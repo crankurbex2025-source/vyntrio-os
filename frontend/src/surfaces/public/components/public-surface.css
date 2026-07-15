@@ -42,6 +42,7 @@
   font-weight: 700;
   letter-spacing: 0.03em;
   color: var(--vyn-text);
+  text-decoration: none;
 }
 
 .vyn-public-nav {
@@ -52,7 +53,8 @@
 }
 
 .vyn-public-nav a,
-.vyn-public-nav a:visited {
+.vyn-public-nav a:visited,
+.vyn-public-nav a[class*="vyn-public-brand"] {
   color: var(--vyn-text-muted);
   text-decoration: none;
   font-size: 0.92rem;
@@ -154,6 +156,15 @@
 .vyn-public-hero-lead .vyn-public-hero-description {
   font-size: 1.1rem;
   max-width: 52ch;
+}
+
+.vyn-public-hero-compact h1 {
+  font-size: clamp(1.85rem, 4vw, 2.6rem);
+  max-width: 22ch;
+}
+
+.vyn-public-hero-compact .vyn-public-hero-description {
+  max-width: 58ch;
 }
 
 .vyn-public-cta-stack {
@@ -488,6 +499,133 @@
   margin: 1rem 0 0;
   color: var(--vyn-text-subtle);
   font-size: 0.82rem;
+}
+
+.vyn-public-download-panel {
+  border: 1px solid var(--vyn-border);
+  border-radius: var(--vyn-radius-md);
+  padding: 1.25rem;
+  background: var(--vyn-panel);
+  max-width: 42rem;
+}
+
+.vyn-public-download-panel h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.vyn-public-download-panel-intro {
+  margin: 0.5rem 0 1rem;
+  color: var(--vyn-text-muted);
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.vyn-public-download-rows {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.vyn-public-download-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--vyn-border);
+}
+
+.vyn-public-download-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.vyn-public-download-row dt {
+  color: var(--vyn-text-muted);
+  font-family: var(--vyn-font-mono);
+}
+
+.vyn-public-download-row dd {
+  margin: 0;
+  color: var(--vyn-text-subtle);
+  text-align: right;
+}
+
+.vyn-public-download-panel-note {
+  margin: 1rem 0 0;
+  color: var(--vyn-text-subtle);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.vyn-public-docs-section + .vyn-public-docs-section {
+  margin-top: 2rem;
+}
+
+.vyn-public-resource-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.vyn-public-resource-item {
+  border: 1px solid var(--vyn-border);
+  border-radius: var(--vyn-radius-md);
+  padding: 1rem 1.1rem;
+  background: var(--vyn-panel);
+}
+
+.vyn-public-resource-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.vyn-public-resource-title {
+  font-weight: 600;
+  color: var(--vyn-text);
+  text-decoration: none;
+  font-size: 0.98rem;
+}
+
+a.vyn-public-resource-title:hover {
+  color: var(--vyn-accent);
+}
+
+.vyn-public-resource-status {
+  font-family: var(--vyn-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vyn-accent-info);
+}
+
+.vyn-public-resource-description {
+  margin: 0.45rem 0 0;
+  color: var(--vyn-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.vyn-public-inline-cta {
+  max-width: 40rem;
+}
+
+.vyn-public-inline-cta h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.vyn-public-inline-cta > p {
+  margin: 0.5rem 0 0;
+  color: var(--vyn-text-muted);
+  line-height: 1.55;
+  font-size: 0.95rem;
 }
 
 @media (min-width: 900px) {

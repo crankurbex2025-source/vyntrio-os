@@ -1,3 +1,21 @@
+export type PublicResourceItem = {
+  title: string;
+  description: string;
+  statusLabel?: string;
+};
+
+export type PublicDocsSectionMessages = {
+  eyebrow?: string;
+  heading: string;
+  intro?: string;
+  items: PublicResourceItem[];
+};
+
+export type PublicDownloadRowMessages = {
+  label: string;
+  value: string;
+};
+
 export const SUPPORTED_LOCALES = ["de", "en"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
@@ -8,8 +26,10 @@ export type PublicMessages = {
   previewBanner: string;
   brand: string;
   nav: {
+    previewLanding: string;
     home: string;
     capabilities: string;
+    docs: string;
     download: string;
     signIn: string;
     localeDe: string;
@@ -61,9 +81,49 @@ export type PublicMessages = {
     ctaDownload: string;
     ctaSignIn: string;
   };
+  downloadPage: {
+    hero: {
+      eyebrow: string;
+      title: string;
+      description: string;
+    };
+    panel: {
+      heading: string;
+      intro: string;
+      rows: PublicDownloadRowMessages[];
+      note: string;
+    };
+    requirements: {
+      eyebrow: string;
+      heading: string;
+      intro: string;
+      items: PublicResourceItem[];
+    };
+    inlineCta: {
+      heading: string;
+      body: string;
+      primary: string;
+      secondary: string;
+    };
+  };
+  docsPage: {
+    hero: {
+      eyebrow: string;
+      title: string;
+      description: string;
+    };
+    sections: [PublicDocsSectionMessages, PublicDocsSectionMessages];
+    inlineCta: {
+      heading: string;
+      body: string;
+      primary: string;
+      secondary: string;
+    };
+  };
   footer: {
     tagline: string;
     download: string;
+    docs: string;
     signIn: string;
     previewNote: string;
   };

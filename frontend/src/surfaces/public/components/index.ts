@@ -1,12 +1,16 @@
 export { PublicControlSurfaceFrame } from "./PublicControlSurfaceFrame";
 export { PublicControlSurfaceShowcase } from "./PublicControlSurfaceShowcase";
+export { PublicDocsSection } from "./PublicDocsSection";
+export { PublicDownloadPanel } from "./PublicDownloadPanel";
 export { PublicFinalCtaBand } from "./PublicFinalCtaBand";
 export { PublicHeroLayout } from "./PublicHeroLayout";
 export { PublicHeroSection } from "./PublicHeroSection";
 export { PublicHonestyBlock } from "./PublicHonestyBlock";
+export { PublicInlineCtaBand } from "./PublicInlineCtaBand";
 export { PublicPillarSection } from "./PublicPillarSection";
 export { PublicPreviewShell } from "./PublicPreviewShell";
 export { PublicProductStatusBlock } from "./PublicProductStatusBlock";
 export { PublicReleaseStrip } from "./PublicReleaseStrip";
+export { PublicResourceList } from "./PublicResourceList";
 export { PublicSectionBand } from "./PublicSectionBand";
 export { PublicSectionIntro } from "./PublicSectionIntro";

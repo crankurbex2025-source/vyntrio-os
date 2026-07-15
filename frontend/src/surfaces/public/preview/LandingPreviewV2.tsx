@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { I18nProvider, useI18n } from "../../../shared/i18n/I18nProvider";
 import {
   PublicControlSurfaceFrame,
@@ -12,31 +11,21 @@ import {
   PublicReleaseStrip,
   PublicSectionBand,
 } from "../components";
+import { buildPreviewShellProps } from "./previewShellConfig";
+import { usePreviewDocumentLang } from "./usePreviewDocumentLang";
 
 function LandingPreviewContent() {
-  const { locale, messages } = useI18n();
-
-  useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
+  const { messages } = useI18n();
+  usePreviewDocumentLang();
 
   return (
     <PublicPreviewShell
-      banner={messages.previewBanner}
-      brand={messages.brand}
-      downloadLabel={messages.nav.download}
-      signInLabel={messages.nav.signIn}
-      footerTagline={messages.footer.tagline}
-      footerNote={messages.footer.previewNote}
-      footerLinks={[
-        { label: messages.footer.download, to: "/download" },
-        { label: messages.footer.signIn, to: "/login" },
-      ]}
-      anchorLinks={[
-        { label: messages.nav.home, to: "#product" },
-        { label: messages.nav.capabilities, to: "#capabilities" },
-      ]}
-      navAriaLabel="Preview navigation"
+      {...buildPreviewShellProps(messages, {
+        anchorLinks: [
+          { label: messages.nav.home, to: "#product" },
+          { label: messages.nav.capabilities, to: "#capabilities" },
+        ],
+      })}
     >
       <PublicSectionBand tone="elevated" id="product">
         <PublicHeroLayout
@@ -134,6 +123,7 @@ function LandingPreviewContent() {
           body={messages.finalCta.body}
           ctaDownloadLabel={messages.finalCta.ctaDownload}
           ctaSignInLabel={messages.finalCta.ctaSignIn}
+          ctaDownloadTo="/design-preview/download"
           headingId="preview-final-cta-heading"
         />
       </PublicSectionBand>

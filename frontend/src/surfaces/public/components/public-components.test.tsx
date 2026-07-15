@@ -7,14 +7,19 @@ import { I18nProvider } from "../../../shared/i18n/I18nProvider";
 import {
   PublicControlSurfaceFrame,
   PublicControlSurfaceShowcase,
+  PublicDocsSection,
+  PublicDownloadPanel,
   PublicFinalCtaBand,
   PublicHeroSection,
+  PublicInlineCtaBand,
   PublicPillarSection,
   PublicPreviewShell,
   PublicProductStatusBlock,
   PublicReleaseStrip,
+  PublicResourceList,
   PublicSectionBand,
 } from "./index";
+import { buildPreviewShellProps } from "../preview/previewShellConfig";
 
 const de = getPublicMessages("de");
 
@@ -99,22 +104,81 @@ describe("public surface components", () => {
     expect(screen.getByRole("heading", { name: de.surfacePreview.heading })).toBeInTheDocument();
   });
 
+  it("PublicHeroSection compact variant omits CTAs when labels are absent", () => {
+    render(
+      <PublicHeroSection
+        eyebrow={de.downloadPage.hero.eyebrow}
+        title={de.downloadPage.hero.title}
+        description={de.downloadPage.hero.description}
+        variant="compact"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: de.downloadPage.hero.title })).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("PublicDownloadPanel shows honest static artifact rows", () => {
+    render(
+      <PublicDownloadPanel
+        heading={de.downloadPage.panel.heading}
+        intro={de.downloadPage.panel.intro}
+        rows={de.downloadPage.panel.rows}
+        note={de.downloadPage.panel.note}
+      />
+    );
+
+    expect(screen.getByText("Nicht veröffentlicht")).toBeInTheDocument();
+    expect(screen.getByText(de.downloadPage.panel.note)).toBeInTheDocument();
+  });
+
+  it("PublicDocsSection renders resource items with status labels", () => {
+    render(
+      <PublicDocsSection
+        eyebrow={de.docsPage.sections[0].eyebrow}
+        heading={de.docsPage.sections[0].heading}
+        intro={de.docsPage.sections[0].intro}
+        items={de.docsPage.sections[0].items}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: de.docsPage.sections[0].heading })).toBeInTheDocument();
+    expect(screen.getByText("Installationsablauf")).toBeInTheDocument();
+    expect(screen.getAllByText("Geplant").length).toBeGreaterThan(0);
+  });
+
+  it("PublicResourceList renders static items without href", () => {
+    render(<PublicResourceList items={de.downloadPage.requirements.items} />);
+
+    expect(screen.getByText(de.downloadPage.requirements.items[0].title)).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("PublicInlineCtaBand renders preview cross-links", () => {
+    render(
+      <MemoryRouter>
+        <PublicInlineCtaBand
+          heading={de.docsPage.inlineCta.heading}
+          body={de.docsPage.inlineCta.body}
+          primaryLabel={de.docsPage.inlineCta.primary}
+          primaryTo="/design-preview/download"
+          secondaryLabel={de.docsPage.inlineCta.secondary}
+          secondaryTo="/design-preview/landing"
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("link", { name: de.docsPage.inlineCta.primary })).toHaveAttribute(
+      "href",
+      "/design-preview/download"
+    );
+  });
+
   it("PublicPreviewShell includes locale switcher and footer links", () => {
     render(
       <MemoryRouter>
         <I18nProvider initialLocale="de">
-          <PublicPreviewShell
-            banner={de.previewBanner}
-            brand={de.brand}
-            downloadLabel={de.nav.download}
-            signInLabel={de.nav.signIn}
-            footerTagline={de.footer.tagline}
-            footerNote={de.footer.previewNote}
-            footerLinks={[
-              { label: de.footer.download, to: "/download" },
-              { label: de.footer.signIn, to: "/login" },
-            ]}
-          >
+          <PublicPreviewShell {...buildPreviewShellProps(de)}>
             <PublicSectionBand>
               <PublicReleaseStrip
                 label={de.release.label}
@@ -141,7 +205,13 @@ describe("public surface components", () => {
 
     expect(screen.getByRole("group", { name: "Language" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: de.release.title })).toBeInTheDocument();
-    expect(screen.getByRole("contentinfo").querySelector(".vyn-public-footer-nav")).toBeTruthy();
-    expect(screen.getAllByRole("link", { name: de.footer.download })[0]).toHaveAttribute("href", "/download");
+    expect(screen.getByRole("link", { name: de.nav.previewLanding })).toHaveAttribute(
+      "href",
+      "/design-preview/landing"
+    );
+    expect(screen.getAllByRole("link", { name: de.footer.download })[0]).toHaveAttribute(
+      "href",
+      "/design-preview/download"
+    );
   });
 });

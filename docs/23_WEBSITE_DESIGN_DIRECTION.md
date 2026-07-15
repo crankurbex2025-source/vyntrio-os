@@ -66,7 +66,7 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 | **11R.1** | **Implemented** | Tokens v2, i18n scaffold, `/design-preview/landing` |
 | **11R.2** | **Implemented** | Reusable public components in `surfaces/public/components/` |
 | **11R.3** | **Implemented** | Preview landing v2 section architecture on `/design-preview/landing` |
-| 11R.4 | Planned | Download/docs pages v2 |
+| **11R.4** | **Implemented** | Public component system for download/docs preview surfaces |
 | 11R.5 | Planned | GSAP motion layer |
 | 11R.6 | Planned | Appliance token convergence |
 | 11R.7 | Planned | PWA manifest |
@@ -76,6 +76,9 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 ## Preview artifacts
 
 - Routed: `/design-preview/landing` (`LandingPreviewV2.tsx`)
+- Routed: `/design-preview/download` (`DownloadPreviewV2.tsx`)
+- Routed: `/design-preview/docs` (`DocsPreviewV2.tsx`)
+- Shared shell config: `surfaces/public/preview/previewShellConfig.ts`
 - Static moodboard: `frontend/design-preview/direction-board.html` (not embedded)
 
 ## Coherence rule
