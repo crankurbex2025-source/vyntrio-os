@@ -224,6 +224,7 @@ scope for Block 10 installer implementation.
 - [x] Block 10 Slice 10.4: installer target-layout scaffold (`target-layout-manifest.yaml`)
 - [x] Block 10 Slice 10.5: preflight-gated mutation dry-run stub (`make installer-mutation-stub`)
 - [x] Block 10 Slice 10.6: first target mutation — empty state directories in `target-sandbox/`
+- [x] Block 10 Slice 10.7: manifest payload copy to `target-sandbox/`
 - [ ] Partition/filesystem executable slice
 - [ ] `vyntrio-installer` target-disk mutation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)
@@ -259,4 +260,5 @@ scope for Block 10 installer implementation.
 - `scripts/validate-installer-layout-plan.sh` — read-only layout plan validation (Slice 10.4)
 - `scripts/installer-mutation-stub.sh` — preflight-gated mutation dry-run stub (Slice 10.5)
 - `scripts/installer-mutate-directories.sh` — empty state directory mutation in target-sandbox (Slice 10.6)
+- `scripts/installer-copy-payloads.sh` — manifest payload copy to target-sandbox (Slice 10.7)
 - Block 10, Slice 10.1 audit (conversation record)

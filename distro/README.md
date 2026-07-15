@@ -61,6 +61,9 @@ Zielplatten-Schreiben.
 `distro/installer/target-sandbox/` via `make installer-mutate-directories`;
 preflight-gated; kein Host-Pfad-Schreiben, kein Payload-Copy.
 
+**Block 10 / Slice 10.7:** Manifest-Payload-Copy nach `target-sandbox/` via
+`make installer-copy-payloads`; nur Allowlist-Payloads; kein Service-Enablement.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

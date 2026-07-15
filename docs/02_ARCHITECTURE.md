@@ -165,6 +165,10 @@ Verzeichnisse unter `distro/installer/target-sandbox/` via
 `make installer-mutate-directories`; preflight-gated; kein Host-`/etc`/`/var/lib`,
 kein Payload-Copy.
 
+**Block 10 / Slice 10.7 (implementiert):** Manifest-Payload-Copy nach
+`distro/installer/target-sandbox/` via `make installer-copy-payloads`;
+preflight-gated; nur sechs Allowlist-Dateien; kein Service-Enablement, kein Bootstrap.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

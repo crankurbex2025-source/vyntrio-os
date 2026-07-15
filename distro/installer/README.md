@@ -16,8 +16,8 @@ on target hardware. Media creation remains **Block 9** (`distro/install-media/`)
 | Layout plan validation (`make installer-layout-plan`) | **Implemented (Slice 10.4)** — read-only |
 | Mutation stub (`make installer-mutation-stub`) | **Implemented (Slice 10.5)** — preflight-gated dry-run |
 | Directory mutation (`make installer-mutate-directories`) | **Implemented (Slice 10.6)** — empty state dirs in target-sandbox |
-| Target-disk install execution | **Not started** — future slice |
-| Bootstrap handoff | **Not started** — future slice |
+| Payload copy (`make installer-copy-payloads`) | **Implemented (Slice 10.7)** — manifest payloads to target-sandbox |
+| Service enablement / bootstrap | **Not started** — future slice |
 
 ## Preflight (Slice 10.3)
 
@@ -74,6 +74,18 @@ the **first real mutation step**. It:
 Production install will map the same relative layout onto the real target filesystem
 in a future slice.
 
+## Payload copy (Slice 10.7)
+
+`make installer-copy-payloads` runs `scripts/installer-copy-payloads.sh`, which:
+
+1. **Requires** successful preflight and valid layout plan (fail-closed)
+2. **Depends on** Slice 10.6 directory layout in `target-sandbox/`
+3. **Copies** only the six manifest-listed files from `distro/install-media/envelope/payload/`
+4. **Refuses** any target root outside `target-sandbox/`
+5. **Does not** enable services, invoke bootstrap, or partition disks
+
+Writes `target-sandbox/PAYLOAD_COPY.txt` with `bootstrap_handoff: deferred`.
+
 ## Related
 
 - `docs/ADR/0007-appliance-installer-contract.md`
@@ -82,4 +94,5 @@ in a future slice.
 - `scripts/validate-installer-layout-plan.sh`
 - `scripts/installer-mutation-stub.sh`
 - `scripts/installer-mutate-directories.sh`
+- `scripts/installer-copy-payloads.sh`
 - `cmd/installer/main.go` — stub entrypoint
