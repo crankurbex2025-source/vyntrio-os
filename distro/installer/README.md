@@ -17,7 +17,8 @@ on target hardware. Media creation remains **Block 9** (`distro/install-media/`)
 | Mutation stub (`make installer-mutation-stub`) | **Implemented (Slice 10.5)** — preflight-gated dry-run |
 | Directory mutation (`make installer-mutate-directories`) | **Implemented (Slice 10.6)** — empty state dirs in target-sandbox |
 | Payload copy (`make installer-copy-payloads`) | **Implemented (Slice 10.7)** — manifest payloads to target-sandbox |
-| Service enablement / bootstrap | **Not started** — future slice |
+| Service prep (`make installer-prepare-service`) | **Implemented (Slice 10.8)** — enablement prep in target-sandbox |
+| Service start / bootstrap | **Not started** — future slice |
 
 ## Preflight (Slice 10.3)
 
@@ -86,6 +87,16 @@ in a future slice.
 
 Writes `target-sandbox/PAYLOAD_COPY.txt` with `bootstrap_handoff: deferred`.
 
+## Service enablement preparation (Slice 10.8)
+
+`make installer-prepare-service` runs `scripts/installer-prepare-service.sh`, which:
+
+1. **Requires** successful preflight, layout plan, and payload copy gates (fail-closed)
+2. **Verifies** `vyntrio-api.service` is present in the target sandbox from Slice 10.7
+3. **Writes** enablement prep marker `etc/systemd/system/vyntrio-api.service.enable-prep`
+4. **Writes** `target-sandbox/SERVICE_PREP.txt` with `enablement_status: prepared_not_enabled`
+5. **Does not** invoke systemctl, start services, or run bootstrap
+
 ## Related
 
 - `docs/ADR/0007-appliance-installer-contract.md`
@@ -95,4 +106,5 @@ Writes `target-sandbox/PAYLOAD_COPY.txt` with `bootstrap_handoff: deferred`.
 - `scripts/installer-mutation-stub.sh`
 - `scripts/installer-mutate-directories.sh`
 - `scripts/installer-copy-payloads.sh`
+- `scripts/installer-prepare-service.sh`
 - `cmd/installer/main.go` — stub entrypoint

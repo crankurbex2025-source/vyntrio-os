@@ -169,6 +169,11 @@ kein Payload-Copy.
 `distro/installer/target-sandbox/` via `make installer-copy-payloads`;
 preflight-gated; nur sechs Allowlist-Dateien; kein Service-Enablement, kein Bootstrap.
 
+**Block 10 / Slice 10.8 (implementiert):** Service-Enablement-Vorbereitung via
+`make installer-prepare-service` — preflight/copy-gated; Prep-Marker und
+`SERVICE_PREP.txt` in `target-sandbox/`; kein systemctl, kein Service-Start,
+kein Bootstrap.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

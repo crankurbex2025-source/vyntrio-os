@@ -4,7 +4,8 @@
 // Mutation stub: scripts/installer-mutation-stub.sh (Slice 10.5, dry-run only).
 // Directory mutation: scripts/installer-mutate-directories.sh (Slice 10.6, target-sandbox only).
 // Payload copy: scripts/installer-copy-payloads.sh (Slice 10.7, target-sandbox only).
-// Service enablement and bootstrap handoff are deferred to future slices.
+// Service prep: scripts/installer-prepare-service.sh (Slice 10.8, no service start).
+// Bootstrap handoff is deferred to a future Block 10 slice.
 package main
 
 func main() {

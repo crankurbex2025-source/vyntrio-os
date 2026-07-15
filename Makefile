@@ -7,7 +7,7 @@ NPM ?= npm
 # ui-stage; never committed. Go compilation fails if this input is absent.
 UI_STAGE_DIR := internal/interfaces/http/ui/dist
 
-.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope installer-preflight test-installer-preflight installer-layout-plan test-installer-layout-plan installer-mutation-stub test-installer-mutation-stub installer-mutate-directories test-installer-mutate-directories installer-copy-payloads test-installer-copy-payloads run-api docs-check clean sqlc-generate generate
+.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope installer-preflight test-installer-preflight installer-layout-plan test-installer-layout-plan installer-mutation-stub test-installer-mutation-stub installer-mutate-directories test-installer-mutate-directories installer-copy-payloads test-installer-copy-payloads installer-prepare-service test-installer-prepare-service run-api docs-check clean sqlc-generate generate
 
 help:
 	@echo "Vyntrio OS — development commands"
@@ -35,6 +35,8 @@ help:
 	@echo "  make test-installer-mutate-directories  Verify directory mutation step"
 	@echo "  make installer-copy-payloads  Copy manifest payloads to target-sandbox"
 	@echo "  make test-installer-copy-payloads  Verify payload copy step"
+	@echo "  make installer-prepare-service  Prepare service enablement in target-sandbox"
+	@echo "  make test-installer-prepare-service  Verify service preparation step"
 	@echo "  make run-api       Run API server (cmd/api)"
 	@echo "  make docs-check    Validate documentation structure"
 	@echo "  make sqlc-generate Regenerate sqlc query code"
@@ -119,6 +121,12 @@ installer-copy-payloads: installer-mutate-directories
 
 test-installer-copy-payloads: installer-copy-payloads
 	@./tests/installer/copy_payloads_test.sh
+
+installer-prepare-service: installer-copy-payloads
+	@./scripts/installer-prepare-service.sh
+
+test-installer-prepare-service: installer-prepare-service
+	@./tests/installer/prepare_service_test.sh
 
 run-api:
 	@$(GO) run ./cmd/api

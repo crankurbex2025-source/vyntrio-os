@@ -64,6 +64,10 @@ preflight-gated; kein Host-Pfad-Schreiben, kein Payload-Copy.
 **Block 10 / Slice 10.7:** Manifest-Payload-Copy nach `target-sandbox/` via
 `make installer-copy-payloads`; nur Allowlist-Payloads; kein Service-Enablement.
 
+**Block 10 / Slice 10.8:** Service-Enablement-Vorbereitung via
+`make installer-prepare-service`; Prep-Artefakte in `target-sandbox/`; kein
+Service-Start, kein Bootstrap.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1
