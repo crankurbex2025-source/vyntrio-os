@@ -203,7 +203,7 @@ approved slices:
 
 ### Follow-up
 
-- [ ] Block 9 Slice 9.3+: `distro/` install-media scaffold (layout manifest, no execution)
+- [x] Block 9 Slice 9.3: `distro/install-media/` scaffold (layout manifest, no execution)
 - [ ] ISO/live-USB build pipeline slice
 - [ ] `vyntrio-installer` implementation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)

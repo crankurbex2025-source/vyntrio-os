@@ -1,0 +1,91 @@
+# Declarative install-media payload manifest (scaffold only).
+# Authority: docs/ADR/0006-appliance-install-recovery-media.md
+# This file is not consumed by any build or installer in Slice 9.3.
+
+schema_version: vyntrio-install-media-manifest-v1
+media_role: install
+
+description: >
+  Greenfield install USB/ISO payload contract. Lists immutable artifacts that may
+  be copied from install media to the target disk. Does not define boot loader,
+  partitioning, or install execution.
+
+# Explicit non-payload: must never be embedded in generic install media.
+excluded_from_media:
+  - appliance_sqlite_state
+  - owner_credentials
+  - bootstrap_tokens
+  - license_files
+  - backup_artifacts
+  - instance_secrets
+
+# Conceptual layout for future image build slices (not populated in 9.3).
+media_layout:
+  boot: deferred
+  live_root: deferred
+  payload_root: payload/
+
+target_disk_paths:
+  - path: /usr/bin
+    purpose: immutable binaries
+  - path: /etc/systemd/system
+    purpose: vyntrio-api.service
+  - path: /usr/lib/sysusers.d
+    purpose: vyntrio account provisioning
+  - path: /etc/tmpfiles.d
+    purpose: /etc/vyntrio directory layout
+  - path: /etc/vyntrio
+    purpose: runtime configuration directory
+  - path: /var/lib/vyntrio
+    purpose: persistent state root (created empty; no DB on media)
+
+payloads:
+  binaries:
+    - id: vyntrio-api
+      build_output: bin/vyntrio-api
+      install_path: /usr/bin/vyntrio-api
+      mode: "0755"
+      owner: root:root
+    - id: vyntrio-backup
+      build_output: bin/vyntrio-backup
+      install_path: /usr/bin/vyntrio-backup
+      mode: "0755"
+      owner: root:root
+
+  systemd:
+    - id: vyntrio-api-service
+      source: distro/systemd/vyntrio-api.service
+      install_path: /etc/systemd/system/vyntrio-api.service
+      mode: "0644"
+      owner: root:root
+    - id: vyntrio-sysusers
+      source: distro/systemd/vyntrio.sysusers
+      install_path: /usr/lib/sysusers.d/vyntrio.conf
+      mode: "0644"
+      owner: root:root
+    - id: vyntrio-tmpfiles
+      source: distro/systemd/vyntrio.tmpfiles.conf
+      install_path: /etc/tmpfiles.d/vyntrio.conf
+      mode: "0644"
+      owner: root:root
+
+  config_templates:
+    - id: config-toml
+      source: distro/install-media/config.toml.template
+      install_path: /etc/vyntrio/config.toml
+      mode: "0640"
+      owner: root:vyntrio
+      note: Template only; administrator must review before first service start.
+
+post_install_handoff:
+  bootstrap: ADR-0004
+  service_unit: vyntrio-api.service
+  persistent_state: empty_until_bootstrap
+  manual_install_reference: distro/systemd/README.md
+
+deferred_slices:
+  - bootable_iso_or_usb_image
+  - disk_partitioning_and_filesystem_layout
+  - vyntrio_installer_execution
+  - recovery_media_scaffold
+  - install_progress_reporting

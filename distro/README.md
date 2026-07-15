@@ -13,6 +13,10 @@ unit, sysusers, tmpfiles). See `distro/systemd/README.md`.
 Boot-USB/ISO-Images (zukünftige Slices). Recovery-Medien sind ein separates
 Deliverable vom Install-Medium.
 
+**Block 9 / Slice 9.3:** Deklaratives Install-Media-Gerüst unter
+`distro/install-media/` (`manifest.yaml`, `config.toml.template`, README) —
+Payload-Vertrag nur; kein Boot, keine Partitionierung, kein Installer-Lauf.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

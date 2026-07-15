@@ -1,0 +1,10 @@
+# Vyntrio API runtime configuration template (install media scaffold).
+# Installed to /etc/vyntrio/config.toml — administrator must review before
+# first service start. No secrets. No Owner credentials.
+# Schema: docs/API_CONVENTIONS.md, docs/ADR/0005-appliance-runtime-operations.md
+
+bind_address = "127.0.0.1"
+listen_port = 8080
+state_dir = "/var/lib/vyntrio"
+log_level = "info"
+cookie_secure = false

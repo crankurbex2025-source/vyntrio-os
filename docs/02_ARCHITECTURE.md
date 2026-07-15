@@ -101,6 +101,11 @@ offline Recovery-Umgebung; persistenter State nur auf Zielplatte
 generischem Medium; License-USB (`docs/15_LICENSE.md`) ist separat. Noch keine
 ISO-/Installer-Implementierung.
 
+**Block 9 / Slice 9.3 (Gerüst, dokumentiert):** Deklaratives Install-Media-
+Gerüst in `distro/install-media/` (`manifest.yaml`, Config-Template, README) —
+listet Payloads und Zielpfade; referenziert `distro/systemd/*`; kein Boot/ISO-
+Build, keine Partitionierung, kein Installer-Lauf.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.
