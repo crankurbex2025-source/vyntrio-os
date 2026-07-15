@@ -14,7 +14,8 @@ sections B, D, E). Runtime paths and ownership remain `docs/ADR/0005-appliance-r
 | Layout manifest (`manifest.yaml`) | **Scaffold** — declarative only |
 | Build contract (`build-contract.md`) | **Contract** — install-image I/O boundary (Slice 9.5) |
 | Payload staging (`make install-media-stage`) | **Implemented (Slice 9.6)** — local `staging/payload/` only |
-| Live/boot envelope (`envelope-manifest.yaml`) | **Scaffold (Slice 9.7)** — declarative layer contract only |
+| Live/boot envelope (`envelope-manifest.yaml`) | **Scaffold (Slice 9.7)** — declarative layer contract |
+| Envelope assembly (`make install-media-envelope`) | **Implemented (Slice 9.8)** — local `envelope/` only |
 | Config template (`config.toml.template`) | **Scaffold** — operator-edited at install |
 | Boot/live environment build | **Not started** — deferred after envelope scaffold |
 | ISO/USB build pipeline | **Not started** — deferred after envelope scaffold |
@@ -51,6 +52,10 @@ distro/
 │   ├── build-contract.md   ← install-image build I/O (Slice 9.5)
 │   ├── config.toml.template
 │   └── staging/            ← local disposable payload staging (Slice 9.6, gitignored)
+│       └── payload/
+│   └── envelope/           ← local disposable envelope assembly (Slice 9.8, gitignored)
+│       ├── boot/
+│       ├── live_root/
 │       └── payload/
 ├── systemd/                ← runtime deployment artifacts (Block 7.3)
 │   └── …
@@ -100,4 +105,5 @@ of this install-media tree.
 - `distro/install-media/envelope-contract.md` — live/boot envelope contract (Slice 9.7)
 - `distro/install-media/envelope-manifest.yaml` — envelope layer inventory (Slice 9.7)
 - `scripts/stage-install-media.sh` — local payload staging (Slice 9.6)
+- `scripts/assemble-install-media-envelope.sh` — local envelope assembly (Slice 9.8)
 - `distro/systemd/README.md` — current manual install path

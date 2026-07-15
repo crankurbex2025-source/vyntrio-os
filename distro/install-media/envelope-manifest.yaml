@@ -3,7 +3,8 @@
 # Payload inventory: distro/install-media/manifest.yaml
 # Build I/O contract: distro/install-media/build-contract.md
 # Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7)
-# Not consumed by any executable envelope builder in Slice 9.7.
+# Assembly: scripts/assemble-install-media-envelope.sh (Slice 9.8)
+# Not consumed by any ISO/USB image builder in Slice 9.8.
 
 schema_version: vyntrio-install-media-envelope-v1
 media_role: install
@@ -74,7 +75,7 @@ envelope_layers:
 
 # Future envelope assembly wraps staging payload inside boot/live layers.
 assembly_flow:
-  current_slice: "9.7"
+  current_slice: "9.8"
   steps:
     - id: stage_payload
       status: implemented
@@ -87,8 +88,9 @@ assembly_flow:
       status: deferred
       action: Add bootloader, kernel, initrd referencing live_root
     - id: embed_payload
-      status: deferred
-      action: Place staged payload/ inside image envelope without target-disk writes
+      status: implemented
+      slice: "9.8"
+      action: Place staged payload/ inside local envelope at distro/install-media/envelope/payload/
     - id: emit_image
       status: deferred
       action: Produce bootable ISO or raw USB image file
@@ -97,7 +99,6 @@ deferred_executable_slices:
   - iso_or_usb_image_generation
   - boot_loader_uefi_bios_configuration
   - live_root_filesystem_composition
-  - envelope_assembly_makefile_target
   - vyntrio_installer_execution
 
 excluded_from_envelope:
@@ -119,6 +120,13 @@ metadata_files:
     purpose: Local staging provenance; not part of bootable envelope output
 
   - id: envelope-record
+    path: ENVELOPE.txt
+    location: distro/install-media/envelope/
+    slice: "9.8"
+    shipped_on_image: false
+    purpose: Local envelope assembly provenance; not part of bootable image output
+
+  - id: envelope-record-yaml
     path: envelope-record.yaml
     location: deferred
     shipped_on_image: deferred

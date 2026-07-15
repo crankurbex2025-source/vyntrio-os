@@ -34,6 +34,11 @@ nur Manifest-Payloads; kein ISO/USB, kein Zielplatten-Schreiben.
 deklarative Schichten (`boot/`, `live_root/`, `payload/`); Verweis auf
 `staging/payload/`; kein ISO/USB-Builder, kein Boot/Live-Root-Lauf.
 
+**Block 9 / Slice 9.8:** Lokale Envelope-Assembly via `make install-media-envelope`
+(`scripts/assemble-install-media-envelope.sh` → `distro/install-media/envelope/`);
+konsumiert gestagte Payloads; `boot/`/`live_root/` nur Platzhalter; kein ISO/USB,
+kein Zielplatten-Schreiben.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

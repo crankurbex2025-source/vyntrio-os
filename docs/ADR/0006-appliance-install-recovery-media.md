@@ -208,6 +208,7 @@ approved slices:
 - [x] Block 9 Slice 9.5: install-image build contract (`distro/install-media/build-contract.md`)
 - [x] Block 9 Slice 9.6: local install-media payload staging (`make install-media-stage`)
 - [x] Block 9 Slice 9.7: install-image live/boot envelope scaffold (`envelope-contract.md`, `envelope-manifest.yaml`)
+- [x] Block 9 Slice 9.8: local install-media envelope assembly (`make install-media-envelope`)
 - [ ] ISO/live-USB image envelope build slice (executable builder)
 - [ ] `vyntrio-installer` implementation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)

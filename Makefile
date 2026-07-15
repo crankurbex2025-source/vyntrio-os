@@ -7,7 +7,7 @@ NPM ?= npm
 # ui-stage; never committed. Go compilation fails if this input is absent.
 UI_STAGE_DIR := internal/interfaces/http/ui/dist
 
-.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage run-api docs-check clean sqlc-generate generate
+.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope run-api docs-check clean sqlc-generate generate
 
 help:
 	@echo "Vyntrio OS — development commands"
@@ -23,6 +23,8 @@ help:
 	@echo "  make build         Build Go binaries (embeds staged frontend)"
 	@echo "  make install-media-stage  Stage install-media payloads locally"
 	@echo "  make test-install-media-stage  Verify install-media staging output"
+	@echo "  make install-media-envelope  Assemble local install-media envelope"
+	@echo "  make test-install-media-envelope  Verify install-media envelope assembly"
 	@echo "  make run-api       Run API server (cmd/api)"
 	@echo "  make docs-check    Validate documentation structure"
 	@echo "  make sqlc-generate Regenerate sqlc query code"
@@ -72,6 +74,12 @@ install-media-stage: build
 test-install-media-stage: install-media-stage
 	@./tests/installmedia/stage_test.sh
 
+install-media-envelope: install-media-stage
+	@./scripts/assemble-install-media-envelope.sh
+
+test-install-media-envelope: install-media-envelope
+	@./tests/installmedia/envelope_test.sh
+
 run-api:
 	@$(GO) run ./cmd/api
 
@@ -82,7 +90,7 @@ clean:
 	@rm -rf bin dist coverage.out coverage.html
 	@rm -rf frontend/dist frontend/build frontend/.next
 	@rm -rf "$(ROOT)/$(UI_STAGE_DIR)"
-	@rm -rf distro/install-media/staging
+	@rm -rf distro/install-media/staging distro/install-media/envelope
 	@echo "Clean complete."
 
 sqlc-generate:

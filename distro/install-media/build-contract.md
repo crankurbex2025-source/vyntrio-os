@@ -19,6 +19,12 @@ images, boot layers, or target-disk writes.
 `envelope-manifest.yaml` define the live/boot envelope layers and how staged
 `payload/` is wrapped into a future bootable image. This is declarative only.
 
+**Slice 9.8 (implemented):** `make install-media-envelope` runs
+`scripts/assemble-install-media-envelope.sh`, which consumes staged payloads and
+assembles the local disposable tree `distro/install-media/envelope/` (`boot/`,
+`live_root/`, `payload/`). `boot/` and `live_root/` are deferred placeholders only.
+This does **not** produce ISO/USB images, boot layers, or target-disk writes.
+
 There is **no** install-image envelope builder, ISO generator, USB writer, or CI
 image publication job yet.
 
@@ -124,6 +130,7 @@ Additionally excluded from **install-image** build inputs:
 | `distro/install-media/manifest.yaml` | **Payload authority** for install image `payload/` staging |
 | `distro/install-media/envelope-manifest.yaml` | **Envelope layer authority** (boot/live_root/payload) — Slice 9.7 |
 | `distro/install-media/envelope-contract.md` | Envelope boundary contract — Slice 9.7 |
+| `scripts/assemble-install-media-envelope.sh` | Local envelope assembly (Slice 9.8) |
 | `distro/install-media/config.toml.template` | Shipped as template; installed to `/etc/vyntrio/config.toml` on target |
 | `distro/install-media/README.md` | Human overview; not consumed by tooling |
 | `distro/recovery-media/` | **Out of scope** — separate image build contract (future slice) |

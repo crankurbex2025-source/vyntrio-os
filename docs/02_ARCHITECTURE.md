@@ -125,6 +125,12 @@ kein Zielplatten-Schreiben.
 definiert `boot/`, `live_root/`, `payload/`-Schichten und Bezug zum lokalen
 Staging; deklarativ nur; kein ISO/USB-Generator, kein Boot/Live-Root-Lauf.
 
+**Block 9 / Slice 9.8 (implementiert):** Lokale Install-Envelope-Assembly via
+`make install-media-envelope` — konsumiert `staging/payload/`, erzeugt
+`distro/install-media/envelope/` mit deklarierten Schichten; validiert nur
+Manifest-Payloads; `boot/`/`live_root/` Platzhalter; kein ISO/USB, kein
+Zielplatten-Schreiben.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

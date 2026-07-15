@@ -15,9 +15,12 @@ a future bootable install image wraps the staged `payload/` tree. This is a
 **declarative contract only**. No ISO/USB generator, boot loader, live-root
 builder, or installer runs in this slice.
 
-**Slice 9.6 (implemented):** `make install-media-stage` produces
-`distro/install-media/staging/payload/` locally. That tree is an **input** to
-future envelope assembly; it is not itself a bootable image.
+**Slice 9.8 (implemented):** `make install-media-envelope` runs
+`scripts/assemble-install-media-envelope.sh`, which consumes staged payloads and
+assembles the local disposable tree `distro/install-media/envelope/` with
+`boot/`, `live_root/`, and `payload/` layers. `boot/` and `live_root/` remain
+deferred placeholders only. This does **not** produce ISO/USB images or write to
+target disk paths.
 
 Recovery-image envelope is a **separate future contract** under
 `distro/recovery-media/` — not defined here.
@@ -41,9 +44,9 @@ bootstrap state. It only **packages** artifacts for boot-time access.
 ```
 Repository (build prep)                    Future bootable image
 ─────────────────────                      ───────────────────────
-distro/install-media/staging/payload/  →  <image>/payload/
+distro/install-media/staging/payload/  →  distro/install-media/envelope/payload/
         ▲                                          ▲
-        │ make install-media-stage (9.6)           │ envelope assembly (deferred)
+        │ make install-media-stage (9.6)           │ make install-media-envelope (9.8)
         │                                          │
 manifest.yaml (payload authority)          envelope-manifest.yaml (layer authority)
 ```
@@ -52,6 +55,8 @@ manifest.yaml (payload authority)          envelope-manifest.yaml (layer authori
 |----------|----------|-----------|------|
 | Staged payloads | `distro/install-media/staging/payload/` | **No** (gitignored) | Disposable local input |
 | `STAGING.txt` | `distro/install-media/staging/` | **No** | Staging provenance only |
+| Assembled envelope | `distro/install-media/envelope/` | **No** (gitignored) | Local disposable envelope tree |
+| `ENVELOPE.txt` | `distro/install-media/envelope/` | **No** | Envelope assembly provenance only |
 | Envelope manifest | `distro/install-media/envelope-manifest.yaml` | **Yes** | Declarative layer contract |
 | Future image file | build output (deferred) | **No** | Ephemeral distribution artifact |
 
@@ -96,16 +101,15 @@ ADR-0004 — not from generic install media.
 
 ## 6. Deferred executable slices
 
-The following require future implementation slices after 9.7:
+The following require future implementation slices after 9.8:
 
 - Live root filesystem composition (minimal Debian/base)
 - Boot loader and UEFI/BIOS configuration
-- Envelope assembly Makefile/CI target
 - ISO/USB image file generation (`xorriso`, `grub`, `dd`, etc.)
 - `vyntrio-installer` execution
-- `envelope-record.yaml` build metadata emission
+- `envelope-record.yaml` build metadata emission (beyond local `ENVELOPE.txt`)
 
-## 7. Out of scope (Slice 9.7)
+## 7. Out of scope (Slice 9.7 and 9.8)
 
 - ISO/USB generation implementation
 - Boot loader or live-root execution
