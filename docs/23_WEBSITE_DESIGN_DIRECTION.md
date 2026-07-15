@@ -84,6 +84,7 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 | **11R.9** | **Implemented** | Product story modules across preview routes |
 | **11R.10** | **Implemented** | Root cutover `/` → v2; preview mirror + legacy fallback |
 | **11R.11** | **Implemented** | Shipped `/download` + `/docs` cutover; production link cleanup |
+| **11R.12** | **Implemented** | Public docs/release content depth; install readiness guidance |
 
 ## Preview artifacts
 

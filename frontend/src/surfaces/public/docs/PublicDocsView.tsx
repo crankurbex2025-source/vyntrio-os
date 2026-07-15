@@ -1,6 +1,7 @@
 import { useI18n } from "../../../shared/i18n/I18nProvider";
 import {
   PublicApplianceJourney,
+  PublicDocsGuideBand,
   PublicDocsSection,
   PublicHeroSection,
   PublicInlineCtaBand,
@@ -68,6 +69,12 @@ export function PublicDocsView({ surface }: PublicDocsViewProps) {
         </PublicSectionBand>
 
         <PublicSectionBand tone="inset">
+          <PublicDocsGuideBand
+            eyebrow={messages.docsPage.guide.eyebrow}
+            heading={messages.docsPage.guide.heading}
+            body={messages.docsPage.guide.body}
+            headingId={`${idPrefix}-docs-guide-heading`}
+          />
           {messages.docsPage.sections.map((section, index) => (
             <PublicDocsSection
               key={section.heading}

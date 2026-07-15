@@ -134,17 +134,20 @@ describe("public surface components", () => {
 
   it("PublicDocsSection renders resource items with status labels", () => {
     render(
-      <PublicDocsSection
-        eyebrow={de.docsPage.sections[0].eyebrow}
-        heading={de.docsPage.sections[0].heading}
-        intro={de.docsPage.sections[0].intro}
-        items={de.docsPage.sections[0].items}
-      />
+      <MemoryRouter>
+        <PublicDocsSection
+          eyebrow={de.docsPage.sections[0].eyebrow}
+          heading={de.docsPage.sections[0].heading}
+          intro={de.docsPage.sections[0].intro}
+          items={de.docsPage.sections[0].items}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByRole("heading", { name: de.docsPage.sections[0].heading })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Release-Bereich lesen" })).toHaveAttribute("href", "/download");
     expect(screen.getByText("Installationsablauf")).toBeInTheDocument();
-    expect(screen.getAllByText("Geplant").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Mit Release").length).toBeGreaterThan(0);
   });
 
   it("PublicResourceList renders static items without href", () => {

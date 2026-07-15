@@ -20,6 +20,8 @@ describe("DocsPage", () => {
       screen.getByRole("heading", { name: "Dokumentation für Installation und Betrieb" })
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Erste Schritte" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Installation im Detail" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Wiederherstellung und Release-Wechsel" })).toBeInTheDocument();
     expect(screen.queryByText(/Design-Vorschau/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Zum Release-Bereich" })).toHaveAttribute("href", "/download");
     expect(screen.getByRole("link", { name: "Zur Startseite" })).toHaveAttribute("href", "/");

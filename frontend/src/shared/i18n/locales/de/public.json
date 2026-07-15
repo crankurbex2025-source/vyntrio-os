@@ -40,31 +40,31 @@
   "installJourney": {
     "eyebrow": "Installationsweg",
     "heading": "Vom Medium zur laufenden Appliance",
-    "intro": "Geplanter Ablauf für die erste Inbetriebnahme — ohne erfundene Medien oder Zeitangaben.",
+    "intro": "Vier Phasen vom ersten Boot bis zur erreichbaren Verwaltungsoberfläche. Medien und Detail-Schritte folgen mit dem öffentlichen Release — der Ablauf bleibt gleich.",
     "ariaLabel": "Installationsphasen für Vyntrio OS",
     "steps": [
       {
         "phase": "01",
         "title": "Boot-Medium erstellen",
-        "body": "USB oder vergleichbares Medium aus dem veröffentlichten Install-Image — erst wenn es existiert.",
+        "body": "Install-Image auf USB oder vergleichbares Medium schreiben und gegen die veröffentlichte Checksumme prüfen — erst wenn das Image existiert.",
         "status": "Ausstehend"
       },
       {
         "phase": "02",
         "title": "Auf Zielhardware installieren",
-        "body": "EFI-fähiger x86_64-Host als Appliance-Ziel, nicht als Container-only Setup.",
+        "body": "EFI-fähiger x86_64-Host als Appliance-Ziel. Partitionierung und System-Setup laufen im Installer — kein Container-only Deployment.",
         "status": "Geplant"
       },
       {
         "phase": "03",
-        "title": "Lokal am Gerät anmelden",
-        "body": "Login direkt an der Appliance, same-origin — keine fremde Admin-Cloud.",
-        "status": "Konstant"
+        "title": "Netzwerk und Erreichbarkeit",
+        "body": "Appliance im lokalen Netz erreichbar machen. Erstkonfiguration und Control Center laufen same-origin auf dem Gerät.",
+        "status": "Geplant"
       },
       {
         "phase": "04",
-        "title": "Control Center öffnen",
-        "body": "Read-only Overview mit echten API-Daten; weitere Module nur bei unterstützter Appliance.",
+        "title": "Lokal anmelden und prüfen",
+        "body": "Login direkt an der Appliance, dann read-only Overview mit echten API-Daten. Weitere Module nur bei unterstützter Hardware.",
         "status": "Nach Login"
       }
     ]
@@ -72,31 +72,31 @@
   "operateJourney": {
     "eyebrow": "Betriebsweg",
     "heading": "Nach der Installation im Alltag",
-    "intro": "Wie Doku und Control Center zusammenspielen — orientiert am Server-Betrieb, nicht an SaaS-Ops.",
+    "intro": "Storage, Dienste und Statusarbeit auf einem Host — dokumentiert wie Server-Betrieb, nicht wie SaaS-Ops mit fremder Control Plane.",
     "ariaLabel": "Betriebsphasen für Vyntrio OS",
     "steps": [
       {
         "phase": "01",
-        "title": "Storage einrichten",
-        "body": "Pools, Shares und persistenter Zustand unter klarer Betriebsgrenze auf dem Gerät.",
+        "title": "Storage strukturieren",
+        "body": "Pools, Freigaben und persistenter Zustand unter klarer Betriebsgrenze. Änderungen wirken auf dem Gerät, nicht in einer externen Verwaltung.",
         "status": "Geplant"
       },
       {
         "phase": "02",
-        "title": "Dienste verwalten",
-        "body": "Systemd-geführte Host-Prozesse direkt auf der Hardware starten und überwachen.",
+        "title": "Host-Dienste führen",
+        "body": "Systemd-geführte Prozesse starten, stoppen und im Kontext des Hosts überwachen — ohne Multi-Tenant-Abstraktion.",
         "status": "Geplant"
       },
       {
         "phase": "03",
-        "title": "Status prüfen",
-        "body": "Overview und spätere Module nur mit echten API-Daten — nie mit Marketing-Metriken.",
+        "title": "Status aus der Appliance lesen",
+        "body": "Overview und spätere Module nur mit echten API-Daten. Öffentliche Seiten zeigen dafür keine Live-Werte.",
         "status": "Konstant"
       },
       {
         "phase": "04",
-        "title": "Release-Wechsel",
-        "body": "Versionswechsel nur über veröffentlichte Medien und dokumentierte Schritte.",
+        "title": "Release-Wechsel planen",
+        "body": "Versionswechsel über veröffentlichte Medien, dokumentierte Schritte und Release-Hinweise — nicht über versteckte Auto-Updates.",
         "status": "Ausstehend"
       }
     ]
@@ -104,7 +104,7 @@
   "release": {
     "label": "Release-Status",
     "title": "Öffentliche Installationsmedien noch nicht verfügbar",
-    "body": "Vyntrio OS ist in aktiver Entwicklung. Diese Vorschau zeigt die geplante Struktur — ohne Datei, ohne Versionsnummer, ohne erfundenen Zeitplan."
+    "body": "Vyntrio OS ist in aktiver Entwicklung. Artefakt-Status, Voraussetzungen und Ablauf sind hier nachvollziehbar — ohne Datei, ohne Versionsnummer und ohne erfundenen Zeitplan."
   },
   "pillars": {
     "eyebrow": "Appliance-Plattform",
@@ -167,37 +167,141 @@
     "hero": {
       "eyebrow": "Release",
       "title": "Installationsmedien und Artefakt-Status",
-      "description": "Release-Bereich für verifizierte Install-Images — aktuell ohne veröffentlichte Datei."
+      "description": "Artefakt-Status, Voraussetzungen und geplanter Installationsablauf an einem Ort. Veröffentlichte Images erscheinen mit Checksumme und Release-Hinweis — nicht vorher."
     },
     "panel": {
       "heading": "Artefakt-Status",
-      "intro": "Alle Einträge sind statisch. Es gibt aktuell keine veröffentlichte Datei zum Herunterladen.",
+      "intro": "Alle Einträge sind statisch und werden mit dem ersten öffentlichen Release befüllt. Aktuell gibt es keine Datei zum Herunterladen.",
       "rows": [
         { "label": "Install-Image", "value": "Nicht veröffentlicht" },
-        { "label": "Checksum", "value": "—" },
+        { "label": "Image-Format", "value": "Noch nicht festgelegt" },
+        { "label": "Checksum (SHA-256)", "value": "—" },
+        { "label": "Signatur / Verifikation", "value": "Ausstehend" },
         { "label": "Release-Kanal", "value": "Noch nicht geöffnet" },
-        { "label": "Verifizierung", "value": "Ausstehend" }
+        { "label": "Begleitende Doku", "value": "In Arbeit" }
       ],
-      "note": "Sobald Medien verfügbar sind, erscheinen hier verifizierte Artefakte mit Checksummen und Release-Hinweisen — nicht vorher."
+      "note": "Mit Veröffentlichung erscheinen hier Dateiname, Checksumme, Signaturstatus und Release-Hinweise. Bis dahin gibt es keinen versteckten Download-Link."
+    },
+    "readiness": {
+      "eyebrow": "Bereitschaft",
+      "heading": "Was du vor dem ersten Installationsversuch klären solltest",
+      "intro": "Diese Punkte helfen einzuschätzen, ob dein Setup zum Appliance-Modell passt — unabhängig davon, ob Medien schon veröffentlicht sind.",
+      "items": [
+        {
+          "title": "Dedizierter Host",
+          "description": "Ziel ist ein physischer Server oder Homelab-Host — kein reines Container- oder VM-only Setup als Dauerlösung.",
+          "statusLabel": "Prüfen"
+        },
+        {
+          "title": "EFI-Boot",
+          "description": "Firmware muss UEFI-Boot unterstützen. Legacy-BIOS-only Systeme sind nicht das Zielbild.",
+          "statusLabel": "Prüfen"
+        },
+        {
+          "title": "Konsole oder Out-of-band",
+          "description": "Für Erstinstallation brauchst du lokalen Zugang zum Gerät — Monitor, KVM oder vergleichbarer Weg.",
+          "statusLabel": "Konstant"
+        },
+        {
+          "title": "Lokales Netzwerk",
+          "description": "Erstkonfiguration und Control Center laufen im LAN same-origin auf der Appliance.",
+          "statusLabel": "Konstant"
+        },
+        {
+          "title": "Daten auf Zielplatten",
+          "description": "Installation kann vorhandene Daten auf dem Zielmedium überschreiben. Backup-Plan vor dem ersten Versuch klären.",
+          "statusLabel": "Prüfen"
+        }
+      ]
+    },
+    "installOutline": {
+      "eyebrow": "Ablauf",
+      "heading": "Geplanter Installationsablauf",
+      "intro": "So sieht der Weg von Medium zu erreichbarer Appliance aus, sobald veröffentlichte Medien existieren. Bis dahin dient die Übersicht der Orientierung.",
+      "ariaLabel": "Geplanter Installationsablauf für Vyntrio OS",
+      "steps": [
+        {
+          "step": "01",
+          "title": "Image laden und prüfen",
+          "body": "Veröffentlichtes Install-Image herunterladen und gegen die angegebene Checksumme prüfen — kein Blind-Download ohne Verifikation."
+        },
+        {
+          "step": "02",
+          "title": "Boot-Medium schreiben",
+          "body": "Image auf USB-Stick oder vergleichbares Medium schreiben. Gerät danach aus dem Medium booten, nicht von der bestehenden Platte."
+        },
+        {
+          "step": "03",
+          "title": "Installer starten",
+          "body": "EFI-Bootreihenfolge setzen, Installer durchlaufen und Zielplatte bewusst wählen. Partitionierung folgt dem Release — nicht vorab erfunden."
+        },
+        {
+          "step": "04",
+          "title": "Netzwerk einrichten",
+          "body": "Appliance im LAN erreichbar machen. IP, Gateway und DNS werden am Gerät konfiguriert — nicht über eine fremde Admin-Cloud."
+        },
+        {
+          "step": "05",
+          "title": "Erste Anmeldung",
+          "body": "Lokal am Gerät anmelden und ins Control Center wechseln. Overview zeigt dann echte API-Daten der Instanz."
+        },
+        {
+          "step": "06",
+          "title": "Betrieb dokumentieren",
+          "body": "Storage, Dienste und Wartung über die Doku-Struktur nachvollziehen. Release-Wechsel bleiben an veröffentlichte Medien gebunden."
+        }
+      ]
+    },
+    "mediaPrep": {
+      "eyebrow": "Medium",
+      "heading": "Boot-Medium vorbereiten",
+      "intro": "Wenn ein Install-Image veröffentlicht ist, gehört Schreiben und Verifikation des Mediums zum ersten Schritt — vor dem Boot am Zielgerät.",
+      "items": [
+        {
+          "title": "Checksumme vor dem Schreiben",
+          "description": "Image-Datei gegen SHA-256 aus dem Release-Bereich prüfen. Abweichung bedeutet: nicht booten.",
+          "statusLabel": "Mit Release"
+        },
+        {
+          "title": "USB oder vergleichbar",
+          "description": "Bootfähiges Medium mit ausreichender Kapazität für das Image. Exaktes Format folgt der Veröffentlichung.",
+          "statusLabel": "Mit Release"
+        },
+        {
+          "title": "EFI-Boot testen",
+          "description": "Nach dem Schreiben einmal vom Medium booten, bevor du Produktivdaten auf dem Zielgerät anfasst.",
+          "statusLabel": "Empfohlen"
+        }
+      ]
     },
     "requirements": {
       "eyebrow": "Voraussetzungen",
-      "heading": "Was du für die Installation brauchst",
-      "intro": "Geplante Mindestanforderungen für ein Appliance-Zielgerät — ohne erfundene Kompatibilitätsversprechen.",
+      "heading": "Hardware- und Umgebungsanforderungen",
+      "intro": "Mindestbild für ein Appliance-Zielgerät. Konkrete Grenzwerte (RAM, Plattengröße) folgen mit dem Release — hier ohne erfundene Zahlen.",
       "items": [
         {
-          "title": "x86_64-Hardware mit EFI",
-          "description": "Zielplattform ist ein dedizierter Host oder Server — kein Container-only Deployment.",
+          "title": "x86_64 mit UEFI",
+          "description": "64-Bit-Host mit EFI-fähiger Firmware. Primäres Zielbild: dedizierter Server oder Homelab-Hardware.",
           "statusLabel": "Geplant"
         },
         {
-          "title": "Bootfähiges Installationsmedium",
-          "description": "USB oder vergleichbarer Weg zum ersten Start — abhängig vom später veröffentlichten Image.",
-          "statusLabel": "Ausstehend"
+          "title": "Arbeitsspeicher",
+          "description": "RAM-Bedarf hängt von Storage- und Dienstelast ab. Verbindliche Mindestwerte stehen im Release — nicht vorher.",
+          "statusLabel": "Mit Release"
         },
         {
-          "title": "Lokaler Netzwerkzugang",
-          "description": "Erstkonfiguration und Control Center laufen same-origin auf der Appliance, nicht über eine fremde Cloud.",
+          "title": "Zielplatte",
+          "description": "Persistenter Speicher für System und Appliance-Daten. Größe und Layout werden mit Install-Image dokumentiert.",
+          "statusLabel": "Mit Release"
+        },
+        {
+          "title": "Netzwerkanschluss",
+          "description": "Ethernet im lokalen Netz für Erstsetup und laufenden Betrieb. Kein Internet-Zwang für die Grundverwaltung.",
+          "statusLabel": "Konstant"
+        },
+        {
+          "title": "Physischer Zugang",
+          "description": "Monitor, Tastatur oder KVM für Erstinstallation und Recovery — auch wenn später vieles über das LAN geht.",
           "statusLabel": "Konstant"
         }
       ]
@@ -219,49 +323,119 @@
     "hero": {
       "eyebrow": "Dokumentation",
       "title": "Dokumentation für Installation und Betrieb",
-      "description": "Geplante Themen für Setup und Alltag — statisch, ohne Live-Suche."
+      "description": "Themen für Einstieg, Installation, Alltag und Wiederherstellung — statisch aufgebaut, ohne Live-Suche und ohne versteckte Release-Dateien."
+    },
+    "guide": {
+      "eyebrow": "Orientierung",
+      "heading": "So ist diese Dokumentation aufgebaut",
+      "body": "Abschnitte folgen dem Weg von der ersten Installation bis zum laufenden Betrieb. Installationsmedien und Artefakt-Status bleiben im Release-Bereich — nicht in den Docs versteckt."
     },
     "sections": [
       {
         "eyebrow": "Einstieg",
         "heading": "Erste Schritte",
-        "intro": "Geplante Themen für den Weg von der Installation bis zur ersten Anmeldung am Gerät.",
+        "intro": "Was du vor und direkt nach der Installation wissen musst — ohne Schrittfolge vorwegzunehmen, die erst mit echten Medien dokumentiert wird.",
         "items": [
           {
+            "title": "Release-Bereich lesen",
+            "description": "Artefakt-Status, Checksumme und Begleit-Doku starten unter /download — nicht in einem versteckten Footer-Link.",
+            "statusLabel": "Konstant",
+            "to": "/download"
+          },
+          {
             "title": "Installationsablauf",
-            "description": "Schrittfolge vom Boot-Medium bis zur erreichbaren Appliance — erscheint mit echten Medien.",
-            "statusLabel": "Geplant"
+            "description": "Schrittfolge vom Boot-Medium bis zur erreichbaren Appliance — erscheint vollständig mit veröffentlichtem Image.",
+            "statusLabel": "Mit Release"
           },
           {
             "title": "Erste Anmeldung",
-            "description": "Lokaler Login am Gerät und Übergang ins Control Center mit echten API-Daten.",
+            "description": "Lokaler Login am Gerät und Übergang ins Control Center mit echten API-Daten der Instanz.",
             "statusLabel": "Geplant"
           },
           {
             "title": "Release-Hinweise",
-            "description": "Versionsbezogene Änderungen nur nach tatsächlicher Veröffentlichung — nicht vorher.",
+            "description": "Versionsbezogene Änderungen, Breaking Changes und bekannte Grenzen — nur nach tatsächlicher Veröffentlichung.",
             "statusLabel": "Ausstehend"
+          }
+        ]
+      },
+      {
+        "eyebrow": "Installation",
+        "heading": "Installation im Detail",
+        "intro": "Referenz für Medium, Hardware und Erstkonfiguration — ergänzt den Ablauf im Release-Bereich mit Betriebskontext.",
+        "items": [
+          {
+            "title": "Boot-Medium und Verifikation",
+            "description": "Image schreiben, Checksumme prüfen, EFI-Boot testen. Fehlerhafte Medien nicht am Produktiv-Host booten.",
+            "statusLabel": "Mit Release"
+          },
+          {
+            "title": "Partitionierung und Zielplatte",
+            "description": "Welche Platten für System und Daten vorgesehen sind, folgt dem Installer des Releases — nicht dieser Übersicht.",
+            "statusLabel": "Mit Release"
+          },
+          {
+            "title": "Netzwerk beim Erststart",
+            "description": "IP, Gateway und DNS am Gerät setzen. Erreichbarkeit im LAN vor weiteren Schritten prüfen.",
+            "statusLabel": "Geplant"
+          },
+          {
+            "title": "Nach der Installation prüfen",
+            "description": "Overview im Control Center: Instanzname, Bereitschaft und unterstützte Module — nur mit echter Anmeldung.",
+            "statusLabel": "Nach Login"
           }
         ]
       },
       {
         "eyebrow": "Betrieb",
         "heading": "Appliance im Alltag",
-        "intro": "Dokumentation für Storage, Dienste und Kontrolle — orientiert am Server-Produkt, nicht am SaaS-Dashboard.",
+        "intro": "Storage, Dienste und Kontrolle auf dem Host — dokumentiert wie Server-Betrieb, nicht wie ein SaaS-Dashboard.",
         "items": [
           {
             "title": "Storage & Shares",
-            "description": "Pools, Freigaben und persistente Zustände unter klarer Betriebsgrenze.",
+            "description": "Pools, Freigaben und persistenter Zustand unter klarer Betriebsgrenze auf dem Gerät.",
             "statusLabel": "Geplant"
           },
           {
             "title": "Host-Dienste",
-            "description": "Systemd-geführte Prozesse direkt auf der Hardware verwalten.",
+            "description": "Systemd-geführte Prozesse direkt auf der Hardware verwalten — Start, Stop, Abhängigkeiten.",
             "statusLabel": "Geplant"
           },
           {
             "title": "Control Center",
             "description": "Read-only Overview und spätere Module nur, wenn die Appliance sie wirklich anbietet.",
+            "statusLabel": "Konstant"
+          },
+          {
+            "title": "Zugriff und Anmeldung",
+            "description": "Session und Admin-Aktionen laufen same-origin auf der Appliance — kein separates Cloud-Login.",
+            "statusLabel": "Konstant"
+          }
+        ]
+      },
+      {
+        "eyebrow": "Wartung",
+        "heading": "Wiederherstellung und Release-Wechsel",
+        "intro": "Was bei Problemen, Backups und Versionswechseln gilt — ohne Versprechen für nicht implementierte Recovery-Tools.",
+        "items": [
+          {
+            "title": "Backup vor Änderungen",
+            "description": "Konfiguration und Daten sichern, bevor du Storage-Layout oder Release-Version änderst.",
+            "statusLabel": "Empfohlen"
+          },
+          {
+            "title": "Recovery-Medien",
+            "description": "Ob und wie Recovery-Images mit dem Release mitgeliefert werden, steht in den Release-Hinweisen — nicht vorher.",
+            "statusLabel": "Mit Release"
+          },
+          {
+            "title": "Release-Upgrade",
+            "description": "Versionswechsel nur über veröffentlichte Medien und dokumentierte Schritte — kein stiller Hintergrund-Update.",
+            "statusLabel": "Ausstehend"
+          },
+          {
+            "title": "Grenzen der öffentlichen Doku",
+            "description": "Live-Status, Metriken und Admin-Aktionen erscheinen nur nach Anmeldung an einer echten Appliance.",
             "statusLabel": "Konstant"
           }
         ]

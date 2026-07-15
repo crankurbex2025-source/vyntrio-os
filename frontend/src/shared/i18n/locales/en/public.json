@@ -40,31 +40,31 @@
   "installJourney": {
     "eyebrow": "Install path",
     "heading": "From install media to a running appliance",
-    "intro": "Planned first-boot flow — no invented media or timelines.",
+    "intro": "Four phases from first boot to a reachable admin surface. Media and step-by-step detail ship with the public release — the flow stays the same.",
     "ariaLabel": "Install phases for Vyntrio OS",
     "steps": [
       {
         "phase": "01",
         "title": "Create boot media",
-        "body": "USB or equivalent from the published install image — only once it exists.",
+        "body": "Write the install image to USB or equivalent and verify against the published checksum — only once the image exists.",
         "status": "Pending"
       },
       {
         "phase": "02",
         "title": "Install on target hardware",
-        "body": "EFI-capable x86_64 host as the appliance target, not a container-only setup.",
+        "body": "EFI-capable x86_64 host as the appliance target. Partitioning and system setup run in the installer — not a container-only deployment.",
         "status": "Planned"
       },
       {
         "phase": "03",
-        "title": "Sign in on the device",
-        "body": "Login directly on the appliance, same-origin — no foreign admin cloud.",
-        "status": "Constant"
+        "title": "Network and reachability",
+        "body": "Make the appliance reachable on the local network. Initial setup and the control center run same-origin on the device.",
+        "status": "Planned"
       },
       {
         "phase": "04",
-        "title": "Open control center",
-        "body": "Read-only overview with real API data; more modules only when the appliance supports them.",
+        "title": "Sign in locally and verify",
+        "body": "Log in on the appliance, then use the read-only overview with real API data. More modules only when the hardware supports them.",
         "status": "After sign-in"
       }
     ]
@@ -72,31 +72,31 @@
   "operateJourney": {
     "eyebrow": "Operations path",
     "heading": "Day-to-day after installation",
-    "intro": "How docs and the control center work together — server operations, not SaaS ops.",
+    "intro": "Storage, services, and status work on one host — documented like server operations, not SaaS ops with a foreign control plane.",
     "ariaLabel": "Operations phases for Vyntrio OS",
     "steps": [
       {
         "phase": "01",
-        "title": "Set up storage",
-        "body": "Pools, shares, and persistent state under a clear boundary on the device.",
+        "title": "Structure storage",
+        "body": "Pools, shares, and persistent state under a clear boundary. Changes apply on the device, not in an external admin service.",
         "status": "Planned"
       },
       {
         "phase": "02",
-        "title": "Manage services",
-        "body": "Start and monitor systemd-managed host processes on the hardware itself.",
+        "title": "Run host services",
+        "body": "Start, stop, and monitor systemd-managed processes in the host context — without multi-tenant abstraction.",
         "status": "Planned"
       },
       {
         "phase": "03",
-        "title": "Check status",
-        "body": "Overview and future modules only with real API data — never marketing metrics.",
+        "title": "Read status from the appliance",
+        "body": "Overview and future modules only with real API data. Public pages do not show live values for that.",
         "status": "Constant"
       },
       {
         "phase": "04",
-        "title": "Release changes",
-        "body": "Version changes only through published media and documented steps.",
+        "title": "Plan release changes",
+        "body": "Version changes through published media, documented steps, and release notes — not hidden auto-updates.",
         "status": "Pending"
       }
     ]
@@ -104,7 +104,7 @@
   "release": {
     "label": "Release status",
     "title": "Public install media not available yet",
-    "body": "Vyntrio OS is in active development. This preview shows the intended structure — no file, no version number, no invented timeline."
+    "body": "Vyntrio OS is in active development. Artifact status, requirements, and workflow are visible here — no file, no version number, and no invented timeline."
   },
   "pillars": {
     "eyebrow": "Appliance platform",
@@ -167,37 +167,141 @@
     "hero": {
       "eyebrow": "Release",
       "title": "Install media and artifact status",
-      "description": "Release area for verified install images — no published file yet."
+      "description": "Artifact status, requirements, and the planned install flow in one place. Published images appear with checksum and release notes — not before."
     },
     "panel": {
       "heading": "Artifact status",
-      "intro": "All entries are static. There is currently no published file to download.",
+      "intro": "All entries are static and will be filled with the first public release. There is currently no file to download.",
       "rows": [
         { "label": "Install image", "value": "Not published" },
-        { "label": "Checksum", "value": "—" },
+        { "label": "Image format", "value": "Not decided yet" },
+        { "label": "Checksum (SHA-256)", "value": "—" },
+        { "label": "Signature / verification", "value": "Pending" },
         { "label": "Release channel", "value": "Not open yet" },
-        { "label": "Verification", "value": "Pending" }
+        { "label": "Companion docs", "value": "In progress" }
       ],
-      "note": "When media is available, verified artifacts with checksums and release notes will appear here — not before."
+      "note": "On release, filename, checksum, signature status, and release notes appear here. Until then there is no hidden download link."
+    },
+    "readiness": {
+      "eyebrow": "Readiness",
+      "heading": "What to clarify before your first install attempt",
+      "intro": "These points help you judge whether your setup fits the appliance model — whether or not media is published yet.",
+      "items": [
+        {
+          "title": "Dedicated host",
+          "description": "Target is a physical server or homelab host — not a container-only or VM-only setup as the long-term solution.",
+          "statusLabel": "Check"
+        },
+        {
+          "title": "EFI boot",
+          "description": "Firmware must support UEFI boot. Legacy BIOS-only systems are not the target model.",
+          "statusLabel": "Check"
+        },
+        {
+          "title": "Console or out-of-band",
+          "description": "First install needs local access to the device — monitor, KVM, or an equivalent path.",
+          "statusLabel": "Constant"
+        },
+        {
+          "title": "Local network",
+          "description": "Initial setup and the control center run on the LAN, same-origin on the appliance.",
+          "statusLabel": "Constant"
+        },
+        {
+          "title": "Data on target disks",
+          "description": "Install can overwrite existing data on the target medium. Clarify your backup plan before the first attempt.",
+          "statusLabel": "Check"
+        }
+      ]
+    },
+    "installOutline": {
+      "eyebrow": "Workflow",
+      "heading": "Planned install workflow",
+      "intro": "This is the path from media to a reachable appliance once published images exist. Until then it orients you on what to expect.",
+      "ariaLabel": "Planned install workflow for Vyntrio OS",
+      "steps": [
+        {
+          "step": "01",
+          "title": "Download and verify image",
+          "body": "Fetch the published install image and verify against the listed checksum — no blind download without verification."
+        },
+        {
+          "step": "02",
+          "title": "Write boot media",
+          "body": "Write the image to USB or equivalent. Boot the device from that medium, not from the existing disk."
+        },
+        {
+          "step": "03",
+          "title": "Run the installer",
+          "body": "Set EFI boot order, run the installer, and choose the target disk deliberately. Partitioning follows the release — not invented here."
+        },
+        {
+          "step": "04",
+          "title": "Configure network",
+          "body": "Make the appliance reachable on the LAN. IP, gateway, and DNS are set on the device — not through a foreign admin cloud."
+        },
+        {
+          "step": "05",
+          "title": "First sign-in",
+          "body": "Sign in locally on the device and open the control center. Overview then shows real API data for the instance."
+        },
+        {
+          "step": "06",
+          "title": "Follow ops docs",
+          "body": "Use the docs structure for storage, services, and maintenance. Release changes stay tied to published media."
+        }
+      ]
+    },
+    "mediaPrep": {
+      "eyebrow": "Media",
+      "heading": "Prepare boot media",
+      "intro": "Once an install image is published, writing and verifying the medium is the first step — before booting the target device.",
+      "items": [
+        {
+          "title": "Verify before writing",
+          "description": "Check the image file against SHA-256 from the release area. A mismatch means: do not boot.",
+          "statusLabel": "With release"
+        },
+        {
+          "title": "USB or equivalent",
+          "description": "Bootable medium with enough capacity for the image. Exact format follows the publication.",
+          "statusLabel": "With release"
+        },
+        {
+          "title": "Test EFI boot",
+          "description": "After writing, boot from the medium once before touching production data on the target host.",
+          "statusLabel": "Recommended"
+        }
+      ]
     },
     "requirements": {
       "eyebrow": "Requirements",
-      "heading": "What you need to install",
-      "intro": "Planned minimum requirements for a target appliance device — without invented compatibility promises.",
+      "heading": "Hardware and environment requirements",
+      "intro": "Baseline picture for a target appliance device. Concrete limits (RAM, disk size) ship with the release — no invented numbers here.",
       "items": [
         {
-          "title": "x86_64 hardware with EFI",
-          "description": "Target platform is a dedicated host or server — not container-only deployment.",
+          "title": "x86_64 with UEFI",
+          "description": "64-bit host with EFI-capable firmware. Primary target: dedicated server or homelab hardware.",
           "statusLabel": "Planned"
         },
         {
-          "title": "Bootable install medium",
-          "description": "USB or comparable first-boot path — depends on the image published later.",
-          "statusLabel": "Pending"
+          "title": "Memory",
+          "description": "RAM needs depend on storage and service load. Binding minimums appear in the release — not before.",
+          "statusLabel": "With release"
         },
         {
-          "title": "Local network access",
-          "description": "Initial setup and the control center run same-origin on the appliance, not through a foreign cloud.",
+          "title": "Target disk",
+          "description": "Persistent storage for system and appliance data. Size and layout are documented with the install image.",
+          "statusLabel": "With release"
+        },
+        {
+          "title": "Network connection",
+          "description": "Ethernet on the local network for initial setup and day-to-day use. No internet requirement for basic administration.",
+          "statusLabel": "Constant"
+        },
+        {
+          "title": "Physical access",
+          "description": "Monitor, keyboard, or KVM for first install and recovery — even when much later work happens over the LAN.",
           "statusLabel": "Constant"
         }
       ]
@@ -219,49 +323,119 @@
     "hero": {
       "eyebrow": "Documentation",
       "title": "Documentation for install and operations",
-      "description": "Planned topics for setup and day-to-day use — static, no live search."
+      "description": "Topics for getting started, installation, day-to-day use, and recovery — static structure, no live search, no hidden release files."
+    },
+    "guide": {
+      "eyebrow": "Orientation",
+      "heading": "How this documentation is organized",
+      "body": "Sections follow the path from first install to running operations. Install media and artifact status stay in the release area — not hidden inside docs."
     },
     "sections": [
       {
         "eyebrow": "Getting started",
         "heading": "First steps",
-        "intro": "Planned topics from install media to first sign-in on the device.",
+        "intro": "What to know before and right after install — without front-running step-by-step detail that ships with real media.",
         "items": [
           {
+            "title": "Read the release area",
+            "description": "Artifact status, checksum, and companion docs start at /download — not in a hidden footer link.",
+            "statusLabel": "Constant",
+            "to": "/download"
+          },
+          {
             "title": "Install workflow",
-            "description": "Steps from boot medium to a reachable appliance — ships with real media.",
-            "statusLabel": "Planned"
+            "description": "Steps from boot medium to a reachable appliance — fully documented once the image is published.",
+            "statusLabel": "With release"
           },
           {
             "title": "First sign-in",
-            "description": "Local device login and transition into the control center with real API data.",
+            "description": "Local device login and transition into the control center with real API data for the instance.",
             "statusLabel": "Planned"
           },
           {
             "title": "Release notes",
-            "description": "Version-specific changes only after an actual release — not before.",
+            "description": "Version-specific changes, breaking changes, and known limits — only after an actual release.",
             "statusLabel": "Pending"
+          }
+        ]
+      },
+      {
+        "eyebrow": "Installation",
+        "heading": "Installation in detail",
+        "intro": "Reference for media, hardware, and initial configuration — complements the workflow in the release area with operations context.",
+        "items": [
+          {
+            "title": "Boot media and verification",
+            "description": "Write the image, verify checksum, test EFI boot. Do not boot faulty media on a production host.",
+            "statusLabel": "With release"
+          },
+          {
+            "title": "Partitioning and target disk",
+            "description": "Which disks are used for system and data follows the release installer — not this overview.",
+            "statusLabel": "With release"
+          },
+          {
+            "title": "Network on first boot",
+            "description": "Set IP, gateway, and DNS on the device. Confirm LAN reachability before further steps.",
+            "statusLabel": "Planned"
+          },
+          {
+            "title": "Post-install checks",
+            "description": "Overview in the control center: instance name, readiness, and supported modules — only after real sign-in.",
+            "statusLabel": "After sign-in"
           }
         ]
       },
       {
         "eyebrow": "Operations",
         "heading": "Appliance in daily use",
-        "intro": "Documentation for storage, services, and control — oriented like a server product, not a SaaS dashboard.",
+        "intro": "Storage, services, and control on the host — documented like a server product, not a SaaS dashboard.",
         "items": [
           {
             "title": "Storage & shares",
-            "description": "Pools, shares, and persistent state under a clear operations boundary.",
+            "description": "Pools, shares, and persistent state under a clear operations boundary on the device.",
             "statusLabel": "Planned"
           },
           {
             "title": "Host services",
-            "description": "Manage systemd-driven processes directly on the hardware.",
+            "description": "Manage systemd-driven processes on the hardware — start, stop, dependencies.",
             "statusLabel": "Planned"
           },
           {
             "title": "Control center",
             "description": "Read-only overview and future modules only when the appliance actually provides them.",
+            "statusLabel": "Constant"
+          },
+          {
+            "title": "Access and sign-in",
+            "description": "Sessions and admin actions run same-origin on the appliance — no separate cloud login.",
+            "statusLabel": "Constant"
+          }
+        ]
+      },
+      {
+        "eyebrow": "Maintenance",
+        "heading": "Recovery and release changes",
+        "intro": "What applies to problems, backups, and version changes — without promising unimplemented recovery tools.",
+        "items": [
+          {
+            "title": "Backup before changes",
+            "description": "Back up configuration and data before changing storage layout or release version.",
+            "statusLabel": "Recommended"
+          },
+          {
+            "title": "Recovery media",
+            "description": "Whether and how recovery images ship with a release is stated in release notes — not before.",
+            "statusLabel": "With release"
+          },
+          {
+            "title": "Release upgrade",
+            "description": "Version changes only through published media and documented steps — no silent background update.",
+            "statusLabel": "Pending"
+          },
+          {
+            "title": "Public docs boundary",
+            "description": "Live status, metrics, and admin actions appear only after sign-in to a real appliance.",
             "statusLabel": "Constant"
           }
         ]

@@ -2,14 +2,29 @@ export type PublicResourceItem = {
   title: string;
   description: string;
   statusLabel?: string;
+  to?: string;
 };
 
-export type PublicDocsSectionMessages = {
+export type PublicProcedureStepMessages = {
+  step: string;
+  title: string;
+  body: string;
+};
+
+export type PublicDocsGuideMessages = {
+  eyebrow: string;
+  heading: string;
+  body: string;
+};
+
+export type PublicDocsSectionBlockMessages = {
   eyebrow?: string;
   heading: string;
   intro?: string;
   items: PublicResourceItem[];
 };
+
+export type PublicDocsSectionMessages = PublicDocsSectionBlockMessages;
 
 export type PublicDownloadRowMessages = {
   label: string;
@@ -124,6 +139,25 @@ export type PublicMessages = {
       rows: PublicDownloadRowMessages[];
       note: string;
     };
+    readiness: {
+      eyebrow: string;
+      heading: string;
+      intro: string;
+      items: PublicResourceItem[];
+    };
+    installOutline: {
+      eyebrow: string;
+      heading: string;
+      intro: string;
+      ariaLabel: string;
+      steps: PublicProcedureStepMessages[];
+    };
+    mediaPrep: {
+      eyebrow: string;
+      heading: string;
+      intro: string;
+      items: PublicResourceItem[];
+    };
     requirements: {
       eyebrow: string;
       heading: string;
@@ -149,7 +183,8 @@ export type PublicMessages = {
       title: string;
       description: string;
     };
-    sections: [PublicDocsSectionMessages, PublicDocsSectionMessages];
+    guide: PublicDocsGuideMessages;
+    sections: PublicDocsSectionMessages[];
     inlineCta: {
       heading: string;
       body: string;

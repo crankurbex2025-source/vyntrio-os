@@ -6,6 +6,7 @@ import {
   PublicHeroSection,
   PublicInlineCtaBand,
   PublicPreviewPageContext,
+  PublicProcedureOutline,
   PublicReleaseStrip,
   PublicSectionBand,
 } from "../components";
@@ -69,6 +70,16 @@ export function PublicDownloadView({ surface }: PublicDownloadViewProps) {
           />
         </PublicSectionBand>
 
+        <PublicSectionBand tone="inset" surface="readiness">
+          <PublicDocsSection
+            eyebrow={messages.downloadPage.readiness.eyebrow}
+            heading={messages.downloadPage.readiness.heading}
+            intro={messages.downloadPage.readiness.intro}
+            items={messages.downloadPage.readiness.items}
+            headingId={`${idPrefix}-download-readiness-heading`}
+          />
+        </PublicSectionBand>
+
         <PublicSectionBand tone="inset" surface="artifact">
           <PublicDownloadPanel
             heading={messages.downloadPage.panel.heading}
@@ -76,6 +87,27 @@ export function PublicDownloadView({ surface }: PublicDownloadViewProps) {
             rows={messages.downloadPage.panel.rows}
             note={messages.downloadPage.panel.note}
             headingId={`${idPrefix}-download-panel-heading`}
+          />
+        </PublicSectionBand>
+
+        <PublicSectionBand tone="inset">
+          <PublicProcedureOutline
+            eyebrow={messages.downloadPage.installOutline.eyebrow}
+            heading={messages.downloadPage.installOutline.heading}
+            intro={messages.downloadPage.installOutline.intro}
+            steps={[...messages.downloadPage.installOutline.steps]}
+            ariaLabel={messages.downloadPage.installOutline.ariaLabel}
+            headingId={`${idPrefix}-download-install-outline-heading`}
+          />
+        </PublicSectionBand>
+
+        <PublicSectionBand>
+          <PublicDocsSection
+            eyebrow={messages.downloadPage.mediaPrep.eyebrow}
+            heading={messages.downloadPage.mediaPrep.heading}
+            intro={messages.downloadPage.mediaPrep.intro}
+            items={messages.downloadPage.mediaPrep.items}
+            headingId={`${idPrefix}-download-media-prep-heading`}
           />
         </PublicSectionBand>
 

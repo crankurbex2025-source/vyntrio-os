@@ -20,6 +20,10 @@ describe("DownloadPage", () => {
       screen.getByRole("heading", { name: "Installationsmedien und Artefakt-Status" })
     ).toBeInTheDocument();
     expect(screen.getByText("Nicht veröffentlicht")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Was du vor dem ersten Installationsversuch klären solltest" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Geplanter Installationsablauf" })).toBeInTheDocument();
     expect(screen.queryByText(/Design-Vorschau/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Zur Startseite" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Zur Dokumentation" })).toHaveAttribute("href", "/docs");
