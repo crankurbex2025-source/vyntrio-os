@@ -14,7 +14,7 @@
   "hero": {
     "eyebrow": "Vyntrio OS",
     "title": "Was läuft auf deinem Server?",
-    "description": "Ein lokales Appliance-Betriebssystem für Storage, Dienste und Kontrolle — auf deiner Hardware installiert, unter deiner Hoheit betrieben, ohne fremde Cloud-Abhängigkeit.",
+    "description": "Vyntrio OS läuft auf deiner Hardware. Storage, Dienste und Verwaltung bleiben auf dem Gerät — ohne Cloud-Zwischenschicht.",
     "ctaDownload": "Release & Download",
     "ctaDownloadHint": "Installationsmedien folgen, sobald veröffentlicht",
     "ctaSignIn": "Am Gerät anmelden",
@@ -23,12 +23,12 @@
   "release": {
     "label": "Release-Status",
     "title": "Öffentliche Installationsmedien noch nicht verfügbar",
-    "body": "Vyntrio OS befindet sich in aktiver Entwicklung. Diese Seite zeigt die geplante Produktstruktur — ohne Download-Datei, ohne Versionsnummer und ohne erfundenen Release-Zeitplan."
+    "body": "Vyntrio OS ist in aktiver Entwicklung. Diese Vorschau zeigt die geplante Struktur — ohne Datei, ohne Versionsnummer, ohne erfundenen Zeitplan."
   },
   "pillars": {
     "eyebrow": "Appliance-Plattform",
-    "heading": "Drei Säulen, ein Gerät",
-    "intro": "Vyntrio kombiniert persistenten Storage, Host-Dienste und eine lokale Kontrollebene — strukturiert wie ein Server-Produkt, nicht wie ein generisches Cloud-Dashboard.",
+    "heading": "Storage, Dienste, Kontrolle",
+    "intro": "Eine Appliance vereint drei Bereiche: persistenter Datenträger, Host-Dienste und die lokale Verwaltung direkt auf dem Gerät.",
     "storage": {
       "tag": "Storage",
       "title": "Zustand auf der Platte",
@@ -41,14 +41,14 @@
     },
     "control": {
       "tag": "Kontrolle",
-      "title": "Same-origin Control Center",
-      "body": "Nach Anmeldung: read-only Overview mit echten API-Daten. Module und Aktionen nur, wenn die Appliance sie wirklich anbietet."
+      "title": "Lokales Control Center",
+      "body": "Nach der Anmeldung siehst du eine read-only Übersicht mit echten API-Daten. Weitere Module erscheinen erst, wenn die Appliance sie unterstützt."
     }
   },
   "surfaceShowcase": {
     "eyebrow": "Kontrollfläche",
-    "heading": "So sieht die Appliance-Oberfläche aus",
-    "intro": "Statische UI-Vorschau des Control Centers — dieselbe visuelle Sprache wie nach der Anmeldung, aber ohne Live-Daten und ohne erfundene Metriken."
+    "heading": "Die Verwaltungsoberfläche im Überblick",
+    "intro": "Statische Vorschau des Control Centers — gleiche Oberfläche wie nach dem Login, aber ohne Live-Daten."
   },
   "surfacePreview": {
     "heading": "Vyntrio Control Center",
@@ -64,8 +64,8 @@
   },
   "productStatus": {
     "eyebrow": "Produktgrenze",
-    "heading": "Ehrlich statt beeindruckend",
-    "body": "Öffentliche Seiten erklären das Produkt. Sie simulieren keinen Betrieb, keine Uptime und keine Admin-Aktionen.",
+    "heading": "Was diese Seite nicht zeigt",
+    "body": "Öffentliche Seiten beschreiben das Produkt. Sie täuschen keinen Betrieb, keine Verfügbarkeit und keine Admin-Aktionen vor.",
     "points": [
       "Keine Live-Metriken auf Marketing-Seiten",
       "Keine erfundenen Downloads oder Testimonials",
@@ -73,8 +73,8 @@
     ]
   },
   "finalCta": {
-    "heading": "Bereit für dein Gerät?",
-    "body": "Wenn Installationsmedien verfügbar sind, startest du hier. Besitzt du bereits eine Appliance, meldest du dich direkt am Gerät an.",
+    "heading": "Als Nächstes",
+    "body": "Sobald Installationsmedien bereitstehen, gehst du in den Release-Bereich. Für eine bestehende Appliance meldest du dich direkt am Gerät an.",
     "ctaDownload": "Zum Release-Bereich",
     "ctaSignIn": "An der Appliance anmelden"
   },
@@ -82,7 +82,7 @@
     "hero": {
       "eyebrow": "Release",
       "title": "Installationsmedien für Vyntrio OS",
-      "description": "Diese Vorschau zeigt die geplante Release-Oberfläche — mit klarer Verfügbarkeit, ohne erfundene Images und ohne stillen Platzhalter-Download."
+      "description": "Vorschau der Release-Seite. Es ist noch keine Installationsdatei verlinkt."
     },
     "panel": {
       "heading": "Artefakt-Status",
@@ -128,7 +128,7 @@
     "hero": {
       "eyebrow": "Dokumentation",
       "title": "Appliance-Wissen, strukturiert statt verstreut",
-      "description": "Geplante Dokumentationsfläche für Installation, Betrieb und ehrliche Produktgrenzen — statisch in dieser Vorschau, ohne Live-Suche und ohne erfundene Artikel."
+      "description": "Geplante Doku für Installation und Betrieb — statisch in dieser Vorschau, ohne Suche und ohne erfundene Artikel."
     },
     "sections": [
       {
@@ -188,6 +188,6 @@
     "download": "Release",
     "docs": "Dokumentation",
     "signIn": "Anmelden",
-    "previewNote": "Design-Vorschau Block 11R.4"
+    "previewNote": "Design-Vorschau Block 11R.5+ — lazy geladen, nicht im `/`-Bundle"
   }
 }

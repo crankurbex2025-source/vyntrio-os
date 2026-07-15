@@ -28,5 +28,6 @@ export function buildPreviewShellProps(
     ],
     navAriaLabel: options.navAriaLabel ?? "Preview navigation",
     anchorLinks: options.anchorLinks,
+    premiumSurface: true,
   };
 }

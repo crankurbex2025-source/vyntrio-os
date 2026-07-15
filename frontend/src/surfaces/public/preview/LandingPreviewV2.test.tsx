@@ -19,7 +19,7 @@ describe("LandingPreviewV2", () => {
     expect(screen.getByRole("heading", { name: "Was läuft auf deinem Server?" })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(/Design-Vorschau/i);
     expect(screen.getAllByText(/Nach Login/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: "So sieht die Appliance-Oberfläche aus" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Die Verwaltungsoberfläche im Überblick" })).toBeInTheDocument();
     expect(screen.queryByText("Checking session...")).not.toBeInTheDocument();
   });
 
@@ -34,6 +34,6 @@ describe("LandingPreviewV2", () => {
 
     expect(screen.getByRole("heading", { name: "What runs on your server?" })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(/Design preview/i);
-    expect(screen.getByRole("heading", { name: "Honest, not impressive" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What this page does not show" })).toBeInTheDocument();
   });
 });

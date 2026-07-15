@@ -29,7 +29,7 @@ function LandingPreviewContent() {
         ],
       })}
     >
-      <PreviewPageMotion>
+      <PreviewPageMotion variant="landing">
       <PublicSectionBand tone="elevated" id="product">
         <PublicHeroLayout
           hero={

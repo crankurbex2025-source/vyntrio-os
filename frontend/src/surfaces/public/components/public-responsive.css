@@ -1,0 +1,296 @@
+/* Vyntrio public surface responsive layer — desktop-first, intrinsically adaptive */
+
+.vyn-public-shell {
+  overflow-x: clip;
+}
+
+.vyn-public-container-root {
+  container-type: inline-size;
+  container-name: public-section;
+}
+
+.vyn-public-hero-layout {
+  container-type: inline-size;
+  container-name: hero-layout;
+}
+
+.vyn-public-pillar-section {
+  container-type: inline-size;
+  container-name: pillar-section;
+}
+
+.vyn-public-surface {
+  container-type: inline-size;
+  container-name: control-surface;
+}
+
+.vyn-public-download-panel,
+.vyn-public-inline-cta,
+.vyn-public-final-cta {
+  container-type: inline-size;
+}
+
+.vyn-public-surface-showcase {
+  container-type: inline-size;
+  container-name: surface-showcase;
+}
+
+.vyn-public-docs-section {
+  container-type: inline-size;
+  container-name: docs-section;
+}
+
+.vyn-public-product-status {
+  container-type: inline-size;
+}
+
+/* Fluid gutters replace fixed 2rem side margins */
+.vyn-public-header-inner,
+.vyn-public-section-band-inner,
+.vyn-public-footer-inner {
+  width: min(100% - (var(--vyn-gutter) * 2), var(--vyn-max-width));
+  padding-inline: 0;
+}
+
+.vyn-public-banner {
+  font-size: clamp(0.78rem, 1.6vw, 0.85rem);
+  padding: clamp(0.65rem, 2vw, 0.75rem) var(--vyn-gutter);
+}
+
+.vyn-public-header-inner {
+  padding-block: clamp(0.85rem, 2vw, 1rem);
+}
+
+.vyn-public-brand {
+  font-size: clamp(1rem, 2.2vw, 1.05rem);
+}
+
+.vyn-public-hero h1 {
+  max-width: min(16ch, 100%);
+  text-wrap: balance;
+}
+
+.vyn-public-hero-lead h1 {
+  max-width: min(18ch, 100%);
+}
+
+.vyn-public-hero-description,
+.vyn-public-hero-lead .vyn-public-hero-description,
+.vyn-public-pillar-intro,
+.vyn-public-section-intro-description {
+  font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+  max-width: min(52ch, 100%);
+}
+
+.vyn-public-section-title {
+  font-size: clamp(1.2rem, 2.4vw, 1.35rem);
+}
+
+.vyn-public-pillars {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
+  gap: clamp(0.85rem, 2vw, 1.15rem);
+}
+
+.vyn-public-hero-layout {
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.vyn-public-btn {
+  min-height: var(--vyn-touch-target);
+  padding-inline: clamp(0.9rem, 2.5vw, 1.15rem);
+}
+
+.vyn-public-surface-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+}
+
+.vyn-public-download-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+}
+
+.vyn-public-footer-top {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.vyn-public-footer-nav {
+  gap: clamp(0.65rem, 2vw, 1rem);
+}
+
+.vyn-public-surface-showcase {
+  gap: clamp(1.15rem, 2.5vw, 2rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.vyn-public-surface-showcase-frame {
+  max-width: min(52rem, 100%);
+}
+
+.vyn-public-download-panel {
+  max-width: min(42rem, 100%);
+}
+
+.vyn-public-inline-cta {
+  max-width: min(40rem, 100%);
+}
+
+.vyn-public-product-status {
+  max-width: min(42rem, 100%);
+}
+
+.vyn-public-product-status h2 {
+  font-size: clamp(1.1rem, 2.2vw, 1.25rem);
+}
+
+.vyn-public-docs-section + .vyn-public-docs-section {
+  margin-top: clamp(1.5rem, 4vw, 2rem);
+}
+
+.vyn-public-inline-cta h2 {
+  font-size: clamp(1.1rem, 2.2vw, 1.2rem);
+}
+
+.vyn-public-resource-item-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+
+/* Container queries — content-driven reflow */
+@container hero-layout (min-width: 48rem) {
+  .vyn-public-hero-layout {
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    align-items: end;
+  }
+}
+
+@container pillar-section (min-width: 52rem) {
+  .vyn-public-pillars {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+}
+
+@container surface-showcase (min-width: 44rem) {
+  .vyn-public-surface-showcase {
+    grid-template-columns: minmax(0, 0.44fr) minmax(0, 0.56fr);
+    align-items: start;
+  }
+
+  .vyn-public-surface-showcase-frame {
+    max-width: none;
+  }
+}
+
+@container docs-section (max-width: 26rem) {
+  .vyn-public-resource-item-header {
+    grid-template-columns: 1fr;
+  }
+
+  .vyn-public-resource-status {
+    justify-self: start;
+  }
+}
+
+@container public-section (max-width: 30rem) {
+  .vyn-public-cta-stack {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vyn-public-cta-item {
+    width: 100%;
+  }
+
+  .vyn-public-cta-item .vyn-public-btn {
+    width: 100%;
+  }
+
+  .vyn-public-cta-hint {
+    max-width: none;
+  }
+
+  .vyn-public-cta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vyn-public-cta-row .vyn-public-btn {
+    width: 100%;
+  }
+
+  .vyn-public-final-cta {
+    text-align: left;
+  }
+}
+
+@container control-surface (max-width: 28rem) {
+  .vyn-public-surface-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .vyn-public-surface-row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+
+@container (max-width: 22rem) {
+  .vyn-public-download-row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .vyn-public-download-row dd {
+    text-align: left;
+  }
+}
+
+@container public-section (min-width: 40rem) {
+  .vyn-public-footer-top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+}
+
+/* Viewport adjustments for shell chrome only */
+@media (max-width: 52rem) {
+  .vyn-public-header-inner {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .vyn-public-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.5rem), 1fr));
+    gap: 0.35rem;
+    width: 100%;
+  }
+
+  .vyn-public-nav a,
+  .vyn-public-locale-switcher button {
+    min-height: var(--vyn-touch-target);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .vyn-public-locale-switcher {
+    justify-self: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vyn-public-header,
+  .vyn-public-pillar {
+    transition: none;
+  }
+}

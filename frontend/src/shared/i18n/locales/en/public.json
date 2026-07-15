@@ -14,7 +14,7 @@
   "hero": {
     "eyebrow": "Vyntrio OS",
     "title": "What runs on your server?",
-    "description": "A local appliance operating system for storage, services, and control — installed on your hardware, operated under your authority, with no foreign cloud dependency.",
+    "description": "Vyntrio OS runs on your hardware. Storage, services, and administration stay on the device — no cloud layer in between.",
     "ctaDownload": "Release & download",
     "ctaDownloadHint": "Install media ships when publicly released",
     "ctaSignIn": "Sign in to your appliance",
@@ -23,12 +23,12 @@
   "release": {
     "label": "Release status",
     "title": "Public install media not available yet",
-    "body": "Vyntrio OS is in active development. This page shows the intended product structure — with no download file, no version number, and no invented release timeline."
+    "body": "Vyntrio OS is in active development. This preview shows the intended structure — no file, no version number, no invented timeline."
   },
   "pillars": {
     "eyebrow": "Appliance platform",
-    "heading": "Three pillars, one device",
-    "intro": "Vyntrio combines persistent storage, host services, and a local control plane — structured like a server product, not a generic cloud dashboard.",
+    "heading": "Storage, services, control",
+    "intro": "One appliance brings together three areas: persistent disk, host services, and local administration on the device itself.",
     "storage": {
       "tag": "Storage",
       "title": "State on disk",
@@ -41,14 +41,14 @@
     },
     "control": {
       "tag": "Control",
-      "title": "Same-origin control center",
-      "body": "After sign-in: read-only overview with real API data. Modules and actions only when the appliance actually provides them."
+      "title": "Local control center",
+      "body": "After sign-in you get a read-only overview with real API data. Additional modules appear only when the appliance supports them."
     }
   },
   "surfaceShowcase": {
     "eyebrow": "Control surface",
-    "heading": "This is what the appliance UI looks like",
-    "intro": "Static control-center preview — same visual language as after sign-in, but without live data or invented metrics."
+    "heading": "The admin surface at a glance",
+    "intro": "Static control-center preview — same UI as after sign-in, without live data."
   },
   "surfacePreview": {
     "heading": "Vyntrio Control Center",
@@ -64,8 +64,8 @@
   },
   "productStatus": {
     "eyebrow": "Product boundary",
-    "heading": "Honest, not impressive",
-    "body": "Public pages explain the product. They do not simulate operations, uptime, or admin actions.",
+    "heading": "What this page does not show",
+    "body": "Public pages describe the product. They do not fake operations, availability, or admin actions.",
     "points": [
       "No live metrics on marketing pages",
       "No invented downloads or testimonials",
@@ -73,8 +73,8 @@
     ]
   },
   "finalCta": {
-    "heading": "Ready for your hardware?",
-    "body": "When install media is available, you start here. If you already own an appliance, sign in directly on the device.",
+    "heading": "Next steps",
+    "body": "When install media is ready, head to the release area. If you already run an appliance, sign in on the device.",
     "ctaDownload": "Go to release area",
     "ctaSignIn": "Sign in to appliance"
   },
@@ -82,7 +82,7 @@
     "hero": {
       "eyebrow": "Release",
       "title": "Install media for Vyntrio OS",
-      "description": "This preview shows the intended release surface — with clear availability, no invented images, and no silent placeholder download."
+      "description": "Preview of the release page. No install file is linked yet."
     },
     "panel": {
       "heading": "Artifact status",
@@ -128,7 +128,7 @@
     "hero": {
       "eyebrow": "Documentation",
       "title": "Appliance knowledge, structured not scattered",
-      "description": "Planned documentation surface for install, operations, and honest product boundaries — static in this preview, with no live search and no invented articles."
+      "description": "Planned docs for install and day-to-day operation — static in this preview, with no search and no invented articles."
     },
     "sections": [
       {
@@ -188,6 +188,6 @@
     "download": "Release",
     "docs": "Documentation",
     "signIn": "Sign in",
-    "previewNote": "Design preview Block 11R.4"
+    "previewNote": "Design preview Block 11R.5+ — lazy-loaded, not in the `/` bundle"
   }
 }

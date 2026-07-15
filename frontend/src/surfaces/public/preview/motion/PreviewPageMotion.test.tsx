@@ -1,40 +1,25 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { PublicSectionBand } from "../../components/PublicSectionBand";
 import { PreviewPageMotion } from "./PreviewPageMotion";
 
-const mocks = vi.hoisted(() => ({
-  gsapFrom: vi.fn(),
-  registerPlugin: vi.fn(),
-}));
-
-vi.mock("gsap", () => ({
-  default: {
-    registerPlugin: mocks.registerPlugin,
-    from: (...args: unknown[]) => mocks.gsapFrom(...args),
-    utils: {
-      toArray: (selector: string, root?: ParentNode | null) => {
-        const scope = root ?? document;
-        return Array.from(scope.querySelectorAll(selector));
-      },
-    },
-  },
-}));
-
-vi.mock("gsap/ScrollTrigger", () => ({
-  ScrollTrigger: {},
-}));
-
-vi.mock("@gsap/react", () => ({
-  useGSAP: (callback: () => void) => {
-    callback();
-  },
+vi.mock("./PreviewMotionRuntime", () => ({
+  PreviewMotionRuntime: ({
+    children,
+    variant,
+  }: {
+    children: React.ReactNode;
+    variant?: string;
+  }) => (
+    <div className="vyn-preview-motion-scope" data-motion="on" data-motion-variant={variant}>
+      {children}
+    </div>
+  ),
 }));
 
 describe("PreviewPageMotion", () => {
   beforeEach(() => {
-    mocks.gsapFrom.mockClear();
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: false,
       media: query,
@@ -47,7 +32,7 @@ describe("PreviewPageMotion", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders children and marks motion on when reduced motion is not preferred", () => {
+  it("renders children and marks motion on when reduced motion is not preferred", async () => {
     render(
       <PreviewPageMotion>
         <PublicSectionBand>
@@ -57,10 +42,29 @@ describe("PreviewPageMotion", () => {
     );
 
     expect(screen.getByText("Section content")).toBeInTheDocument();
-    expect(document.querySelector(".vyn-preview-motion-scope")).toHaveAttribute("data-motion", "on");
+    await waitFor(() => {
+      expect(document.querySelector(".vyn-preview-motion-scope")).toHaveAttribute("data-motion", "on");
+    });
   });
 
-  it("skips GSAP setup when prefers-reduced-motion is enabled", () => {
+  it("marks landing motion variant when requested", async () => {
+    render(
+      <PreviewPageMotion variant="landing">
+        <PublicSectionBand>
+          <p>Landing section</p>
+        </PublicSectionBand>
+      </PreviewPageMotion>
+    );
+
+    await waitFor(() => {
+      expect(document.querySelector(".vyn-preview-motion-scope")).toHaveAttribute(
+        "data-motion-variant",
+        "landing"
+      );
+    });
+  });
+
+  it("skips lazy GSAP runtime when prefers-reduced-motion is enabled", () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: query === "(prefers-reduced-motion: reduce)",
       media: query,
@@ -77,6 +81,5 @@ describe("PreviewPageMotion", () => {
     );
 
     expect(document.querySelector(".vyn-preview-motion-scope")).toHaveAttribute("data-motion", "off");
-    expect(mocks.gsapFrom).not.toHaveBeenCalled();
   });
 });

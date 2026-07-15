@@ -53,12 +53,16 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 - Future: URL prefix `/de`, `/en` in slice 11R.3+
 - **No machine translation pipeline**
 
-## Motion (Block 11R.5)
+## Motion (Block 11R.5+)
 
 - GSAP + `@gsap/react` + ScrollTrigger on `/design-preview/*` only
-- `PreviewPageMotion` — hero stagger on load, section reveals on scroll
+- `PreviewPageMotion` — `default` variant for download/docs; `landing` variant for richer hero, pillar stagger, showcase split
+- Header gains `vyn-public-header-scrolled` after ~140px scroll (preview surfaces)
 - **Lenis deferred** — native scroll keeps anchor links and reduced-motion behavior predictable
 - `prefers-reduced-motion` mandatory — no GSAP setup when enabled
+- Visual references: restrained grain/depth from [animated-electrician](https://github.com/Ismail-Khan-Dev/animated-electrician); appliance density from [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA); homelab theme discipline from [theme.park](https://github.com/themepark-dev/theme.park)
+- Responsive: fluid `clamp()` gutters/spacing, `auto-fit`/`minmax()` grids, container queries on preview sections (`public-responsive.css`); layout reference patterns from [innovate-tech-landing](https://github.com/CodeWithKarol/innovate-tech-landing) and GitHub.com layout kit (bento/grid rhythm, not visual clone)
+- Performance: preview routes and GSAP motion load via `React.lazy` + `Suspense`; Vite `manualChunks` isolates `preview-gsap` from the shipped `/` entry path
 - No fake live metric animation, no looping decoration
 
 ## Block 11R slice map

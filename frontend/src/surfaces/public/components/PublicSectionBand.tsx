@@ -18,7 +18,7 @@ export function PublicSectionBand({ children, tone = "default", id }: PublicSect
             : "vyn-public-section-band"
       }
     >
-      <div className="vyn-public-section-band-inner">{children}</div>
+      <div className="vyn-public-section-band-inner vyn-public-container-root">{children}</div>
     </div>
   );
 }

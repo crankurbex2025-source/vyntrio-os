@@ -35,7 +35,9 @@
   --vyn-radius-md: 0.5rem;
   --vyn-radius-lg: 0.75rem;
   --vyn-max-width: 72rem;
-  --vyn-section-gap: clamp(3rem, 6vw, 6rem);
+  --vyn-gutter: clamp(1rem, 3vw, 2rem);
+  --vyn-touch-target: 2.75rem;
+  --vyn-section-gap: clamp(2.5rem, 5vw + 1rem, 6rem);
 
   /* Legacy aliases — keep appliance + shipped public surfaces stable until 11R.6 */
   --dashboard-bg: var(--vyn-bg);

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { LocaleSwitcher } from "../../../shared/ui/LocaleSwitcher";
 import "./public-surface.css";
+import "./public-responsive.css";
 
 export type PublicFooterLink = {
   label: string;
@@ -23,6 +24,7 @@ export type PublicPreviewShellProps = {
   children: ReactNode;
   navAriaLabel?: string;
   anchorLinks?: PublicFooterLink[];
+  premiumSurface?: boolean;
 };
 
 export function PublicPreviewShell({
@@ -40,9 +42,10 @@ export function PublicPreviewShell({
   children,
   navAriaLabel = "Public navigation",
   anchorLinks,
+  premiumSurface = false,
 }: PublicPreviewShellProps) {
   return (
-    <div className="vyn-public-shell">
+    <div className={premiumSurface ? "vyn-public-shell vyn-public-shell-premium" : "vyn-public-shell"}>
       <p className="vyn-public-banner" role="status">
         {banner}
       </p>
