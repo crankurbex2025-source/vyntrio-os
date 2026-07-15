@@ -1,0 +1,85 @@
+{
+  "previewBanner": "Design preview — not the production homepage. Route / stays on Slice 11.1 until Block 11R.8 cutover.",
+  "brand": "Vyntrio",
+  "nav": {
+    "home": "Product",
+    "capabilities": "Capabilities",
+    "download": "Release",
+    "signIn": "Sign in",
+    "localeDe": "DE",
+    "localeEn": "EN"
+  },
+  "hero": {
+    "eyebrow": "Vyntrio OS",
+    "title": "What runs on your server?",
+    "description": "A local appliance operating system for storage, services, and control — installed on your hardware, operated under your authority, with no foreign cloud dependency.",
+    "ctaDownload": "Release & download",
+    "ctaDownloadHint": "Install media ships when publicly released",
+    "ctaSignIn": "Sign in to your appliance",
+    "ctaSignInHint": "For existing Vyntrio appliances"
+  },
+  "release": {
+    "label": "Release status",
+    "title": "Public install media not available yet",
+    "body": "Vyntrio OS is in active development. This page shows the intended product structure — with no download file, no version number, and no invented release timeline."
+  },
+  "pillars": {
+    "eyebrow": "Appliance platform",
+    "heading": "Three pillars, one device",
+    "intro": "Vyntrio combines persistent storage, host services, and a local control plane — structured like a server product, not a generic cloud dashboard.",
+    "storage": {
+      "tag": "Storage",
+      "title": "State on disk",
+      "body": "Persistent appliance state under a clear operations boundary — prepared for pools, shares, and controlled administration on the target device."
+    },
+    "services": {
+      "tag": "Services",
+      "title": "Processes on the host",
+      "body": "Systemd-managed services on the hardware itself. No multi-tenant SaaS, no foreign control plane."
+    },
+    "control": {
+      "tag": "Control",
+      "title": "Same-origin control center",
+      "body": "After sign-in: read-only overview with real API data. Modules and actions only when the appliance actually provides them."
+    }
+  },
+  "surfaceShowcase": {
+    "eyebrow": "Control surface",
+    "heading": "This is what the appliance UI looks like",
+    "intro": "Static control-center preview — same visual language as after sign-in, but without live data or invented metrics."
+  },
+  "surfacePreview": {
+    "heading": "Vyntrio Control Center",
+    "subheading": "Preview — not connected",
+    "panelLabel": "Overview",
+    "panelNote": "Instance name, readiness, and modules appear only after successful sign-in to a real appliance.",
+    "rows": [
+      { "label": "Instance", "value": "—" },
+      { "label": "Readiness", "value": "After sign-in" },
+      { "label": "Data source", "value": "None (preview)" },
+      { "label": "Scope", "value": "Read-only overview" }
+    ]
+  },
+  "productStatus": {
+    "eyebrow": "Product boundary",
+    "heading": "Honest, not impressive",
+    "body": "Public pages explain the product. They do not simulate operations, uptime, or admin actions.",
+    "points": [
+      "No live metrics on marketing pages",
+      "No invented downloads or testimonials",
+      "Live status only in the authenticated appliance view"
+    ]
+  },
+  "finalCta": {
+    "heading": "Ready for your hardware?",
+    "body": "When install media is available, you start here. If you already own an appliance, sign in directly on the device.",
+    "ctaDownload": "Go to release area",
+    "ctaSignIn": "Sign in to appliance"
+  },
+  "footer": {
+    "tagline": "Vyntrio OS — homelab appliance for storage, services, and control.",
+    "download": "Release",
+    "signIn": "Sign in",
+    "previewNote": "Design preview Block 11R.3"
+  }
+}

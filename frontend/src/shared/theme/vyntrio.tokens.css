@@ -1,0 +1,66 @@
+/* Vyntrio unified design tokens — Block 11R foundation */
+:root {
+  color-scheme: dark;
+
+  /* Core surfaces */
+  --vyn-bg: #06080d;
+  --vyn-bg-elevated: #0c1018;
+  --vyn-panel: #111722;
+  --vyn-panel-muted: #0a0f17;
+  --vyn-border: rgba(148, 163, 184, 0.14);
+  --vyn-border-strong: rgba(148, 163, 184, 0.24);
+
+  /* Typography */
+  --vyn-text: #edf2f8;
+  --vyn-text-muted: #8b98ab;
+  --vyn-text-subtle: #6b778a;
+  --vyn-font-display: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --vyn-font-body: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --vyn-font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+
+  /* Brand accents — warm appliance, not purple SaaS */
+  --vyn-accent: #e85d2b;
+  --vyn-accent-strong: #cf4f22;
+  --vyn-accent-soft: rgba(232, 93, 43, 0.12);
+  --vyn-accent-info: #3d8bfd;
+  --vyn-accent-info-soft: rgba(61, 139, 253, 0.12);
+
+  /* Status (shared with appliance) */
+  --vyn-status-ok: #3ecf8e;
+  --vyn-status-warn: #f0b429;
+  --vyn-status-danger: #f07178;
+
+  /* Layout */
+  --vyn-radius-sm: 0.375rem;
+  --vyn-radius-md: 0.5rem;
+  --vyn-radius-lg: 0.75rem;
+  --vyn-max-width: 72rem;
+  --vyn-section-gap: clamp(3rem, 6vw, 6rem);
+
+  /* Legacy aliases — keep appliance + shipped public surfaces stable until 11R.6 */
+  --dashboard-bg: var(--vyn-bg);
+  --dashboard-bg-elevated: var(--vyn-bg-elevated);
+  --dashboard-panel: var(--vyn-panel);
+  --dashboard-border: var(--vyn-border);
+  --dashboard-text: var(--vyn-text);
+  --dashboard-muted: var(--vyn-text-muted);
+  --dashboard-accent: #6366f1;
+  --dashboard-accent-soft: rgba(99, 102, 241, 0.16);
+  --dashboard-ready: var(--vyn-status-ok);
+  --dashboard-not-ready: var(--vyn-status-warn);
+  --dashboard-danger: var(--vyn-status-danger);
+
+  --public-bg: var(--vyn-bg);
+  --public-bg-elevated: var(--vyn-bg-elevated);
+  --public-panel: rgba(17, 23, 34, 0.92);
+  --public-border: var(--vyn-border);
+  --public-text: var(--vyn-text);
+  --public-muted: var(--vyn-text-muted);
+  --public-accent: #7c83ff;
+  --public-accent-strong: #5b63f0;
+  --public-accent-soft: rgba(124, 131, 255, 0.14);
+  --public-hero-glow: rgba(59, 130, 246, 0.22);
+  --public-max-width: var(--vyn-max-width);
+  --public-radius: 1rem;
+  --public-font: var(--vyn-font-body);
+}

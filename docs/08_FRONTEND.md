@@ -3,9 +3,10 @@
 ## Architektur
 React + TypeScript mit Feature-Oriented Structure.
 
-**Block 11 / Slice 11.1 (implementiert):** Router-basierte Surfaces im bestehenden
-`frontend/`-Paket — public (`/`), auth (`/login`), appliance (`/app/*`). Details:
-`docs/22_WEBSITE.md`.
+**Block 11 / Slice 11R.1–11R.2 (implementiert):** `vyntrio.tokens.css`, i18n
+(`de` default), Preview `/design-preview/landing`; 11R.2 extrahiert Public-
+Primitives unter `surfaces/public/components/`. Route `/` unverändert (11.1).
+Details: `docs/23_WEBSITE_DESIGN_DIRECTION.md`.
 
 ## Produktions-Auslieferung (v1, implementiert)
 
@@ -22,9 +23,10 @@ Details: `docs/09_API.md`, `docs/17_SECURITY.md`, `docs/19_RELEASE.md`.
 - Live-Daten als Streams behandeln.
 - Accessibility und Fehlerzustände als Pflichtbestandteil.
 
-## Strukturen (aktuell, Slice 11.1)
+## Strukturen (aktuell, Slice 11.1 / 11R.2)
 - `app/` — Router und Layouts
-- `surfaces/public/` — statische Marketing-Seiten (kein API-Import)
+- `surfaces/public/components/` — wiederverwendbare Public-Primitives (11R.2)
+- `surfaces/public/preview/` — Design-Preview-Routen
 - `surfaces/auth/` — Login-Einstieg
 - `surfaces/appliance/` — Session-Probe, Overview, Settings
 - `features/` — bestehende Feature-Module (auth, overview, settings)

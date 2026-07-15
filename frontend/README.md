@@ -25,7 +25,9 @@ npm run test:run
 npm run build
 ```
 
-Open `http://localhost:5173/` for the landing page. Appliance flow: `/app` or `/login`.
+Open `http://localhost:5173/` for the shipped Slice 11.1 landing.
+Design preview (Block 11R.1): `http://localhost:5173/design-preview/landing`
+Appliance flow: `/app` or `/login`.
 
 ## Rules
 

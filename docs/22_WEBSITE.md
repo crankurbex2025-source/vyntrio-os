@@ -42,6 +42,9 @@ frontend/npm run build → make ui-stage → go:embed → vyntrio-api
 | Slice | Status | Focus |
 |-------|--------|-------|
 | **11.1** | **Implemented** | Router foundation + public landing at `/` |
+| **11R.1** | **Implemented** | Design tokens v2, i18n scaffold, preview at `/design-preview/landing` |
+| **11R.2** | **Implemented** | Reusable public components under `surfaces/public/components/` |
+| **11R.3** | **Implemented** | Preview landing v2 section architecture on `/design-preview/landing` |
 | 11.2 | Planned | Shared design tokens + UI primitives |
 | 11.3 | Planned | Download & docs entry pages |
 | 11.4 | Planned | Auth decoupling — session probe only on `/app/*` |

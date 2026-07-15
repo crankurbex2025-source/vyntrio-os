@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vyntrio — Design Direction Board (Preview, not shipped)</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #06080d;
+        --bg-elevated: #0c1018;
+        --panel: #111722;
+        --border: rgba(148, 163, 184, 0.14);
+        --text: #edf2f8;
+        --muted: #8b98ab;
+        --accent: #e85d2b;
+        --accent-soft: rgba(232, 93, 43, 0.12);
+        --accent-2: #3d8bfd;
+        --ok: #3ecf8e;
+        --warn: #f0b429;
+        --font-display: "IBM Plex Sans", "Segoe UI", sans-serif;
+        --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
+        --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-12: 3rem;
+        --radius: 0.5rem;
+        --max: 72rem;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.55;
+      }
+      .wrap { width: min(100% - 2rem, var(--max)); margin: 0 auto; padding: var(--space-8) 0; }
+      .banner {
+        border: 1px dashed var(--warn);
+        background: rgba(240, 180, 41, 0.08);
+        padding: var(--space-4);
+        border-radius: var(--radius);
+        margin-bottom: var(--space-8);
+        color: #f6d98b;
+        font-size: 0.9rem;
+      }
+      h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.05; margin: 0 0 var(--space-4); }
+      h2 { font-size: 1.25rem; margin: var(--space-12) 0 var(--space-4); letter-spacing: 0.02em; }
+      p { color: var(--muted); max-width: 52ch; }
+      .grid { display: grid; gap: var(--space-4); }
+      .grid-3 { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+      .swatch { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+      .swatch div { height: 4rem; }
+      .swatch span { display: block; padding: var(--space-3); font-size: 0.8rem; color: var(--muted); font-family: var(--font-mono); }
+      .hero-mock {
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) * 2);
+        background: linear-gradient(180deg, var(--bg-elevated), var(--panel));
+        padding: var(--space-12) var(--space-8);
+        display: grid;
+        gap: var(--space-6);
+      }
+      .eyebrow { color: var(--accent); font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
+      .cta-row { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+      .btn { padding: 0.8rem 1.1rem; border-radius: var(--radius); font-weight: 600; text-decoration: none; font-size: 0.95rem; }
+      .btn-primary { background: var(--accent); color: #111; }
+      .btn-secondary { border: 1px solid var(--border); color: var(--text); }
+      .section-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+      .section-list li { border-left: 3px solid var(--accent-2); padding-left: var(--space-4); color: var(--muted); }
+      .section-list strong { color: var(--text); display: block; }
+      .motion li { font-family: var(--font-mono); font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="banner">
+        PREVIEW ONLY — not routed, not embedded, not production. Open via file:// or local static server.
+        Replaces rejected Slice 11.1 generic landing direction.
+      </div>
+
+      <p class="eyebrow">Block 11 — Redesign correction</p>
+      <h1>Dein Server. Deine Regeln. Dein System.</h1>
+      <p>
+        Zielbild: Premium-Appliance-Produkt wie unraid.net in Struktur, Unraid-PWA in Dashboard-Dichte —
+        keine SaaS-Template-Ästhetik, keine KI-Floskeln.
+      </p>
+
+      <div class="hero-mock">
+        <p class="eyebrow">Vyntrio OS</p>
+        <h1 style="margin:0">Homelab-Appliance für Storage, Dienste und Kontrolle</h1>
+        <p>Lokale Kontrollebene auf deiner Hardware — ehrlich, ohne Cloud-Versprechen.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#">Release &amp; Download</a>
+          <a class="btn btn-secondary" href="#">Am Gerät anmelden</a>
+        </div>
+      </div>
+
+      <h2>Farbrichtung (warm appliance, nicht purple SaaS)</h2>
+      <div class="grid grid-3">
+        <div class="swatch"><div style="background:#06080d"></div><span>--bg #06080d</span></div>
+        <div class="swatch"><div style="background:#e85d2b"></div><span>--accent #e85d2b (Unraid-adjacent warmth)</span></div>
+        <div class="swatch"><div style="background:#3d8bfd"></div><span>--accent-2 #3d8bfd (info/links)</span></div>
+        <div class="swatch"><div style="background:#3ecf8e"></div><span>--ok #3ecf8e</span></div>
+      </div>
+
+      <h2>Typografie</h2>
+      <p>IBM Plex Sans (UI + Marketing) + IBM Plex Mono (Status, Labels, Metriken). Kein generisches Inter-only-Stack.</p>
+
+      <h2>Landing-Sektionsarchitektur (unraid.net-Struktur)</h2>
+      <ul class="section-list">
+        <li><strong>01 Hero</strong> Produktversprechen + 2 CTAs (Download, Anmelden)</li>
+        <li><strong>02 Release strip</strong> Ehrlicher Release-/Docs-Hinweis (kein Fake-Changelog)</li>
+        <li><strong>03 Capability pillars</strong> Storage / Dienste / VMs — mit Produktscreens, nicht 3 gleiche Karten</li>
+        <li><strong>04 Control surface preview</strong> Statisches Dashboard-Mock (read-only), gleiche Tokens wie App</li>
+        <li><strong>05 Betrieb &amp; Vertrauen</strong> Lokal, same-origin, keine Fake-Metriken</li>
+        <li><strong>06 Download / Trial</strong> Nur wenn real verfügbar — sonst ehrlicher Platzhalter</li>
+        <li><strong>07 Footer</strong> Docs, GitHub, Sprache DE/EN</li>
+      </ul>
+
+      <h2 class="motion">Motion (GSAP + Lenis, später)</h2>
+      <ul class="section-list motion">
+        <li>Hero: staggered headline lines, scrub 0.8–1.2</li>
+        <li>Pillars: ScrollTrigger pin + horizontal reveal (desktop), stack (mobile)</li>
+        <li>Dashboard preview: subtle parallax panel, no fake live numbers animating</li>
+        <li>prefers-reduced-motion: disable scrub, instant states</li>
+      </ul>
+    </div>
+  </body>
+</html>
