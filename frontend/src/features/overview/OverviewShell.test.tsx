@@ -62,6 +62,9 @@ describe("OverviewShell", () => {
     runtime: {
       status: "ready",
     },
+    health: {
+      status: "healthy",
+    },
   };
 
   function renderShell(overrides: Partial<ComponentProps<typeof OverviewShell>> = {}) {
@@ -95,6 +98,7 @@ describe("OverviewShell", () => {
     expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
     expect(screen.getByText(/Build abc123 · development channel/)).toBeInTheDocument();
     expect(screen.getByText("Runtime readiness")).toBeInTheDocument();
+    expect(screen.getByText("Health summary")).toBeInTheDocument();
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
     expect(screen.queryByText(/eth0|192\.168|mac/i)).not.toBeInTheDocument();
   });
@@ -120,6 +124,16 @@ describe("OverviewShell", () => {
       },
     });
     expect(screen.getByText("Network presence could not be determined.")).toBeInTheDocument();
+  });
+
+  it("renders warning health summary for backup note", () => {
+    renderShell({
+      overview: {
+        ...overview,
+        health: { status: "warning", note: "backup" },
+      },
+    });
+    expect(screen.getByText(/last recorded local backup attempt failed/)).toBeInTheDocument();
   });
 
   it("renders degraded runtime readiness copy", () => {

@@ -56,6 +56,12 @@ describe("parseOverviewDto", () => {
     };
   }
 
+  function validHealth() {
+    return {
+      status: "healthy" as const,
+    };
+  }
+
   function validPayload() {
     return {
       instance: {
@@ -78,6 +84,7 @@ describe("parseOverviewDto", () => {
       network: validNetwork(),
       software: validSoftware(),
       runtime: validRuntime(),
+      health: validHealth(),
       collected_at: "2026-07-14T12:00:00.000000000Z",
     };
   }
@@ -210,6 +217,18 @@ describe("parseOverviewDto", () => {
         runtime: { status: "degraded", note: "network" },
       })
     ).toBeNull();
+  });
+
+  it("accepts warning health with backup note", () => {
+    expect(
+      parseOverviewDto({
+        ...validPayload(),
+        health: { status: "warning", note: "backup" },
+      })
+    ).toEqual({
+      ...validPayload(),
+      health: { status: "warning", note: "backup" },
+    });
   });
 
   it("formats metric bytes for display", () => {

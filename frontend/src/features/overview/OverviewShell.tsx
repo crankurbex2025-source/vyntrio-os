@@ -127,6 +127,47 @@ export function OverviewShell({
         </section>
 
         <section className="dashboard-panel">
+          <h2>Health summary</h2>
+          <p className="dashboard-panel-note">
+            Derived from existing overview slices only. This is not a health probe and does not
+            claim full appliance wellness.
+          </p>
+          <article className="dashboard-info-card">
+            <p className="dashboard-card-label">Overall status</p>
+            {overview.health.status === "healthy" ? (
+              <>
+                <p className="dashboard-card-value">Healthy</p>
+                <p className="dashboard-card-detail">
+                  As of {formatOverviewCollectedAt(overview.collected_at)}.
+                </p>
+              </>
+            ) : null}
+            {overview.health.status === "warning" ? (
+              <>
+                <p className="dashboard-card-value">Warning</p>
+                <p className="dashboard-card-detail">
+                  {overview.health.note === "database"
+                    ? "Runtime readiness is degraded because the database dependency is not ready."
+                    : overview.health.note === "backup"
+                      ? "The last recorded local backup attempt failed."
+                      : "A recorded overview signal needs attention."}
+                  {" As of "}
+                  {formatOverviewCollectedAt(overview.collected_at)}.
+                </p>
+              </>
+            ) : null}
+            {overview.health.status === "unknown" ? (
+              <>
+                <p className="dashboard-card-value">Unknown</p>
+                <p className="dashboard-card-detail">
+                  Health summary could not be classified from current overview state.
+                </p>
+              </>
+            ) : null}
+          </article>
+        </section>
+
+        <section className="dashboard-panel">
           <h2>Software release</h2>
           <p className="dashboard-panel-note">
             Read-only metadata from the running API process. This does not check for updates or

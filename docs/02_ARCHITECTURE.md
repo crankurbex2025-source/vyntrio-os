@@ -90,6 +90,10 @@ kein Update-Check, keine Paket- oder Host-Inventory.
 abgeleitet aus bestehendem `readiness` und `service` ohne neue Probes; UI nutzt
 `collected_at` für Zeitbezug.
 
+**Block 8 / Slice 8.11 (implementiert):** Read-only Health-Summary im Overview-DTO
+(`health.status` ∈ `healthy` | `warning` | `unknown`, optional `note: database|backup`) —
+abgeleitet aus bestehendem `runtime` und `backup` ohne neue Probes.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

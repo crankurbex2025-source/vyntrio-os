@@ -62,6 +62,7 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
   - `network`: begrenzte Netzwerk-Präsenz (Slice 8.7; siehe unten)
   - `software`: read-only Software-/Release-Metadaten (Slice 8.9; siehe unten)
   - `runtime`: read-only Runtime-Readiness-Label (Slice 8.10; siehe unten)
+  - `health`: read-only Health-Summary (Slice 8.11; siehe unten)
   - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
 - **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
 - **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
@@ -187,6 +188,30 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
 - **`note`:** optional nur bei `degraded`; derzeit nur `database` (wenn `readiness` Datenbankfehler meldet).
 - Kein Zeitstempel in `runtime`; nutze `collected_at` auf Overview-Ebene.
 - Keine Host-, Netzwerk-, Paket- oder Update-Claims; kein Ersatz für `/readyz`-Betrieb.
+
+**Zusätzliches Feld `health` (Slice 8.11):**
+
+```json
+"health": { "status": "healthy" }
+```
+
+```json
+"health": { "status": "warning", "note": "database" }
+```
+
+```json
+"health": { "status": "warning", "note": "backup" }
+```
+
+```json
+"health": { "status": "unknown" }
+```
+
+- **`health`:** grobe Health-Summary, **abgeleitet** aus bestehendem `runtime` und `backup` — keine neuen Probes.
+- **`status`:** `healthy`, `warning` oder `unknown`.
+- **`note`:** optional nur bei `warning`; `database` (Runtime degradiert) oder `backup` (letzter Backup-Versuch `failed` bei sonst ready Runtime).
+- Kein Zeitstempel in `health`; nutze `collected_at` auf Overview-Ebene.
+- Keine Voll-Appliance-Wellness-, Host- oder Netzwerk-Claims.
 
 ### PATCH `/api/v1/settings/instance`
 

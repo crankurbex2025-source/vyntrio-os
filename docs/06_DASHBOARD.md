@@ -45,7 +45,11 @@ Session-Rollen mit `system:health` (Owner, Operator, Read-only).
 - Abgeleitet aus bestehendem Overview-`readiness`/`service`; kein neuer Health-Check
 - Zeitbezug über bestehendes `collected_at` in der UI
 
-**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7/8.9/8.10):**
+**Enthalten in 8.11:**
+- Read-only Health-Summary-Karte: `healthy`, `warning`, `unknown`; optionale `note: database|backup`
+- Abgeleitet aus bestehendem `runtime` und `backup`; kein neuer Health-Check
+
+**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7/8.9/8.10/8.11):**
 - CPU-Auslastung in Prozent, 5m/15m-Load, Temperatur
 - Netzwerk-Metriken (Durchsatz, Pakete, Carrier, Wi-Fi, IP-Adressen)
 - Zusätzliche Filesystem-/Mount-IDs, Backup-Aktionen und Restore-Aktionen

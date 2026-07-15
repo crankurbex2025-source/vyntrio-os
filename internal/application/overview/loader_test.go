@@ -172,6 +172,9 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 	if got.Runtime.Status != overview.RuntimeStatusReady {
 		t.Fatalf("runtime = %+v", got.Runtime)
 	}
+	if got.Health.Status != overview.HealthStatusHealthy {
+		t.Fatalf("health = %+v", got.Health)
+	}
 	if got.CollectedAt == "" {
 		t.Fatal("expected collected_at")
 	}
@@ -220,6 +223,9 @@ func TestLoaderMapsDatabaseFailureToNotReady(t *testing.T) {
 	}
 	if got.Runtime.Status != overview.RuntimeStatusDegraded || got.Runtime.Note != overview.RuntimeNoteDatabase {
 		t.Fatalf("runtime = %+v, want degraded/database", got.Runtime)
+	}
+	if got.Health.Status != overview.HealthStatusWarning || got.Health.Note != overview.HealthNoteDatabase {
+		t.Fatalf("health = %+v, want warning/database", got.Health)
 	}
 }
 

@@ -65,6 +65,15 @@ export type RuntimeDto = {
   note?: RuntimeNote;
 };
 
+export type HealthStatus = "healthy" | "warning" | "unknown";
+
+export type HealthNote = "database" | "backup";
+
+export type HealthDto = {
+  status: HealthStatus;
+  note?: HealthNote;
+};
+
 export type OverviewDto = {
   instance: {
     name: string;
@@ -86,6 +95,7 @@ export type OverviewDto = {
   network: NetworkDto;
   software: SoftwareDto;
   runtime: RuntimeDto;
+  health: HealthDto;
   collected_at: string;
 };
 
@@ -369,6 +379,26 @@ function parseRuntime(value: unknown): RuntimeDto | null {
   return { status, note: "database" };
 }
 
+function parseHealth(value: unknown): HealthDto | null {
+  if (!isPlainRecord(value) || !("status" in value)) {
+    return null;
+  }
+  const status = value.status;
+  if (status !== "healthy" && status !== "warning" && status !== "unknown") {
+    return null;
+  }
+  if (status === "healthy" || status === "unknown") {
+    return hasExactKeys(value, ["status"]) ? { status } : null;
+  }
+  if (
+    !hasExactKeys(value, ["status", "note"]) ||
+    (value.note !== "database" && value.note !== "backup")
+  ) {
+    return null;
+  }
+  return { status, note: value.note };
+}
+
 export function parseOverviewDto(payload: unknown): OverviewDto | null {
   if (
     !isPlainRecord(payload) ||
@@ -382,6 +412,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
       "network",
       "software",
       "runtime",
+      "health",
       "collected_at",
     ])
   ) {
@@ -397,6 +428,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
   const network = parseNetwork(payload.network);
   const software = parseSoftware(payload.software);
   const runtime = parseRuntime(payload.runtime);
+  const health = parseHealth(payload.health);
   const collectedAt = payload.collected_at;
 
   if (!isPlainRecord(instance) || !hasExactKeys(instance, ["name", "version", "commit"])) {
@@ -424,6 +456,9 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     return null;
   }
   if (!runtime) {
+    return null;
+  }
+  if (!health) {
     return null;
   }
 
@@ -461,6 +496,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     network,
     software,
     runtime,
+    health,
     collected_at: collectedAt,
   };
 }

@@ -17,6 +17,7 @@ type Response struct {
 	Network     netpresence.Network `json:"network"`
 	Software    SoftwareSection     `json:"software"`
 	Runtime     RuntimeSection      `json:"runtime"`
+	Health      HealthSection       `json:"health"`
 	CollectedAt string              `json:"collected_at"`
 }
 

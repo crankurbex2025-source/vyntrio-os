@@ -84,6 +84,9 @@ describe("App", () => {
       runtime: {
         status: "ready",
       },
+      health: {
+        status: "healthy",
+      },
     };
   }
 
@@ -205,6 +208,7 @@ describe("App", () => {
         ...validOverviewPayload(),
         readiness: { status: "not_ready", database: "error" },
         runtime: { status: "degraded", note: "database" },
+        health: { status: "warning", note: "database" },
       },
     });
 

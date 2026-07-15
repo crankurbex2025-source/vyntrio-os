@@ -83,6 +83,7 @@ func (l Loader) Load(ctx context.Context) (Response, error) {
 
 	readiness := MapReadiness(l.readiness.Check(ctx))
 	service := ServiceSection{Status: serviceStatusRunning}
+	backup := l.backupStatus.Read(ctx)
 	runtime := AssembleRuntime(readiness, service)
 	collectedAt := l.now().UTC().Format(time.RFC3339Nano)
 
@@ -98,10 +99,11 @@ func (l Loader) Load(ctx context.Context) (Response, error) {
 		Service:     service,
 		Readiness:   readiness,
 		Host:        l.hostMetrics.Collect(ctx),
-		Backup:      l.backupStatus.Read(ctx),
+		Backup:      backup,
 		Network:     l.networkPresence.Collect(ctx),
 		Software:    AssembleSoftware(l.version, l.commit, l.environment),
 		Runtime:     runtime,
+		Health:      AssembleHealth(runtime, backup),
 		CollectedAt: collectedAt,
 	}, nil
 }

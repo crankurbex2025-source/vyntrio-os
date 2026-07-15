@@ -248,6 +248,16 @@ Intended v1 layout:
 - Never expose raw probe output, paths, or diagnostic strings. Timestamp context
   remains on overview-level `collected_at` only.
 
+#### E.6 Overview health summary (Slice 8.11, implemented)
+
+- For `GET /api/v1/overview` only, expose a coarse `health` summary assembled
+  **in-process** from already-materialized `runtime` and `backup` fields.
+- Map `healthy` when runtime is ready and backup is not `failed`; map `warning`
+  with optional `note: database` or `note: backup`; otherwise `unknown`. No new
+  health probes, host inspection, or dependency scans.
+- Never expose raw probe output, paths, or diagnostic strings. Timestamp context
+  remains on overview-level `collected_at` only.
+
 ### F. Startup, liveness, readiness and shutdown
 
 - **Fail-closed startup (implemented):** invalid runtime configuration,

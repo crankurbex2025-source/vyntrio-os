@@ -568,6 +568,9 @@ func assertOverviewResponseShape(t *testing.T, rec *httptest.ResponseRecorder) {
 	if got.Runtime.Status == "" {
 		t.Fatalf("runtime = %+v", got.Runtime)
 	}
+	if got.Health.Status == "" {
+		t.Fatalf("health = %+v", got.Health)
+	}
 }
 
 func assertOverviewCacheControlNoStore(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -625,6 +628,17 @@ var allowedRuntimeNotes = map[string]struct{}{
 	appoverview.RuntimeNoteDatabase: {},
 }
 
+var allowedHealthStatuses = map[string]struct{}{
+	appoverview.HealthStatusHealthy: {},
+	appoverview.HealthStatusWarning: {},
+	appoverview.HealthStatusUnknown: {},
+}
+
+var allowedHealthNotes = map[string]struct{}{
+	appoverview.HealthNoteDatabase: {},
+	appoverview.HealthNoteBackup:   {},
+}
+
 var forbiddenOverviewValueSubstrings = []string{
 	"/var/lib", "/etc/vyntrio", "127.0.0.1", "sqlite", "config.toml",
 	".tar", "sha256", "vyntrio.db",
@@ -673,6 +687,14 @@ func scanOverviewJSONValue(value any, parentKeys []string) error {
 				}
 				if _, ok := allowed[lowerKey]; !ok {
 					return fmt.Errorf("runtime section contained forbidden JSON key %q", key)
+				}
+			}
+			if isHealthSection(parentKeys) {
+				allowed := map[string]struct{}{
+					"status": {}, "note": {},
+				}
+				if _, ok := allowed[lowerKey]; !ok {
+					return fmt.Errorf("health section contained forbidden JSON key %q", key)
 				}
 			}
 			if lowerKey == "failure" && isBackupSection(parentKeys) {
@@ -732,6 +754,26 @@ func scanOverviewJSONValue(value any, parentKeys []string) error {
 				}
 				if _, allowed := allowedRuntimeNotes[note]; !allowed {
 					return fmt.Errorf("runtime.note = %q, want allowed enum", note)
+				}
+				continue
+			}
+			if lowerKey == "status" && isHealthSection(parentKeys) {
+				status, ok := child.(string)
+				if !ok {
+					return fmt.Errorf("health.status has unexpected type %T", child)
+				}
+				if _, allowed := allowedHealthStatuses[status]; !allowed {
+					return fmt.Errorf("health.status = %q, want allowed enum", status)
+				}
+				continue
+			}
+			if lowerKey == "note" && isHealthSection(parentKeys) {
+				note, ok := child.(string)
+				if !ok {
+					return fmt.Errorf("health.note has unexpected type %T", child)
+				}
+				if _, allowed := allowedHealthNotes[note]; !allowed {
+					return fmt.Errorf("health.note = %q, want allowed enum", note)
 				}
 				continue
 			}
@@ -820,6 +862,10 @@ func isSoftwareSection(parentKeys []string) bool {
 
 func isRuntimeSection(parentKeys []string) bool {
 	return len(parentKeys) == 1 && parentKeys[0] == "runtime"
+}
+
+func isHealthSection(parentKeys []string) bool {
+	return len(parentKeys) == 1 && parentKeys[0] == "health"
 }
 
 func assertNetworkJSON(t *testing.T, body []byte, wantStatus string) {
@@ -919,6 +965,23 @@ func TestOverviewRuntimeStatusDegradedSerialization(t *testing.T) {
 	if got.Readiness.Status != "not_ready" || got.Readiness.Database != "error" {
 		t.Fatalf("readiness = %+v", got.Readiness)
 	}
+	if got.Health.Status != appoverview.HealthStatusWarning || got.Health.Note != appoverview.HealthNoteDatabase {
+		t.Fatalf("health = %+v, want warning/database", got.Health)
+	}
+}
+
+func TestOverviewHealthStatusHealthySerialization(t *testing.T) {
+	router := newSettingsRouter(t, settingsRouterOpts{})
+	sessionCookie := ownerSessionCookie(t, router)
+	rec := httptest.NewRecorder()
+	router.handler.ServeHTTP(rec, overviewGET([]*http.Cookie{sessionCookie}))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", rec.Code, rec.Body.String())
+	}
+	got := decodeOverviewResponse(t, rec.Body.Bytes())
+	if got.Health.Status != appoverview.HealthStatusHealthy {
+		t.Fatalf("health = %+v, want healthy", got.Health)
+	}
 }
 
 func assertSoftwareJSON(t *testing.T, body []byte, wantStatus, wantVersion, wantCommit, wantChannel string) {
@@ -952,6 +1015,7 @@ func TestDisclosureGuardAllowsArtifactFailureClass(t *testing.T) {
 		"network":{"status":"available"},
 		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"runtime":{"status":"ready"},
+		"health":{"status":"warning","note":"backup"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	assertNoSensitiveOverviewFields(t, body)
@@ -968,6 +1032,7 @@ func TestDisclosureGuardAllowsNetworkAvailableStatus(t *testing.T) {
 		"network":{"status":"available"},
 		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"runtime":{"status":"ready"},
+		"health":{"status":"healthy"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	assertNoSensitiveOverviewFields(t, body)
@@ -984,6 +1049,7 @@ func TestDisclosureGuardRejectsForbiddenInterfaceKey(t *testing.T) {
 		"network":{"status":"available","interface":"eth0"},
 		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"runtime":{"status":"ready"},
+		"health":{"status":"healthy"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {
@@ -1002,6 +1068,7 @@ func TestDisclosureGuardRejectsForbiddenNameInNetworkSection(t *testing.T) {
 		"network":{"status":"available","name":"eth0"},
 		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"runtime":{"status":"ready"},
+		"health":{"status":"healthy"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {
@@ -1020,6 +1087,7 @@ func TestDisclosureGuardRejectsIPAddressValue(t *testing.T) {
 		"network":{"status":"available","detail":"192.168.1.10"},
 		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"runtime":{"status":"ready"},
+		"health":{"status":"healthy"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {
@@ -1038,6 +1106,7 @@ func TestDisclosureGuardRejectsForbiddenPathField(t *testing.T) {
 		"network":{"status":"unknown"},
 		"software":{"status":"ok","version":"0.2.0-test","commit":"test-commit","channel":"development"},
 		"runtime":{"status":"ready"},
+		"health":{"status":"healthy"},
 		"collected_at":"2026-07-14T12:00:00.000000000Z"
 	}`)
 	if err := checkNoSensitiveOverviewFields(body); err == nil {
