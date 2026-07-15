@@ -83,9 +83,12 @@ checks:
     status: deferred
     note: Target block device and operator intent checks deferred to later slice.
 
+layout_plan_authority: distro/installer/target-layout-manifest.yaml
+
 deferred_slices:
   - target_disk_accessibility
   - operator_reprovision_confirmation
+  - partition_filesystem_layout
   - install_payload_copy
   - service_enablement
   - bootstrap_handoff

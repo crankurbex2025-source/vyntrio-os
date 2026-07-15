@@ -1,0 +1,122 @@
+# Declarative installer target-disk layout manifest (scaffold only).
+# Authority: docs/ADR/0007-appliance-installer-contract.md (section E)
+# Runtime paths: docs/ADR/0005-appliance-runtime-operations.md (section D)
+# Payload inventory: distro/install-media/manifest.yaml
+# Not consumed by partitioning or disk mutation logic in Slice 10.4.
+
+schema_version: vyntrio-installer-target-layout-v1
+media_role: install
+
+description: >
+  Target-disk layout planning contract for greenfield install. Defines intended
+  paths and directories the installer may create on the target system. Does not
+  partition, format, or write disks.
+
+contract: docs/ADR/0007-appliance-installer-contract.md
+layout_contract: distro/installer/target-layout-contract.md
+
+separate_from:
+  media_creation: distro/install-media/
+  recovery_media: distro/recovery-media/
+  restore_procedure: docs/ops/restore-safety-contract.md
+  note: >
+    Layout planning applies to target disk only after boot from install media.
+    Block 9 media creation does not define target partition tables.
+
+# Partition/filesystem details deferred — conceptual planning only.
+partition_layout:
+  status: deferred
+  uefi_bios: deferred
+  luks_encryption: deferred
+  note: >
+    Exact partition table, boot partition sizing, and filesystem types are
+    deferred to a future executable slice. This manifest defines path intent only.
+
+  conceptual_mounts:
+    - mount_point: /
+      purpose: OS root filesystem hosting Vyntrio install targets
+      required_for_install: true
+
+# Directories the installer may create empty on target disk (no pre-seeded DB).
+directories:
+  - path: /etc/vyntrio
+    purpose: runtime configuration directory
+    initial_content: empty_except_template_install
+    authority: ADR-0005 section D
+
+  - path: /var/lib/vyntrio
+    purpose: persistent state root
+    initial_content: empty
+    forbidden_initial_content:
+      - appliance_sqlite_state
+      - backup_artifacts
+    authority: ADR-0005 section D
+
+  - path: /var/lib/vyntrio/backups
+    purpose: root-only backup destination (future writes by vyntrio-backup)
+    initial_content: empty
+    authority: ADR-0005 section D
+
+# Files copied from install-media payload to target disk (future slice).
+payload_install_paths:
+  authority: distro/install-media/manifest.yaml
+  entries:
+    - target: /usr/bin/vyntrio-api
+      source_payload: usr/bin/vyntrio-api
+      mode: "0755"
+      owner: root:root
+    - target: /usr/bin/vyntrio-backup
+      source_payload: usr/bin/vyntrio-backup
+      mode: "0755"
+      owner: root:root
+    - target: /etc/systemd/system/vyntrio-api.service
+      source_payload: etc/systemd/system/vyntrio-api.service
+      mode: "0644"
+      owner: root:root
+    - target: /usr/lib/sysusers.d/vyntrio.conf
+      source_payload: usr/lib/sysusers.d/vyntrio.conf
+      mode: "0644"
+      owner: root:root
+    - target: /etc/tmpfiles.d/vyntrio.conf
+      source_payload: etc/tmpfiles.d/vyntrio.conf
+      mode: "0644"
+      owner: root:root
+    - target: /etc/vyntrio/config.toml
+      source_payload: etc/vyntrio/config.toml
+      mode: "0640"
+      owner: root:vyntrio
+      note: Template from install media; not secrets.
+
+# systemd/sysusers/tmpfiles provisioning referenced by layout plan.
+provisioning_artifacts:
+  - id: vyntrio-api-service
+    target: /etc/systemd/system/vyntrio-api.service
+    enable_on_target: deferred
+  - id: vyntrio-sysusers
+    target: /usr/lib/sysusers.d/vyntrio.conf
+    apply_on_target: deferred
+  - id: vyntrio-tmpfiles
+    target: /etc/tmpfiles.d/vyntrio.conf
+    apply_on_target: deferred
+
+forbidden_target_mutations:
+  - paths_outside_allowlist_without_adr_amendment
+  - pre_seeded_vyntrio_db
+  - bootstrap_settings_or_owner_credentials
+  - license_files_on_target_during_install
+  - recovery_media_tooling
+  - non_vyntrio_system_package_changes
+
+post_layout_handoff:
+  service_enablement: deferred
+  bootstrap: ADR-0004
+  persistent_state: empty_until_bootstrap
+
+deferred_executable_slices:
+  - partition_table_creation
+  - filesystem_formatting
+  - target_disk_block_device_mutation
+  - payload_copy_to_target
+  - sysusers_tmpfiles_application
+  - service_enablement
+  - bootstrap_handoff

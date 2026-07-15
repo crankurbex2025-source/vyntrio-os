@@ -7,7 +7,7 @@ NPM ?= npm
 # ui-stage; never committed. Go compilation fails if this input is absent.
 UI_STAGE_DIR := internal/interfaces/http/ui/dist
 
-.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope installer-preflight test-installer-preflight run-api docs-check clean sqlc-generate generate
+.PHONY: help bootstrap verify fmt lint test test-go test-frontend ui-stage build install-media-stage test-install-media-stage install-media-envelope test-install-media-envelope installer-preflight test-installer-preflight installer-layout-plan test-installer-layout-plan run-api docs-check clean sqlc-generate generate
 
 help:
 	@echo "Vyntrio OS — development commands"
@@ -27,6 +27,8 @@ help:
 	@echo "  make test-install-media-envelope  Verify install-media envelope assembly"
 	@echo "  make installer-preflight  Run read-only installer preflight checks"
 	@echo "  make test-installer-preflight  Verify installer preflight behavior"
+	@echo "  make installer-layout-plan  Validate installer target-layout manifest"
+	@echo "  make test-installer-layout-plan  Verify layout plan validation"
 	@echo "  make run-api       Run API server (cmd/api)"
 	@echo "  make docs-check    Validate documentation structure"
 	@echo "  make sqlc-generate Regenerate sqlc query code"
@@ -87,6 +89,12 @@ installer-preflight: install-media-envelope
 
 test-installer-preflight: installer-preflight
 	@./tests/installer/preflight_test.sh
+
+installer-layout-plan:
+	@./scripts/validate-installer-layout-plan.sh
+
+test-installer-layout-plan: installer-layout-plan
+	@./tests/installer/layout_plan_test.sh
 
 run-api:
 	@$(GO) run ./cmd/api

@@ -221,7 +221,8 @@ scope for Block 10 installer implementation.
 - [x] Block 10 Slice 10.1: read-only installer contract audit
 - [x] Block 10 Slice 10.2: formal installer contract (this ADR)
 - [x] Block 10 Slice 10.3: installer preflight scaffold (`make installer-preflight`)
-- [ ] Partition/filesystem layout slice
+- [x] Block 10 Slice 10.4: installer target-layout scaffold (`target-layout-manifest.yaml`)
+- [ ] Partition/filesystem executable slice
 - [ ] `vyntrio-installer` target-disk mutation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)
 - [ ] Host media creator specification (macOS/Windows — separate block or slice)
@@ -250,5 +251,8 @@ scope for Block 10 installer implementation.
 - `docs/15_LICENSE.md` — license USB (separate from install)
 - `cmd/installer/main.go` — stub entrypoint
 - `distro/installer/preflight-manifest.yaml` — preflight check inventory (Slice 10.3)
+- `distro/installer/target-layout-manifest.yaml` — target layout inventory (Slice 10.4)
+- `distro/installer/target-layout-contract.md` — layout planning boundary (Slice 10.4)
 - `scripts/installer-preflight.sh` — read-only preflight (Slice 10.3)
+- `scripts/validate-installer-layout-plan.sh` — read-only layout plan validation (Slice 10.4)
 - Block 10, Slice 10.1 audit (conversation record)

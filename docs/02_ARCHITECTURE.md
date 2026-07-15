@@ -149,6 +149,12 @@ Allowlist, Bootstrap-Handoff, Ausschlüsse; kein Installer-Implementierung.
 `make installer-preflight` — validiert Install-Media-Kontext und Payload-
 Inventar gegen ADR-0007; kein Zielplatten-Schreiben, kein Bootstrap.
 
+**Block 10 / Slice 10.4 (Gerüst, dokumentiert):** Zielplatten-Layout-Gerüst in
+`distro/installer/target-layout-manifest.yaml` und `target-layout-contract.md` —
+definiert Allowlist-Pfade und leere State-Verzeichnisse; Partitionierung
+deferred; read-only Validierung via `make installer-layout-plan`; kein
+Zielplatten-Schreiben.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

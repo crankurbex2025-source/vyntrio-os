@@ -48,6 +48,11 @@ kein Live-Root, kein Installer-Lauf.
 via `make installer-preflight`; validiert Envelope/Payload gegen ADR-0007; kein
 Zielplatten-Schreiben, kein Bootstrap.
 
+**Block 10 / Slice 10.4:** Zielplatten-Layout-Gerüst unter `distro/installer/`
+(`target-layout-manifest.yaml`, `target-layout-contract.md`); read-only
+Validierung via `make installer-layout-plan`; Partitionierung deferred; kein
+Zielplatten-Schreiben.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1
