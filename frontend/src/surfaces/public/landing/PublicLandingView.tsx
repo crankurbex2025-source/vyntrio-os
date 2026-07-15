@@ -27,13 +27,17 @@ export type PublicLandingViewProps = {
 export function PublicLandingView({ surface }: PublicLandingViewProps) {
   const { messages } = useI18n();
   const { idPrefix } = surface;
+  const contextAriaLabel =
+    surface.mode === "production"
+      ? messages.productContext.ariaLabel
+      : messages.previewContext.ariaLabel;
 
   return (
     <div className="vyn-public-landing-page vyn-public-preview-page">
       <PreviewPageMotion variant="landing">
         <PublicSectionBand tone="elevated" surface="hero" id="product">
           <PublicPreviewPageContext
-            ariaLabel={messages.previewContext.ariaLabel}
+            ariaLabel={contextAriaLabel}
             links={surface.contextLinks}
             currentKey={surface.contextCurrentKey}
           />

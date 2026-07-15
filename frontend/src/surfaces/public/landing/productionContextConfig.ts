@@ -5,6 +5,6 @@ export function buildProductionContextLinks(messages: PublicMessages): PublicPre
   return [
     { key: "landing", label: messages.previewContext.landing, to: "/" },
     { key: "download", label: messages.previewContext.download, to: "/download" },
-    { key: "docs", label: messages.previewContext.docs, to: "/design-preview/docs" },
+    { key: "docs", label: messages.previewContext.docs, to: "/docs" },
   ];
 }

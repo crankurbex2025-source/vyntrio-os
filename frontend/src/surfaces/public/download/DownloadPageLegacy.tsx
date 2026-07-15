@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { PageHeader } from "../../../shared/ui/PageHeader";
 
-export function DownloadPlaceholder() {
+/** Slice 11.1 download placeholder — retained at /design-preview/download-legacy for rollback review. */
+export function DownloadPageLegacy() {
   return (
     <main className="public-main download-placeholder">
       <PageHeader

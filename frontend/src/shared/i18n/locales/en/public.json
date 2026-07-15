@@ -34,6 +34,9 @@
     "download": "Release",
     "docs": "Documentation"
   },
+  "productContext": {
+    "ariaLabel": "Product areas"
+  },
   "installJourney": {
     "eyebrow": "Install path",
     "heading": "From install media to a running appliance",
@@ -204,13 +207,19 @@
       "body": "Release details stay on this page. For appliance structure context, start on the preview homepage.",
       "primary": "Go to preview homepage",
       "secondary": "Go to documentation"
+    },
+    "productionInlineCta": {
+      "heading": "Continue on the site",
+      "body": "Release details stay on this page. For appliance structure context, start on the homepage.",
+      "primary": "Go to homepage",
+      "secondary": "Go to documentation"
     }
   },
   "docsPage": {
     "hero": {
       "eyebrow": "Documentation",
       "title": "Documentation for install and operations",
-      "description": "Planned topics for setup and day-to-day use — static in this preview, no live search."
+      "description": "Planned topics for setup and day-to-day use — static, no live search."
     },
     "sections": [
       {
@@ -263,6 +272,12 @@
       "body": "Documentation and install media stay separate. For artifact status, switch to the release area.",
       "primary": "Go to release preview",
       "secondary": "Go to preview homepage"
+    },
+    "productionInlineCta": {
+      "heading": "Continue to release area",
+      "body": "Documentation and install media stay separate. For artifact status, switch to the release area.",
+      "primary": "Go to release area",
+      "secondary": "Go to homepage"
     }
   },
   "footer": {

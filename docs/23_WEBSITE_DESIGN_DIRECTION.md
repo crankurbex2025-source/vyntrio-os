@@ -1,9 +1,9 @@
 # Website design direction (Block 11R)
 
 **Status:** Accepted for redesign correction track (Slice 11R.1 foundation).
-**Shipped route `/` is v2 landing** (Block 11R.10 cutover).
-**Preview mirror:** `/design-preview/landing` (banner + preview links).
-**Rollback review:** `/design-preview/landing-legacy` (Slice 11.1).
+**Shipped routes `/`, `/download`, `/docs` are v2 public surfaces** (Block 11R.10–11R.11 cutover).
+**Preview mirrors:** `/design-preview/landing`, `/design-preview/download`, `/design-preview/docs` (banner + preview links).
+**Rollback review:** `/design-preview/landing-legacy`, `/design-preview/download-legacy`.
 
 ## Verdict on Slice 11.1
 
@@ -56,7 +56,7 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 
 ## Motion (Block 11R.5+)
 
-- GSAP + `@gsap/react` + ScrollTrigger on `/` and `/design-preview/*` landing surfaces
+- GSAP + `@gsap/react` + ScrollTrigger on `/`, `/download`, `/docs`, and `/design-preview/*` public surfaces
 - `PreviewPageMotion` — `default` variant for download/docs; `landing` variant for richer hero, pillar stagger, showcase split
 - Header gains `vyn-public-header-scrolled` after ~140px scroll (preview surfaces)
 - **Lenis deferred** — native scroll keeps anchor links and reduced-motion behavior predictable
@@ -83,15 +83,19 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 | **11R.8** | **Implemented** | Landing visual/media (chassis, signal path, glyphs) |
 | **11R.9** | **Implemented** | Product story modules across preview routes |
 | **11R.10** | **Implemented** | Root cutover `/` → v2; preview mirror + legacy fallback |
+| **11R.11** | **Implemented** | Shipped `/download` + `/docs` cutover; production link cleanup |
 
 ## Preview artifacts
 
 - Routed: `/` (`LandingPage.tsx` + `PublicLandingView.tsx`)
+- Routed: `/download` (`DownloadPage.tsx` + `PublicDownloadView.tsx`)
+- Routed: `/docs` (`DocsPage.tsx` + `PublicDocsView.tsx`)
 - Routed: `/design-preview/landing` (`LandingPreviewV2.tsx`)
-- Rollback review: `/design-preview/landing-legacy` (`LandingPageLegacy.tsx`)
 - Routed: `/design-preview/download` (`DownloadPreviewV2.tsx`)
 - Routed: `/design-preview/docs` (`DocsPreviewV2.tsx`)
-- Shared shell config: `surfaces/public/preview/previewShellConfig.ts`
+- Rollback review: `/design-preview/landing-legacy` (`LandingPageLegacy.tsx`)
+- Rollback review: `/design-preview/download-legacy` (`DownloadPageLegacy.tsx`)
+- Shared production shell: `surfaces/public/landing/productionShellConfig.ts`
 - Motion scope: `surfaces/public/preview/motion/PreviewPageMotion.tsx`
 - Static moodboard: `frontend/design-preview/direction-board.html` (not embedded)
 

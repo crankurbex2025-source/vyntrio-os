@@ -54,6 +54,9 @@ export type PublicMessages = {
     download: string;
     docs: string;
   };
+  productContext: {
+    ariaLabel: string;
+  };
   installJourney: {
     eyebrow: string;
     heading: string;
@@ -133,6 +136,12 @@ export type PublicMessages = {
       primary: string;
       secondary: string;
     };
+    productionInlineCta: {
+      heading: string;
+      body: string;
+      primary: string;
+      secondary: string;
+    };
   };
   docsPage: {
     hero: {
@@ -142,6 +151,12 @@ export type PublicMessages = {
     };
     sections: [PublicDocsSectionMessages, PublicDocsSectionMessages];
     inlineCta: {
+      heading: string;
+      body: string;
+      primary: string;
+      secondary: string;
+    };
+    productionInlineCta: {
       heading: string;
       body: string;
       primary: string;

@@ -34,6 +34,9 @@
     "download": "Release",
     "docs": "Dokumentation"
   },
+  "productContext": {
+    "ariaLabel": "Produktbereiche"
+  },
   "installJourney": {
     "eyebrow": "Installationsweg",
     "heading": "Vom Medium zur laufenden Appliance",
@@ -204,13 +207,19 @@
       "body": "Release-Details bleiben an dieser Stelle. Für Kontext zur Appliance-Struktur startest du auf der Vorschau-Startseite.",
       "primary": "Zur Vorschau-Startseite",
       "secondary": "Zur Dokumentation"
+    },
+    "productionInlineCta": {
+      "heading": "Weiter auf der Website",
+      "body": "Release-Details bleiben auf dieser Seite. Für Produktkontext zur Appliance-Struktur startest du auf der Startseite.",
+      "primary": "Zur Startseite",
+      "secondary": "Zur Dokumentation"
     }
   },
   "docsPage": {
     "hero": {
       "eyebrow": "Dokumentation",
       "title": "Dokumentation für Installation und Betrieb",
-      "description": "Geplante Themen für Setup und Alltag — statisch in dieser Vorschau, ohne Live-Suche."
+      "description": "Geplante Themen für Setup und Alltag — statisch, ohne Live-Suche."
     },
     "sections": [
       {
@@ -263,6 +272,12 @@
       "body": "Dokumentation und Installationsmedien bleiben getrennt. Für Artefakt-Status wechselst du in den Release-Bereich.",
       "primary": "Zur Release-Vorschau",
       "secondary": "Zur Vorschau-Startseite"
+    },
+    "productionInlineCta": {
+      "heading": "Weiter im Release-Bereich",
+      "body": "Dokumentation und Installationsmedien bleiben getrennt. Für Artefakt-Status wechselst du in den Release-Bereich.",
+      "primary": "Zum Release-Bereich",
+      "secondary": "Zur Startseite"
     }
   },
   "footer": {

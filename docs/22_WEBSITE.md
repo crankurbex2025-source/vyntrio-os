@@ -61,7 +61,8 @@ frontend/npm run build → make ui-stage → go:embed → vyntrio-api
 ## Slice 11.1 behavior
 
 - `/` — static landing page (hero, value proposition, CTAs to `/download` and `/login`)
-- `/download` — honest placeholder (no binaries linked)
+- `/download` — v2 release surface (artifact status, requirements, honest no-file state)
+- `/docs` — v2 documentation surface (install/operate topics, static)
 - `/login` — auth entry; successful login navigates to `/app` with CSRF handoff
 - `/app` — existing appliance flow (session probe, overview, settings)
 - Unknown paths redirect to `/`

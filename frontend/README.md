@@ -6,8 +6,9 @@ React + TypeScript web UI for Vyntrio OS — public product surface and applianc
 
 | Route | Surface | Description |
 |-------|---------|-------------|
-| `/` | Public | Static landing page (no API) |
-| `/download` | Public | Honest placeholder — install media not yet linked |
+| `/` | Public | v2 landing (DE/EN, lazy-loaded) |
+| `/download` | Public | v2 release surface — honest artifact status, no binaries linked |
+| `/docs` | Public | v2 documentation surface — static topics, no live search |
 | `/login` | Auth | Sign in to your appliance |
 | `/app` | Appliance | Session probe, read-only overview, Owner settings |
 
@@ -25,7 +26,7 @@ npm run test:run
 npm run build
 ```
 
-Open `http://localhost:5173/` for the shipped v2 landing (Block 11R.10). Slice 11.1 rollback: `/design-preview/landing-legacy`.
+Open `http://localhost:5173/` for the shipped v2 landing (Block 11R.10). Production download/docs: `/download`, `/docs`. Slice 11.1 rollback: `/design-preview/landing-legacy`, `/design-preview/download-legacy`.
 Design preview (Block 11R.1): `http://localhost:5173/design-preview/landing`
 Appliance flow: `/app` or `/login`.
 
