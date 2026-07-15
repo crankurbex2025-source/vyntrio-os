@@ -85,6 +85,11 @@ HardwareAddr-Präsenz; keine Schnittstellen-/MAC-/IP-Exposure. Per-Sektion
 bereits lokaler Loader-Metadaten (eingebettete Version/Commit, Kanal aus `api.environment`);
 kein Update-Check, keine Paket- oder Host-Inventory.
 
+**Block 8 / Slice 8.10 (implementiert):** Read-only Runtime-Readiness im Overview-DTO
+(`runtime.status` ∈ `ready` | `degraded` | `unknown`, optional `note: database`) —
+abgeleitet aus bestehendem `readiness` und `service` ohne neue Probes; UI nutzt
+`collected_at` für Zeitbezug.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

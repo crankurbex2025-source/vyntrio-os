@@ -24,8 +24,13 @@ export function OverviewShell({
   onOpenSettings,
   onSignOut,
 }: OverviewShellProps) {
-  const isReady = overview.readiness.status === "ready" && overview.readiness.database === "ok";
   const stateFilesystem = overview.host.filesystems[0];
+  const runtimeLabel =
+    overview.runtime.status === "ready"
+      ? "Ready"
+      : overview.runtime.status === "degraded"
+        ? "Degraded"
+        : "Unknown";
 
   return (
     <div className="dashboard-layout">
@@ -58,12 +63,20 @@ export function OverviewShell({
       <main className="dashboard-main">
         <section className="dashboard-status-grid">
           <article
-            className={`dashboard-status-card ${isReady ? "dashboard-status-card-ready" : "dashboard-status-card-not-ready"}`}
+            className={`dashboard-status-card ${
+              overview.runtime.status === "ready"
+                ? "dashboard-status-card-ready"
+                : "dashboard-status-card-not-ready"
+            }`}
           >
             <p className="dashboard-card-label">Application readiness</p>
-            <p className="dashboard-card-value">{isReady ? "Ready" : "Not ready"}</p>
+            <p className="dashboard-card-value">{runtimeLabel}</p>
             <p className="dashboard-card-detail">
-              Database {overview.readiness.database === "ok" ? "connected" : "unavailable"}
+              {overview.runtime.status === "degraded" && overview.runtime.note === "database"
+                ? "Database dependency is not ready."
+                : overview.runtime.status === "ready"
+                  ? "Core dependencies reported ready at collection time."
+                  : "Runtime readiness could not be classified from current state."}
             </p>
           </article>
 
@@ -71,6 +84,45 @@ export function OverviewShell({
             <p className="dashboard-card-label">Service</p>
             <p className="dashboard-card-value">Running</p>
             <p className="dashboard-card-detail">API process is serving this overview</p>
+          </article>
+        </section>
+
+        <section className="dashboard-panel">
+          <h2>Runtime readiness</h2>
+          <p className="dashboard-panel-note">
+            Derived from existing overview readiness and service state only. This does not run new
+            health probes or claim full appliance health.
+          </p>
+          <article className="dashboard-info-card">
+            <p className="dashboard-card-label">Runtime status</p>
+            {overview.runtime.status === "ready" ? (
+              <>
+                <p className="dashboard-card-value">Ready</p>
+                <p className="dashboard-card-detail">
+                  As of {formatOverviewCollectedAt(overview.collected_at)}.
+                </p>
+              </>
+            ) : null}
+            {overview.runtime.status === "degraded" ? (
+              <>
+                <p className="dashboard-card-value">Degraded</p>
+                <p className="dashboard-card-detail">
+                  {overview.runtime.note === "database"
+                    ? "Database dependency is not ready."
+                    : "A local dependency is not ready."}
+                  {" As of "}
+                  {formatOverviewCollectedAt(overview.collected_at)}.
+                </p>
+              </>
+            ) : null}
+            {overview.runtime.status === "unknown" ? (
+              <>
+                <p className="dashboard-card-value">Unknown</p>
+                <p className="dashboard-card-detail">
+                  Runtime readiness could not be classified from current state.
+                </p>
+              </>
+            ) : null}
           </article>
         </section>
 
@@ -267,7 +319,7 @@ export function OverviewShell({
           </dl>
         </section>
 
-        {!isReady ? (
+        {overview.readiness.status !== "ready" ? (
           <section className="dashboard-alert" role="status">
             The database is not ready. This overview reports current status only and does not
             perform recovery actions.

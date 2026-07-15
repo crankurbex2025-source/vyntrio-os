@@ -81,6 +81,9 @@ describe("App", () => {
         commit: "abc123",
         channel: "development",
       },
+      runtime: {
+        status: "ready",
+      },
     };
   }
 
@@ -183,7 +186,7 @@ describe("App", () => {
       await waitFor(() => {
         expect(screen.getByText("Vyntrio Control Center")).toBeInTheDocument();
       });
-      expect(screen.getByText("Ready")).toBeInTheDocument();
+      expect(screen.getAllByText("Ready").length).toBeGreaterThanOrEqual(1);
       expect(
         screen.queryByText("You do not have access to this appliance view.")
       ).not.toBeInTheDocument();
@@ -201,15 +204,16 @@ describe("App", () => {
       data: {
         ...validOverviewPayload(),
         readiness: { status: "not_ready", database: "error" },
+        runtime: { status: "degraded", note: "database" },
       },
     });
 
     render(<App apiClient={apiClient} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Not ready")).toBeInTheDocument();
+      expect(screen.getAllByText("Degraded").length).toBeGreaterThanOrEqual(1);
     });
-    expect(screen.getByText("Database unavailable")).toBeInTheDocument();
+    expect(screen.getAllByText(/Database dependency is not ready/).length).toBeGreaterThanOrEqual(1);
     expect(
       screen.getByText(/does not perform recovery actions/i)
     ).toBeInTheDocument();

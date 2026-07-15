@@ -56,6 +56,15 @@ export type SoftwareDto = {
   channel?: ReleaseChannel;
 };
 
+export type RuntimeStatus = "ready" | "degraded" | "unknown";
+
+export type RuntimeNote = "database";
+
+export type RuntimeDto = {
+  status: RuntimeStatus;
+  note?: RuntimeNote;
+};
+
 export type OverviewDto = {
   instance: {
     name: string;
@@ -76,6 +85,7 @@ export type OverviewDto = {
   backup: BackupDto;
   network: NetworkDto;
   software: SoftwareDto;
+  runtime: RuntimeDto;
   collected_at: string;
 };
 
@@ -339,6 +349,26 @@ function parseSoftware(value: unknown): SoftwareDto | null {
   };
 }
 
+function parseRuntime(value: unknown): RuntimeDto | null {
+  if (!isPlainRecord(value) || !("status" in value)) {
+    return null;
+  }
+  const status = value.status;
+  if (status !== "ready" && status !== "degraded" && status !== "unknown") {
+    return null;
+  }
+  if (status === "ready" || status === "unknown") {
+    return hasExactKeys(value, ["status"]) ? { status } : null;
+  }
+  if (
+    !hasExactKeys(value, ["status", "note"]) ||
+    value.note !== "database"
+  ) {
+    return null;
+  }
+  return { status, note: "database" };
+}
+
 export function parseOverviewDto(payload: unknown): OverviewDto | null {
   if (
     !isPlainRecord(payload) ||
@@ -351,6 +381,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
       "backup",
       "network",
       "software",
+      "runtime",
       "collected_at",
     ])
   ) {
@@ -365,6 +396,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
   const backup = parseBackup(payload.backup);
   const network = parseNetwork(payload.network);
   const software = parseSoftware(payload.software);
+  const runtime = parseRuntime(payload.runtime);
   const collectedAt = payload.collected_at;
 
   if (!isPlainRecord(instance) || !hasExactKeys(instance, ["name", "version", "commit"])) {
@@ -389,6 +421,9 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     return null;
   }
   if (!software) {
+    return null;
+  }
+  if (!runtime) {
     return null;
   }
 
@@ -425,6 +460,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     backup,
     network,
     software,
+    runtime,
     collected_at: collectedAt,
   };
 }

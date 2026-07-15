@@ -238,6 +238,16 @@ Intended v1 layout:
 - This slice does not verify update availability, package integrity, or release provenance
   beyond what the running binary already embeds.
 
+#### E.5 Overview runtime readiness (Slice 8.10, implemented)
+
+- For `GET /api/v1/overview` only, expose a coarse `runtime` label assembled
+  **in-process** from already-materialized `readiness` and `service` fields.
+- Map `ready` when readiness reports ready/ok and service is `running`; map
+  `degraded` with optional `note: database` when readiness reports not_ready/error;
+  otherwise `unknown`. No new health probes, host inspection, or dependency scans.
+- Never expose raw probe output, paths, or diagnostic strings. Timestamp context
+  remains on overview-level `collected_at` only.
+
 ### F. Startup, liveness, readiness and shutdown
 
 - **Fail-closed startup (implemented):** invalid runtime configuration,

@@ -50,6 +50,12 @@ describe("parseOverviewDto", () => {
     };
   }
 
+  function validRuntime() {
+    return {
+      status: "ready" as const,
+    };
+  }
+
   function validPayload() {
     return {
       instance: {
@@ -71,6 +77,7 @@ describe("parseOverviewDto", () => {
       backup: validBackup(),
       network: validNetwork(),
       software: validSoftware(),
+      runtime: validRuntime(),
       collected_at: "2026-07-14T12:00:00.000000000Z",
     };
   }
@@ -171,6 +178,36 @@ describe("parseOverviewDto", () => {
           version: "0.2.0-dev",
           channel: "staging",
         },
+      })
+    ).toBeNull();
+  });
+
+  it("accepts degraded runtime with database note", () => {
+    expect(
+      parseOverviewDto({
+        ...validPayload(),
+        runtime: { status: "degraded", note: "database" },
+      })
+    ).toEqual({
+      ...validPayload(),
+      runtime: { status: "degraded", note: "database" },
+    });
+  });
+
+  it("rejects runtime with invalid note", () => {
+    expect(
+      parseOverviewDto({
+        ...validPayload(),
+        runtime: { status: "degraded", note: "network" },
+      })
+    ).toBeNull();
+  });
+
+  it("rejects runtime with invalid note", () => {
+    expect(
+      parseOverviewDto({
+        ...validPayload(),
+        runtime: { status: "degraded", note: "network" },
       })
     ).toBeNull();
   });

@@ -61,6 +61,7 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
   - `backup`: lokaler Backup-Status (Slice 8.5; siehe unten)
   - `network`: begrenzte Netzwerk-Präsenz (Slice 8.7; siehe unten)
   - `software`: read-only Software-/Release-Metadaten (Slice 8.9; siehe unten)
+  - `runtime`: read-only Runtime-Readiness-Label (Slice 8.10; siehe unten)
   - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
 - **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
 - **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
@@ -166,6 +167,26 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
 - **`channel`:** nur bei `ok`; `development`, `production` oder `unknown` — abgeleitet aus dem bestehenden `api.environment`-Modell, kein Update-Kanal aus dem Netz.
 - Kein Update-Check, kein Paketmanager, keine OS-/Kernel-Inventory, keine Registry-/CI-Metadaten.
 - Fehlende Version → nur `status: unavailable`; Overview bleibt **200**, sofern die Kern-Assembly gelingt.
+
+**Zusätzliches Feld `runtime` (Slice 8.10):**
+
+```json
+"runtime": { "status": "ready" }
+```
+
+```json
+"runtime": { "status": "degraded", "note": "database" }
+```
+
+```json
+"runtime": { "status": "unknown" }
+```
+
+- **`runtime`:** grobes Runtime-Readiness-Label, **abgeleitet** aus bestehendem `readiness` und `service` — keine neuen Probes.
+- **`status`:** `ready`, `degraded` oder `unknown`.
+- **`note`:** optional nur bei `degraded`; derzeit nur `database` (wenn `readiness` Datenbankfehler meldet).
+- Kein Zeitstempel in `runtime`; nutze `collected_at` auf Overview-Ebene.
+- Keine Host-, Netzwerk-, Paket- oder Update-Claims; kein Ersatz für `/readyz`-Betrieb.
 
 ### PATCH `/api/v1/settings/instance`
 

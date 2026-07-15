@@ -16,6 +16,7 @@ type Response struct {
 	Backup      backupstatus.Backup `json:"backup"`
 	Network     netpresence.Network `json:"network"`
 	Software    SoftwareSection     `json:"software"`
+	Runtime     RuntimeSection      `json:"runtime"`
 	CollectedAt string              `json:"collected_at"`
 }
 

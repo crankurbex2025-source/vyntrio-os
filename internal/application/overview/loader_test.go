@@ -169,6 +169,9 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 	if got.Software.Channel != overview.ReleaseChannelDevelopment {
 		t.Fatalf("software.channel = %q", got.Software.Channel)
 	}
+	if got.Runtime.Status != overview.RuntimeStatusReady {
+		t.Fatalf("runtime = %+v", got.Runtime)
+	}
 	if got.CollectedAt == "" {
 		t.Fatal("expected collected_at")
 	}
@@ -214,6 +217,9 @@ func TestLoaderMapsDatabaseFailureToNotReady(t *testing.T) {
 	}
 	if got.Network.Status != netpresence.StatusUnavailable {
 		t.Fatalf("network.status = %q, want unavailable", got.Network.Status)
+	}
+	if got.Runtime.Status != overview.RuntimeStatusDegraded || got.Runtime.Note != overview.RuntimeNoteDatabase {
+		t.Fatalf("runtime = %+v, want degraded/database", got.Runtime)
 	}
 }
 

@@ -59,6 +59,9 @@ describe("OverviewShell", () => {
       commit: "abc123",
       channel: "development",
     },
+    runtime: {
+      status: "ready",
+    },
   };
 
   function renderShell(overrides: Partial<ComponentProps<typeof OverviewShell>> = {}) {
@@ -91,6 +94,7 @@ describe("OverviewShell", () => {
     expect(screen.getByText("Local network interface present")).toBeInTheDocument();
     expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
     expect(screen.getByText(/Build abc123 · development channel/)).toBeInTheDocument();
+    expect(screen.getByText("Runtime readiness")).toBeInTheDocument();
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
     expect(screen.queryByText(/eth0|192\.168|mac/i)).not.toBeInTheDocument();
   });
@@ -116,6 +120,18 @@ describe("OverviewShell", () => {
       },
     });
     expect(screen.getByText("Network presence could not be determined.")).toBeInTheDocument();
+  });
+
+  it("renders degraded runtime readiness copy", () => {
+    renderShell({
+      overview: {
+        ...overview,
+        runtime: { status: "degraded", note: "database" },
+        readiness: { status: "not_ready", database: "error" },
+      },
+    });
+    expect(screen.getAllByText("Degraded").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Database dependency is not ready/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders unavailable software release metadata", () => {

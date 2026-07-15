@@ -40,7 +40,12 @@ Session-Rollen mit `system:health` (Owner, Operator, Read-only).
 - Read-only Software-/Release-Karte: Version, optionale Build-Revision, Kanal (`development`/`production`/`unknown`)
 - Kein Update-Check, keine Paket-/OS-Inventory, keine Admin-Aktionen
 
-**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7/8.9):**
+**Enthalten in 8.10:**
+- Read-only Runtime-Readiness-Karte: `ready`, `degraded`, `unknown`; optionale `note: database`
+- Abgeleitet aus bestehendem Overview-`readiness`/`service`; kein neuer Health-Check
+- Zeitbezug über bestehendes `collected_at` in der UI
+
+**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7/8.9/8.10):**
 - CPU-Auslastung in Prozent, 5m/15m-Load, Temperatur
 - Netzwerk-Metriken (Durchsatz, Pakete, Carrier, Wi-Fi, IP-Adressen)
 - Zusätzliche Filesystem-/Mount-IDs, Backup-Aktionen und Restore-Aktionen
