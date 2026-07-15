@@ -46,6 +46,7 @@ secrets/
 # Build artifacts
 build/output/
 distro/output/
+distro/install-media/staging/
 *.iso
 *.img
 

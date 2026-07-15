@@ -9,12 +9,14 @@
 
 ## 1. Explicit status
 
-There is **no** install-image builder, ISO generator, USB writer, Makefile
-target, or CI job that consumes `manifest.yaml` in the repository today.
+**Slice 9.6 (implemented):** `make install-media-stage` runs
+`scripts/stage-install-media.sh`, which validates required inputs and copies
+manifest-listed payloads into the local disposable tree
+`distro/install-media/staging/payload/`. This does **not** produce ISO/USB
+images, boot layers, or target-disk writes.
 
-`distro/install-media/manifest.yaml` and `distro/recovery-media/manifest.yaml`
-are **declarative scaffolds only**. Slice 9.5 defines the **first build-flow
-contract** for install images; it does not execute builds.
+There is **no** install-image envelope builder, ISO generator, USB writer, or CI
+image publication job yet.
 
 Recovery-image build is a **separate future contract** under
 `distro/recovery-media/` — not in scope for this document.
@@ -145,8 +147,7 @@ after `vyntrio-api.service` starts on the installed host with an empty database.
 
 **Deferred to later executable slices:**
 
-- Makefile/CI target that runs an image builder
-- ISO/USB generation (`xorriso`, `grub`, `dd`, etc.)
+- ISO/USB image envelope generation (`xorriso`, `grub`, `dd`, etc.)
 - Live root filesystem composition (Debian/minimal base)
 - Boot loader and UEFI/BIOS configuration
 - Disk partitioning and filesystem creation

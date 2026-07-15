@@ -113,8 +113,12 @@ Restore-CLI, kein Boot/ISO-Build.
 
 **Block 9 / Slice 9.5 (Vertrag, dokumentiert):** Install-Image-Build-Vertrag in
 `distro/install-media/build-contract.md` — definiert Build-Inputs/Outputs,
-Ein-/Ausschlüsse und Verweis auf `manifest.yaml`; Scaffolds noch nicht von
-Tooling konsumiert; kein ISO/USB-Generator.
+Ein-/Ausschlüsse und Verweis auf `manifest.yaml`; kein ISO/USB-Generator.
+
+**Block 9 / Slice 9.6 (implementiert):** Lokales Install-Payload-Staging via
+`make install-media-stage` — validiert Build-Artefakte, kopiert nur
+Manifest-Payloads nach `distro/install-media/staging/payload/`; kein Boot/ISO,
+kein Zielplatten-Schreiben.
 
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
