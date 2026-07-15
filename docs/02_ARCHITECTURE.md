@@ -94,6 +94,13 @@ abgeleitet aus bestehendem `readiness` und `service` ohne neue Probes; UI nutzt
 (`health.status` ∈ `healthy` | `warning` | `unknown`, optional `note: database|backup`) —
 abgeleitet aus bestehendem `runtime` und `backup` ohne neue Probes.
 
+**Block 9 / Slice 9.2 (Vertrag, dokumentiert):** Install- und Recovery-Medien
+(ADR-0006) — getrennte Boot-USB/ISO-Rollen für Greenfield-Installation vs.
+offline Recovery-Umgebung; persistenter State nur auf Zielplatte
+(`/var/lib/vyntrio/`, `/etc/vyntrio/` per ADR-0005); kein Owner-Seeding auf
+generischem Medium; License-USB (`docs/15_LICENSE.md`) ist separat. Noch keine
+ISO-/Installer-Implementierung.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.

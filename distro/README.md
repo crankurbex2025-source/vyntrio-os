@@ -7,6 +7,12 @@ hooks, and **systemd deployment artifacts** for appliance operation.
 adds production-oriented systemd artifacts under `distro/systemd/` (service
 unit, sysusers, tmpfiles). See `distro/systemd/README.md`.
 
+**Block 9 / Slice 9.2:** Install- und Recovery-Medien-Vertrag in
+`docs/ADR/0006-appliance-install-recovery-media.md`. `distro/systemd/` sind
+**Runtime-Installationsartefakte** auf der Zielplatte — nicht dasselbe wie
+Boot-USB/ISO-Images (zukünftige Slices). Recovery-Medien sind ein separates
+Deliverable vom Install-Medium.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

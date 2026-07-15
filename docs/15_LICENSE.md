@@ -10,7 +10,8 @@ Edition-basierte Feature-Freischaltung ohne Beeinträchtigung der Systemstabilit
 
 ## Funktionen
 - Hardwarebindung
-- USB-Lizenzoption
+- USB-Lizenzoption (kommerzielles Aktivierungsmedium — **nicht** Install- oder
+  Recovery-USB/ISO; siehe `docs/ADR/0006-appliance-install-recovery-media.md`)
 - Online Aktivierung
 - Offline Aktivierung
 - Digitale Signaturen

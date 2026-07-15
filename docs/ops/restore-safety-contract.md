@@ -47,8 +47,15 @@ Certbot material, DNS, firewall rules, host users/groups, or non-Vyntrio package
 - UI/API backup or restore controls
 - Automatic disaster recovery
 - Storage/NAS snapshot restore (`docs/05_STORAGE.md` roadmap — separate domain)
-- Boot media, installer integration, or full-host recovery
+- Boot media, installer integration, or full-host recovery (as **restore
+  implementation** — see ADR-0006 for what recovery **media** is, separately)
 - Restore preview or delegated non-root restore authority
+
+**Cross-reference (Block 9):** `docs/ADR/0006-appliance-install-recovery-media.md`
+defines recovery boot media as an optional **offline delivery environment** that
+may host future restore tooling. It does **not** implement restore, alter this
+contract, or permit API/UI restore. Block 7 restore rules govern all live-state
+mutation when restore is implemented.
 
 ## 3. Trust boundaries
 

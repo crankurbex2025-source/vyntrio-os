@@ -13,6 +13,7 @@ Governance: see `docs/01_MASTERPLAN.md` — ADR required for irreversible techno
 | [0003](0003-sqlite-migrations.md) | **Accepted** | SQLite with golang-migrate and sqlc |
 | [0004](0004-identity-and-access.md) | **Accepted** | Local-first identity and access control |
 | [0005](0005-appliance-runtime-operations.md) | **Accepted** | Appliance runtime configuration and operations model |
+| [0006](0006-appliance-install-recovery-media.md) | **Accepted** | Appliance install and recovery media model |
 | [Template](ADR_TEMPLATE.md) | Template | ADR template |
 
 ## Process
