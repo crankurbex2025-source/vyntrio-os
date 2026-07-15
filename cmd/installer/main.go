@@ -5,6 +5,7 @@
 // Directory mutation: scripts/installer-mutate-directories.sh (Slice 10.6, target-sandbox only).
 // Payload copy: scripts/installer-copy-payloads.sh (Slice 10.7, target-sandbox only).
 // Service prep: scripts/installer-prepare-service.sh (Slice 10.8, no service start).
+// Service enable: scripts/installer-enable-service.sh (Slice 10.9, no service start).
 // Bootstrap handoff is deferred to a future Block 10 slice.
 package main
 

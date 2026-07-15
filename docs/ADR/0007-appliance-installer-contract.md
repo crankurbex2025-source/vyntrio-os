@@ -226,6 +226,7 @@ scope for Block 10 installer implementation.
 - [x] Block 10 Slice 10.6: first target mutation — empty state directories in `target-sandbox/`
 - [x] Block 10 Slice 10.7: manifest payload copy to `target-sandbox/`
 - [x] Block 10 Slice 10.8: service enablement preparation in `target-sandbox/`
+- [x] Block 10 Slice 10.9: controlled service enablement in `target-sandbox/`
 - [ ] Partition/filesystem executable slice
 - [ ] `vyntrio-installer` target-disk mutation slice
 - [ ] Install→bootstrap handoff slice (ADR-0004 integration)
@@ -263,4 +264,5 @@ scope for Block 10 installer implementation.
 - `scripts/installer-mutate-directories.sh` — empty state directory mutation in target-sandbox (Slice 10.6)
 - `scripts/installer-copy-payloads.sh` — manifest payload copy to target-sandbox (Slice 10.7)
 - `scripts/installer-prepare-service.sh` — service enablement preparation in target-sandbox (Slice 10.8)
+- `scripts/installer-enable-service.sh` — controlled service enablement in target-sandbox (Slice 10.9)
 - Block 10, Slice 10.1 audit (conversation record)

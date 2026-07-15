@@ -68,6 +68,10 @@ preflight-gated; kein Host-Pfad-Schreiben, kein Payload-Copy.
 `make installer-prepare-service`; Prep-Artefakte in `target-sandbox/`; kein
 Service-Start, kein Bootstrap.
 
+**Block 10 / Slice 10.9:** Kontrolliertes Service-Enablement via
+`make installer-enable-service`; wants-Symlink in `target-sandbox/`; kein
+Service-Start, kein Bootstrap.
+
 See `docs/03_ROADMAP.md` and `cursor-prompts/phase-02-linux-base.md`.
 
 ## Out of scope for Phase 1

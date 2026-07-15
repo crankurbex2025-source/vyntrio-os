@@ -174,6 +174,11 @@ preflight-gated; nur sechs Allowlist-Dateien; kein Service-Enablement, kein Boot
 `SERVICE_PREP.txt` in `target-sandbox/`; kein systemctl, kein Service-Start,
 kein Bootstrap.
 
+**Block 10 / Slice 10.9 (implementiert):** Kontrolliertes Service-Enablement via
+`make installer-enable-service` — preflight/prep-gated; systemd wants-Symlink und
+`SERVICE_ENABLE.txt` in `target-sandbox/`; kein systemctl, kein Service-Start,
+kein Bootstrap.
+
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.
 - Jede externe Integration bekommt ein Interface und mindestens einen Adapter.
