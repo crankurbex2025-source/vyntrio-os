@@ -1,8 +1,9 @@
 # Website design direction (Block 11R)
 
 **Status:** Accepted for redesign correction track (Slice 11R.1 foundation).
-**Shipped route `/` remains Slice 11.1** until Block 11R.8 cutover.
-**Preview route:** `/design-preview/landing`
+**Shipped route `/` is v2 landing** (Block 11R.10 cutover).
+**Preview mirror:** `/design-preview/landing` (banner + preview links).
+**Rollback review:** `/design-preview/landing-legacy` (Slice 11.1).
 
 ## Verdict on Slice 11.1
 
@@ -55,14 +56,14 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 
 ## Motion (Block 11R.5+)
 
-- GSAP + `@gsap/react` + ScrollTrigger on `/design-preview/*` only
+- GSAP + `@gsap/react` + ScrollTrigger on `/` and `/design-preview/*` landing surfaces
 - `PreviewPageMotion` — `default` variant for download/docs; `landing` variant for richer hero, pillar stagger, showcase split
 - Header gains `vyn-public-header-scrolled` after ~140px scroll (preview surfaces)
 - **Lenis deferred** — native scroll keeps anchor links and reduced-motion behavior predictable
 - `prefers-reduced-motion` mandatory — no GSAP setup when enabled
 - Visual references: restrained grain/depth from [animated-electrician](https://github.com/Ismail-Khan-Dev/animated-electrician); appliance density from [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA); homelab theme discipline from [theme.park](https://github.com/themepark-dev/theme.park)
 - Responsive: fluid `clamp()` gutters/spacing, `auto-fit`/`minmax()` grids, container queries on preview sections (`public-responsive.css`); layout reference patterns from [innovate-tech-landing](https://github.com/CodeWithKarol/innovate-tech-landing) and GitHub.com layout kit (bento/grid rhythm, not visual clone)
-- Performance: preview routes and GSAP motion load via `React.lazy` + `Suspense`; Vite `manualChunks` isolates `preview-gsap` from the shipped `/` entry path
+- Performance: `/` and preview routes load landing/motion via `React.lazy` + `Suspense`; Vite `manualChunks` isolates `preview-gsap` from the main app shell
 - Landing visual (11R.7): chassis line-art, hero accent rule, section surface variants (`hero` / `statement` / `finale`), sticky blurred header — references from [theme.park Unraid base](https://github.com/themepark-dev/theme.park/blob/master/css/base/unraid/unraid-base.css) and [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA) panel density
 - Landing visual/media (11R.8): signal-path storytelling, pillar glyphs, surface bezel lamps, framed showcase mount — references from [Rackula](https://github.com/RackulaLives/Rackula), [rackpad](https://github.com/Kobii-git/rackpad), [tinyDC](https://github.com/GoodrichDev/tinydc.net) rack composition (product-relevant, not cloned)
 - Product story (11R.9): shared preview context nav, install/operate journey modules, cross-route product CSS — references from [theme.park Unraid](https://github.com/themepark-dev/theme.park), [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA), homelab ops patterns from [UniFi Homelab Ops](https://github.com/merlijntishauser/unifi-homelab-ops)
@@ -79,12 +80,15 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 | **11R.5** | **Implemented** | Restrained GSAP motion layer on `/design-preview/*` |
 | 11R.6 | Planned | Appliance token convergence |
 | 11R.7 | Planned | PWA manifest |
-| 11R.8 | Planned | Cutover `/` → v2 |
-| 11R.9 | Planned | `vyntrio.xyz` deploy contract |
+| **11R.8** | **Implemented** | Landing visual/media (chassis, signal path, glyphs) |
+| **11R.9** | **Implemented** | Product story modules across preview routes |
+| **11R.10** | **Implemented** | Root cutover `/` → v2; preview mirror + legacy fallback |
 
 ## Preview artifacts
 
+- Routed: `/` (`LandingPage.tsx` + `PublicLandingView.tsx`)
 - Routed: `/design-preview/landing` (`LandingPreviewV2.tsx`)
+- Rollback review: `/design-preview/landing-legacy` (`LandingPageLegacy.tsx`)
 - Routed: `/design-preview/download` (`DownloadPreviewV2.tsx`)
 - Routed: `/design-preview/docs` (`DocsPreviewV2.tsx`)
 - Shared shell config: `surfaces/public/preview/previewShellConfig.ts`

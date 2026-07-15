@@ -10,7 +10,7 @@ export type PublicFooterLink = {
 };
 
 export type PublicPreviewShellProps = {
-  banner: string;
+  banner?: string;
   brand: string;
   brandTo?: string;
   downloadLabel: string;
@@ -57,9 +57,11 @@ export function PublicPreviewShell({
 
   return (
     <div className={shellClass}>
-      <p className="vyn-public-banner" role="status">
-        {banner}
-      </p>
+      {banner ? (
+        <p className="vyn-public-banner" role="status">
+          {banner}
+        </p>
+      ) : null}
 
       <header className="vyn-public-header">
         <div className="vyn-public-header-inner">

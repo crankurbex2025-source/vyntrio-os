@@ -25,7 +25,7 @@ npm run test:run
 npm run build
 ```
 
-Open `http://localhost:5173/` for the shipped Slice 11.1 landing.
+Open `http://localhost:5173/` for the shipped v2 landing (Block 11R.10). Slice 11.1 rollback: `/design-preview/landing-legacy`.
 Design preview (Block 11R.1): `http://localhost:5173/design-preview/landing`
 Appliance flow: `/app` or `/login`.
 

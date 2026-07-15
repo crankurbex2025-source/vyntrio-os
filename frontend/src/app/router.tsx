@@ -4,13 +4,14 @@ import { PublicLayout } from "./layouts/PublicLayout";
 import ApplianceApp from "../surfaces/appliance/ApplianceApp";
 import { LoginRoute } from "../surfaces/auth/LoginRoute";
 import { DownloadPlaceholder } from "../surfaces/public/download/DownloadPlaceholder";
-import { LandingPage } from "../surfaces/public/landing/LandingPage";
+import { LandingPageLegacy } from "../surfaces/public/landing/LandingPageLegacy";
 import {
   DocsPreviewV2,
   DownloadPreviewV2,
   LandingPreviewV2,
   PreviewRouteFallback,
 } from "../surfaces/public/preview/previewRoutes";
+import { LandingPage } from "../surfaces/public/publicRoutes";
 import type { ApiClient } from "../lib/api";
 
 type AppRouterProps = {
@@ -20,9 +21,17 @@ type AppRouterProps = {
 export function AppRouter({ apiClient }: AppRouterProps) {
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          <Suspense fallback={<PreviewRouteFallback />}>
+            <LandingPage />
+          </Suspense>
+        }
+      />
       <Route element={<PublicLayout />}>
-        <Route path="/" element={<LandingPage />} />
         <Route path="/download" element={<DownloadPlaceholder />} />
+        <Route path="/design-preview/landing-legacy" element={<LandingPageLegacy />} />
       </Route>
       <Route path="/login" element={<LoginRoute apiClient={apiClient} />} />
       <Route path="/app/*" element={<ApplianceApp apiClient={apiClient} />} />

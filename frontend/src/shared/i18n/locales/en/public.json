@@ -1,5 +1,5 @@
 {
-  "previewBanner": "Design preview — not the production homepage. Route / stays on Slice 11.1 until Block 11R.8 cutover.",
+  "previewBanner": "Design preview — mirrors the production homepage. Route / is the shipped landing.",
   "brand": "Vyntrio",
   "nav": {
     "previewLanding": "Home",

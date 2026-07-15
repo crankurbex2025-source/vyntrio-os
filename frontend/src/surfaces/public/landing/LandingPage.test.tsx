@@ -1,24 +1,39 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LandingPage } from "./LandingPage";
 
 describe("LandingPage", () => {
-  it("renders static marketing content without API dependencies", () => {
+  beforeEach(() => {
+    window.localStorage.removeItem("vyntrio.locale");
+  });
+
+  it("renders German production landing without preview banner or API dependencies", () => {
     render(
       <MemoryRouter>
         <LandingPage />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("heading", { name: "Your server, under your control." })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Get Vyntrio OS" })).toHaveAttribute("href", "/download");
-    expect(screen.getByRole("link", { name: "Sign in to your appliance" })).toHaveAttribute(
-      "href",
-      "/login"
-    );
-    expect(screen.getByText(/local appliance platform/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Was läuft auf deinem Server?" })).toBeInTheDocument();
+    expect(screen.queryByText(/Design-Vorschau/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Release & Download" })).toHaveAttribute("href", "/download");
+    expect(screen.getByRole("link", { name: "Am Gerät anmelden" })).toHaveAttribute("href", "/login");
     expect(screen.queryByText("Checking session...")).not.toBeInTheDocument();
+  });
+
+  it("switches to English copy via locale switcher", () => {
+    render(
+      <MemoryRouter>
+        <LandingPage />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "EN" }));
+
+    expect(screen.getByRole("heading", { name: "What runs on your server?" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Release & download" })).toHaveAttribute("href", "/download");
+    expect(screen.getByRole("heading", { name: "What this page does not show" })).toBeInTheDocument();
   });
 });
