@@ -30,6 +30,12 @@ Open `http://localhost:5173/` for the shipped v2 landing (Block 11R.10). Product
 Design preview (Block 11R.1): `http://localhost:5173/design-preview/landing`
 Appliance flow: `/app` or `/login`.
 
+## Web installability (Block 11R.7)
+
+- Manifest: `/site.webmanifest` — `start_url` `/` (production, not preview routes)
+- Icons: `/icons/icon-192.png`, `/icons/icon-512.png`
+- **Honest boundary:** browser install adds a website shortcut only — not hardware/OS installation and not offline support (no service worker)
+
 ## Rules
 
 - Public surfaces must not import `lib/api` or show fake operational data.

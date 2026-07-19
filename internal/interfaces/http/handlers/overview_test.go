@@ -571,6 +571,9 @@ func assertOverviewResponseShape(t *testing.T, rec *httptest.ResponseRecorder) {
 	if got.Health.Status == "" {
 		t.Fatalf("health = %+v", got.Health)
 	}
+	if got.Storage.Status == "" {
+		t.Fatalf("storage = %+v", got.Storage)
+	}
 }
 
 func assertOverviewCacheControlNoStore(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -981,6 +984,9 @@ func TestOverviewHealthStatusHealthySerialization(t *testing.T) {
 	got := decodeOverviewResponse(t, rec.Body.Bytes())
 	if got.Health.Status != appoverview.HealthStatusHealthy {
 		t.Fatalf("health = %+v, want healthy", got.Health)
+	}
+	if !got.Storage.MutationAvailable {
+		t.Fatalf("storage.mutation_available = false, want true (declared pool foundation)")
 	}
 }
 

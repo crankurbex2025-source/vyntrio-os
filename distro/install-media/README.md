@@ -16,11 +16,21 @@ sections B, D, E). Runtime paths and ownership remain `docs/ADR/0005-appliance-r
 | Payload staging (`make install-media-stage`) | **Implemented (Slice 9.6)** — local `staging/payload/` only |
 | Live/boot envelope (`envelope-manifest.yaml`) | **Scaffold (Slice 9.7)** — declarative layer contract |
 | Envelope assembly (`make install-media-envelope`) | **Implemented (Slice 9.8)** — local `envelope/` only |
-| Bootability contract (`bootability-manifest.yaml`) | **Scaffold (Slice 9.9)** — declarative boot init boundary |
+| Bootability contract (`bootability-manifest.yaml`) | **Contract + status through Stage 2 / Slice 10.1** (authoritative) |
 | Config template (`config.toml.template`) | **Scaffold** — operator-edited at install |
-| Boot/live layer population | **Not started** — deferred after bootability scaffold |
-| ISO/USB image emission | **Not started** — deferred after bootability scaffold |
-| `vyntrio-installer` behavior | **Not started** — `cmd/installer` is a stub |
+| Boot/live layer population | **Stub (9.11) → real (Slice 9.12)** — `make install-media-image` (kernel/initrd/GRUB) |
+| Image stub emission | **Superseded** — real image chain from Slice 9.12 |
+| Firmware-bootable image | **Implemented (Slice 9.13)** — raw MBR/BIOS `.img` via `grub-bios-setup`, structurally verified |
+| Runtime boot + first-boot path | **Implemented (Slice 9.14)** — `make install-media-runtime` (qemu-gated; honest skip w/o VM) |
+| Live-rootfs userland | **Implemented (Slice 9.15)** — `make install-media-live-rootfs` (chroot-verified dashboard) |
+| Live-initramfs hardware enablement | **Implemented (Slice 9.16)** — `make install-media-hardware` (storage/net modules + DHCP) |
+| Image boots Vyntrio live initramfs | **Implemented (Slice 9.17)** — `make install-media-initrd-swap` (sha256-proven from image) |
+| Runtime boot verification (Stage 2) | **Implemented, blocked here (Slice 10.1)** — `make install-media-runtime-verify` (read-only; fails closed w/o qemu) |
+| Local dashboard stability (Stage 2) | **Implemented (Slice 10.2)** — dashboard-first; busybox-sh supervised `firstboot.sh`; `/readyz` local proof; LAN bind blocked on TLS |
+| First-boot local onboarding clarity (Stage 2) | **Implemented (Slice 10.3)** — clear boot→local dashboard→sign-in→overview prompt; landing page `#first-boot-setup` mirrors the same flow |
+| Dashboard-on-boot proof (real HTTP from boot) | **Blocked** — needs a VM/hardware harness (no qemu/`/dev/kvm` here) |
+| Host USB creator | **Not started** — deferred |
+| `vyntrio-installer` (Block 10) | **Secondary internal infra** — not primary delivery |
 | Recovery media | **Separate deliverable** — not under `install-media/` |
 
 ## What install media is for
@@ -51,22 +61,19 @@ distro/
 │   ├── envelope-manifest.yaml  ← live/boot envelope layers (Slice 9.7)
 │   ├── envelope-contract.md    ← envelope boundary contract (Slice 9.7)
 │   ├── bootability-manifest.yaml ← bootable init layers (Slice 9.9)
-│   ├── bootability-contract.md   ← bootable init boundary (Slice 9.9)
+│   ├── bootability-contract.md   ← bootable init boundary (9.9) + foundation (9.11)
 │   ├── build-contract.md   ← install-image build I/O (Slice 9.5)
 │   ├── config.toml.template
-│   └── staging/            ← local disposable payload staging (Slice 9.6, gitignored)
-│       └── payload/
-│   └── envelope/           ← local disposable envelope assembly (Slice 9.8, gitignored)
-│       ├── boot/
-│       ├── live_root/
-│       └── payload/
+│   ├── staging/            ← local disposable payload staging (Slice 9.6, gitignored)
+│   ├── envelope/           ← local disposable envelope (Slices 9.8/9.11, gitignored)
+│   └── build/              ← image stub emission (Slice 9.11, gitignored)
 ├── systemd/                ← runtime deployment artifacts (Block 7.3)
 │   └── …
 └── README.md
 ```
 
-Future build slices may populate `boot/` and `live_root/` inside the image
-envelope per `bootability-manifest.yaml`; nothing in Slice 9.9 executes boot logic.
+Future build slices replace stubs with real bootloader/kernel/rootfs. Slice 9.11
+emits a non-bootable stub via `make install-media-bootability`.
 
 ## Payload sources
 
@@ -111,4 +118,6 @@ of this install-media tree.
 - `distro/install-media/bootability-manifest.yaml` — bootability layer inventory (Slice 9.9)
 - `scripts/stage-install-media.sh` — local payload staging (Slice 9.6)
 - `scripts/assemble-install-media-envelope.sh` — local envelope assembly (Slice 9.8)
-- `distro/systemd/README.md` — current manual install path
+- `scripts/initialize-install-media-bootability.sh` — bootability foundation (Slice 9.11)
+- `docs/ops/install-media-bootability.md` — Slice 9.11 operator contract
+- `distro/systemd/README.md` — interim developer/lab install path

@@ -1,9 +1,10 @@
 import type { PublicMessages } from "../../../shared/i18n";
 import type { PublicPreviewShellProps } from "../components/PublicPreviewShell";
+import { buildProductionNav } from "../nav/publicNavConfig";
 
 type ProductionShellOptions = Pick<
   PublicPreviewShellProps,
-  "anchorLinks" | "navAriaLabel" | "shellVariant"
+  "navAriaLabel" | "shellVariant"
 >;
 
 export function buildProductionShellProps(
@@ -11,25 +12,12 @@ export function buildProductionShellProps(
   options: ProductionShellOptions = {}
 ): Omit<PublicPreviewShellProps, "children"> {
   return {
-    brand: messages.brand,
-    brandTo: "/",
-    downloadLabel: messages.nav.download,
-    downloadTo: "/download",
-    signInLabel: messages.nav.signIn,
-    signInTo: "/login",
-    footerTagline: messages.footer.tagline,
-    routeLinks: [
-      { label: messages.nav.home, to: "/" },
-      { label: messages.nav.download, to: "/download" },
-      { label: messages.nav.docs, to: "/docs" },
-    ],
-    footerLinks: [
-      { label: messages.footer.download, to: "/download" },
-      { label: messages.footer.docs, to: "/docs" },
-      { label: messages.footer.signIn, to: "/login" },
-    ],
-    navAriaLabel: options.navAriaLabel ?? "Public navigation",
-    anchorLinks: options.anchorLinks,
+    nav: buildProductionNav(messages),
+    navAriaLabel: options.navAriaLabel ?? messages.chrome.navAriaLabel,
+    menuOpenLabel: messages.chrome.menuOpen,
+    menuCloseLabel: messages.chrome.menuClose,
+    mobileNavLabel: messages.chrome.mobileNav,
+    themeToggleLabel: messages.chrome.themeToggle,
     premiumSurface: true,
     shellVariant: options.shellVariant ?? "landing",
   };

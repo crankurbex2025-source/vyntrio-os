@@ -54,7 +54,8 @@ Current runtime truth (verified against `cmd/api/main.go`,
   Vite, dev proxy, or static-files directory at runtime.
 
 **Implemented (Slice 7.9):** root-only local backup command `vyntrio-backup`
-(`cmd/backup`). **Not implemented:** restore CLI, backup timer, retention,
+(`cmd/backup`). **Implemented:** restore CLI (`vyntrio-restore`, `cmd/restore`).
+**Not implemented:** backup timer, retention,
 encryption, or remote upload. **Slice 7.8 (accepted contract):** binding
 backup/restore safety architecture documented in sections **G** and **H** below.
 **Slice 7.3 (implemented):** systemd unit,
@@ -279,7 +280,8 @@ Intended v1 layout:
 
 ### G. Backup contract (Slice 7.8 architecture; Slice 7.9 backup CLI)
 
-**Status:** backup CLI **implemented** (`vyntrio-backup`). No restore command,
+**Status:** backup CLI **implemented** (`vyntrio-backup`). Restore CLI
+**implemented** (`vyntrio-restore`). No backup timer,
 timer, API, UI, encryption, retention, or remote target exists.
 
 #### G.0 Operator command (implemented)
@@ -453,12 +455,9 @@ the audit schema without widening this slice.
 
 ### H. Restore contract (Slice 7.8 — approved for future implementation)
 
-**Status:** architecture contract only. No restore command exists today.
-
-Detailed fail-closed restore **safety requirements** (preflight gates, lifecycle
-ordering, deferrals, and mandatory pre-implementation test categories) are in
-`docs/ops/restore-safety-contract.md`. That document elaborates section H; it does
-not replace this ADR as the architecture authority.
+**Status:** implemented (`vyntrio-restore`, `cmd/restore`). Operator sequence
+below remains the architecture authority; see
+`docs/ops/restore-safety-contract.md` for CLI syntax and v1 limits.
 
 #### H.1 Access model
 
@@ -506,9 +505,12 @@ not replace this ADR as the architecture authority.
 
 #### H.3 Rollback boundary
 
-- If manifest or archive-member validation, file placement, ownership repair,
-  service start, or readiness proof fails, the operator procedure must document
-  attempting rollback to the pre-restore preservation copy created in step 4.
+- If manifest or archive-member validation, file placement, or ownership repair
+  fails before post-restore verification, rollback from the preservation copy is
+  attempted without extended restart orchestration.
+- If service start or local health/readiness fails after placement, `vyntrio-restore`
+  attempts rollback from the preservation copy, repairs ownership, restarts the
+  service, and reprobes (Slice 7.13).
 - **Not guaranteed:** rollback after external interruption (power loss, kill -9,
   manual deletion mid-restore). Operators must treat a failed restore as an
   incident requiring manual inspection of preserve copies.
@@ -545,8 +547,7 @@ key management in v1.
 
 The following remain **out of scope** until dedicated future slices:
 
-- restore CLI implementation (see section H and
-  `docs/ops/restore-safety-contract.md`);
+- [x] Restore CLI implementation per section H (`vyntrio-restore`, Slice 7.12).
 - systemd backup timer or scheduling;
 - retention/pruning;
 - compression;

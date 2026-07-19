@@ -6,14 +6,14 @@ const STORAGE_KEY = "vyntrio.locale";
 describe("i18n", () => {
   it("defaults to German catalog", () => {
     expect(DEFAULT_LOCALE).toBe("de");
-    expect(getPublicMessages("de").hero.title).toContain("Server");
+    expect(getPublicMessages("de").hero.title).toContain("Hardware");
   });
 
   it("provides separate English copy, not a mirror of German strings", () => {
     const de = getPublicMessages("de");
     const en = getPublicMessages("en");
     expect(en.hero.title).not.toBe(de.hero.title);
-    expect(en.hero.title).toContain("server");
+    expect(en.hero.title.toLowerCase()).toContain("hardware");
   });
 
   it("validates supported locales", () => {

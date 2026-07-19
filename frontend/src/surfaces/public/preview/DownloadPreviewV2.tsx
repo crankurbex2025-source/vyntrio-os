@@ -1,7 +1,6 @@
 import { I18nProvider, useI18n } from "../../../shared/i18n/I18nProvider";
 import { PublicPreviewShell } from "../components";
 import { PublicDownloadView } from "../download/PublicDownloadView";
-import { buildPreviewContextLinks } from "./previewContextConfig";
 import { buildPreviewShellProps } from "./previewShellConfig";
 import { usePreviewDocumentLang } from "./usePreviewDocumentLang";
 
@@ -15,7 +14,7 @@ function DownloadPreviewContent() {
         surface={{
           mode: "preview",
           contextCurrentKey: "download",
-          contextLinks: buildPreviewContextLinks(messages),
+          contextLinks: [],
           inlineCtaPrimaryTo: "/design-preview/landing",
           inlineCtaSecondaryTo: "/design-preview/docs",
           idPrefix: "preview",

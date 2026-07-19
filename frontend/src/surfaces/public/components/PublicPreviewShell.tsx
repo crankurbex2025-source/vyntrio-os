@@ -1,51 +1,101 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { LocaleSwitcher } from "../../../shared/ui/LocaleSwitcher";
+import type { PublicNavModel } from "../nav/publicNavConfig";
+import { PublicSiteHeader } from "./PublicSiteHeader";
+import { usePublicTheme } from "./usePublicTheme";
 import "./public-surface.css";
 import "./public-responsive.css";
+import "./public-chrome.css";
 
 export type PublicFooterLink = {
   label: string;
   to: string;
 };
 
+/** @deprecated Prefer `nav` model — kept for transitional callers/tests. */
 export type PublicPreviewShellProps = {
   banner?: string;
-  brand: string;
+  brand?: string;
   brandTo?: string;
-  downloadLabel: string;
+  downloadLabel?: string;
   downloadTo?: string;
-  signInLabel: string;
+  signInLabel?: string;
   signInTo?: string;
-  footerTagline: string;
+  footerTagline?: string;
   footerNote?: string;
   footerLinks?: PublicFooterLink[];
   routeLinks?: PublicFooterLink[];
   children: ReactNode;
   navAriaLabel?: string;
+  /** Ignored — nav duplication removed. Kept so old call sites typecheck during migration. */
   anchorLinks?: PublicFooterLink[];
   premiumSurface?: boolean;
   shellVariant?: "default" | "landing" | "product";
+  /** Canonical navigation model (preferred). */
+  nav?: PublicNavModel;
+  menuOpenLabel?: string;
+  menuCloseLabel?: string;
+  mobileNavLabel?: string;
+  themeToggleLabel?: string;
 };
+
+function legacyNavFromProps(props: PublicPreviewShellProps): PublicNavModel | null {
+  if (!props.brand || !props.downloadLabel || !props.signInLabel || !props.footerTagline) {
+    return null;
+  }
+  const items = (props.routeLinks ?? [])
+    .filter((link) => link.to !== props.downloadTo)
+    .map((link, index) => ({
+      id: `legacy-${index}`,
+      label: link.label,
+      to: link.to,
+    }));
+  return {
+    brand: props.brand,
+    brandTo: props.brandTo ?? "/",
+    items,
+    cta: {
+      id: "download",
+      label: props.downloadLabel,
+      to: props.downloadTo ?? "/download",
+      cta: true,
+    },
+    secondary: {
+      id: "sign-in",
+      label: props.signInLabel,
+      to: props.signInTo ?? "/login",
+      secondary: true,
+    },
+    footerItems: (props.footerLinks ?? []).map((link, index) => ({
+      id: `footer-${index}`,
+      label: link.label,
+      to: link.to,
+    })),
+    footerTagline: props.footerTagline,
+    footerNote: props.footerNote,
+  };
+}
 
 export function PublicPreviewShell({
   banner,
-  brand,
-  brandTo,
-  downloadLabel,
-  downloadTo = "/download",
-  signInLabel,
-  signInTo = "/login",
-  footerTagline,
-  footerNote,
-  footerLinks,
-  routeLinks,
   children,
-  navAriaLabel = "Public navigation",
-  anchorLinks,
-  premiumSurface = false,
+  navAriaLabel = "Primary",
+  premiumSurface = true,
   shellVariant = "default",
+  nav: navProp,
+  menuOpenLabel = "Open menu",
+  menuCloseLabel = "Close menu",
+  mobileNavLabel = "Site menu",
+  themeToggleLabel = "Toggle color theme",
+  ...legacy
 }: PublicPreviewShellProps) {
+  const { theme, toggleTheme } = usePublicTheme();
+  const nav = navProp ?? legacyNavFromProps({ ...legacy, children, navAriaLabel });
+
+  if (!nav) {
+    throw new Error("PublicPreviewShell requires a nav model or legacy brand/download props");
+  }
+
   const shellClass = [
     "vyn-public-shell",
     premiumSurface ? "vyn-public-shell-premium" : "",
@@ -56,57 +106,45 @@ export function PublicPreviewShell({
     .join(" ");
 
   return (
-    <div className={shellClass}>
+    <div className={shellClass} data-theme={theme}>
       {banner ? (
         <p className="vyn-public-banner" role="status">
           {banner}
         </p>
       ) : null}
 
-      <header className="vyn-public-header">
-        <div className="vyn-public-header-inner">
-          {brandTo ? (
-            <Link className="vyn-public-brand" to={brandTo}>
-              {brand}
-            </Link>
-          ) : (
-            <span className="vyn-public-brand">{brand}</span>
-          )}
-          <nav className="vyn-public-nav" aria-label={navAriaLabel}>
-            {routeLinks?.map((link) => (
-              <Link key={link.to} to={link.to}>
-                {link.label}
-              </Link>
-            ))}
-            {anchorLinks?.map((link) => (
-              <a key={link.to} href={link.to}>
-                {link.label}
-              </a>
-            ))}
-            <Link to={downloadTo}>{downloadLabel}</Link>
-            <Link to={signInTo}>{signInLabel}</Link>
-            <LocaleSwitcher />
-          </nav>
-        </div>
-      </header>
+      <PublicSiteHeader
+        nav={nav}
+        navAriaLabel={navAriaLabel}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        themeToggleLabel={themeToggleLabel}
+        menuOpenLabel={menuOpenLabel}
+        menuCloseLabel={menuCloseLabel}
+        mobileNavLabel={mobileNavLabel}
+      />
 
       <main className="vyn-public-main">{children}</main>
 
       <footer className="vyn-public-footer">
         <div className="vyn-public-footer-inner">
           <div className="vyn-public-footer-top">
-            <p className="vyn-public-footer-tagline">{footerTagline}</p>
-            {footerLinks ? (
-              <nav className="vyn-public-footer-nav" aria-label="Footer">
-                {footerLinks.map((link) => (
-                  <Link key={link.to} to={link.to}>
+            <p className="vyn-public-footer-tagline">{nav.footerTagline}</p>
+            <nav className="vyn-public-footer-nav" aria-label="Footer">
+              {nav.footerItems.map((link) =>
+                link.to.includes("#") ? (
+                  <a key={link.id} href={link.to}>
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link key={link.id} to={link.to}>
                     {link.label}
                   </Link>
-                ))}
-              </nav>
-            ) : null}
+                )
+              )}
+            </nav>
           </div>
-          {footerNote ? <p className="vyn-public-footer-note">{footerNote}</p> : null}
+          {nav.footerNote ? <p className="vyn-public-footer-note">{nav.footerNote}</p> : null}
         </div>
       </footer>
     </div>

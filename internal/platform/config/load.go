@@ -72,7 +72,16 @@ func loadFromFile(path, allowedStateDir string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	if err := validateCookieSecure(cookieSecure, bindAddress); err != nil {
+
+	tlsCertFile, err := optionalString(raw, tlsCertFileKey)
+	if err != nil {
+		return Config{}, err
+	}
+	tlsKeyFile, err := optionalString(raw, tlsKeyFileKey)
+	if err != nil {
+		return Config{}, err
+	}
+	if err := validateTLSConfiguration(cookieSecure, bindAddress, tlsCertFile, tlsKeyFile); err != nil {
 		return Config{}, err
 	}
 
@@ -87,6 +96,8 @@ func loadFromFile(path, allowedStateDir string) (Config, error) {
 		StateDir:        stateDir,
 		LogLevel:        logLevel,
 		CookieSecure:    cookieSecure,
+		TLSCertFile:     tlsCertFile,
+		TLSKeyFile:      tlsKeyFile,
 		Env:             env,
 		ReadTimeout:     defaultReadTimeout,
 		WriteTimeout:    defaultWriteTimeout,
@@ -111,22 +122,25 @@ func decodeStrictTOML(data []byte) (map[string]any, error) {
 		return nil, fmt.Errorf("config: empty configuration")
 	}
 
-	allowed := make(map[string]struct{}, len(requiredConfigKeys))
+	allowed := make(map[string]struct{}, len(requiredConfigKeys)+2)
 	for _, key := range requiredConfigKeys {
 		allowed[key] = struct{}{}
 	}
+	allowed[tlsCertFileKey] = struct{}{}
+	allowed[tlsKeyFileKey] = struct{}{}
 
 	for key := range raw {
 		if _, ok := allowed[key]; !ok {
 			return nil, fmt.Errorf("config: unknown key %q", key)
 		}
 	}
+
 	for _, key := range requiredConfigKeys {
 		if _, ok := raw[key]; !ok {
 			return nil, fmt.Errorf("config: missing required key %q", key)
 		}
 	}
-	if len(raw) != len(requiredConfigKeys) {
+	if len(raw) < len(requiredConfigKeys) || len(raw) > len(requiredConfigKeys)+2 {
 		return nil, fmt.Errorf("config: invalid configuration schema")
 	}
 
@@ -175,6 +189,21 @@ func requiredBool(raw map[string]any, key string) (bool, error) {
 	return typed, nil
 }
 
+func optionalString(raw map[string]any, key string) (string, error) {
+	value, ok := raw[key]
+	if !ok {
+		return "", nil
+	}
+	typed, ok := value.(string)
+	if !ok {
+		return "", fmt.Errorf("config: invalid type for %q", key)
+	}
+	if strings.TrimSpace(typed) != typed || typed == "" {
+		return "", fmt.Errorf("config: invalid value for %q", key)
+	}
+	return typed, nil
+}
+
 func validateBindAddress(value string) error {
 	if strings.Contains(value, "%") {
 		return fmt.Errorf("config: invalid bind_address")
@@ -199,16 +228,6 @@ func validateListenPort(port int) error {
 func validateLogLevel(value string) error {
 	if _, ok := allowedLogLevels[value]; !ok {
 		return fmt.Errorf("config: invalid log_level")
-	}
-	return nil
-}
-
-func validateCookieSecure(cookieSecure bool, bindAddress string) error {
-	if cookieSecure {
-		return nil
-	}
-	if !isLoopbackAddress(bindAddress) {
-		return fmt.Errorf("config: cookie_secure=false requires loopback bind_address")
 	}
 	return nil
 }

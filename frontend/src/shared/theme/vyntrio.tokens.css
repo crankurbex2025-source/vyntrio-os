@@ -1,8 +1,8 @@
-/* Vyntrio unified design tokens — Block 11R foundation */
+/* Vyntrio unified design tokens — Block 11R (11R.6 convergence) */
 :root {
+  /* Appliance / auth default remains dark graphite */
   color-scheme: dark;
 
-  /* Core surfaces */
   --vyn-bg: #06080d;
   --vyn-bg-elevated: #0c1018;
   --vyn-panel: #111722;
@@ -10,47 +10,47 @@
   --vyn-border: rgba(148, 163, 184, 0.14);
   --vyn-border-strong: rgba(148, 163, 184, 0.24);
 
-  /* Typography */
   --vyn-text: #edf2f8;
   --vyn-text-muted: #8b98ab;
   --vyn-text-subtle: #6b778a;
-  --vyn-font-display: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
-  --vyn-font-body: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --vyn-font-display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --vyn-font-body: "Source Sans 3", "Source Sans Pro", "Segoe UI", sans-serif;
   --vyn-font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
 
-  /* Brand accents — warm appliance, not purple SaaS */
   --vyn-accent: #e85d2b;
   --vyn-accent-strong: #cf4f22;
   --vyn-accent-soft: rgba(232, 93, 43, 0.12);
   --vyn-accent-info: #3d8bfd;
   --vyn-accent-info-soft: rgba(61, 139, 253, 0.12);
 
-  /* Status (shared with appliance) */
   --vyn-status-ok: #3ecf8e;
+  --vyn-status-ok-soft: rgba(62, 207, 142, 0.12);
+  --vyn-status-ok-border: rgba(62, 207, 142, 0.35);
   --vyn-status-warn: #f0b429;
+  --vyn-status-warn-soft: rgba(240, 180, 41, 0.12);
+  --vyn-status-warn-border: rgba(240, 180, 41, 0.35);
   --vyn-status-danger: #f07178;
+  --vyn-status-danger-soft: rgba(240, 113, 120, 0.22);
+  --vyn-status-danger-border: rgba(240, 113, 120, 0.35);
+  --vyn-status-danger-text: #fecaca;
 
-  /* Layout */
+  --vyn-shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.28);
+  --vyn-shadow-float: 0 16px 40px rgba(0, 0, 0, 0.4);
+  --vyn-hero-glow: rgba(232, 93, 43, 0.18);
+  --vyn-trust-bg: #0e131c;
+  --vyn-enterprise-bg: #121925;
+  --vyn-nav-pill: rgba(12, 16, 24, 0.88);
+
   --vyn-radius-sm: 0.375rem;
   --vyn-radius-md: 0.5rem;
   --vyn-radius-lg: 0.75rem;
+  --vyn-radius-xl: 1rem;
+  --vyn-radius-2xl: 1.5rem;
+  --vyn-radius-pill: 999px;
   --vyn-max-width: 72rem;
   --vyn-gutter: clamp(1rem, 3vw, 2rem);
   --vyn-touch-target: 2.75rem;
-  --vyn-section-gap: clamp(2.5rem, 5vw + 1rem, 6rem);
-
-  /* Legacy aliases — keep appliance + shipped public surfaces stable until 11R.6 */
-  --dashboard-bg: var(--vyn-bg);
-  --dashboard-bg-elevated: var(--vyn-bg-elevated);
-  --dashboard-panel: var(--vyn-panel);
-  --dashboard-border: var(--vyn-border);
-  --dashboard-text: var(--vyn-text);
-  --dashboard-muted: var(--vyn-text-muted);
-  --dashboard-accent: #6366f1;
-  --dashboard-accent-soft: rgba(99, 102, 241, 0.16);
-  --dashboard-ready: var(--vyn-status-ok);
-  --dashboard-not-ready: var(--vyn-status-warn);
-  --dashboard-danger: var(--vyn-status-danger);
+  --vyn-section-gap: clamp(2.75rem, 6vw + 1rem, 7rem);
 
   --public-bg: var(--vyn-bg);
   --public-bg-elevated: var(--vyn-bg-elevated);
@@ -58,11 +58,71 @@
   --public-border: var(--vyn-border);
   --public-text: var(--vyn-text);
   --public-muted: var(--vyn-text-muted);
-  --public-accent: #7c83ff;
-  --public-accent-strong: #5b63f0;
-  --public-accent-soft: rgba(124, 131, 255, 0.14);
-  --public-hero-glow: rgba(59, 130, 246, 0.22);
+  --public-accent: var(--vyn-accent);
+  --public-accent-strong: var(--vyn-accent-strong);
+  --public-accent-soft: var(--vyn-accent-soft);
+  --public-hero-glow: var(--vyn-hero-glow);
   --public-max-width: var(--vyn-max-width);
-  --public-radius: 1rem;
+  --public-radius: var(--vyn-radius-xl);
   --public-font: var(--vyn-font-body);
 }
+
+/*
+ * Marketing public shell — bright oat / dinkel / graphite / copper.
+ * Dark equivalent via prefers-color-scheme (inherits :root dark tokens).
+ */
+.vyn-public-shell {
+  color-scheme: light;
+
+  --vyn-bg: #f3eee6;
+  --vyn-bg-elevated: #faf7f1;
+  --vyn-panel: #ffffff;
+  --vyn-panel-muted: #ebe4d8;
+  --vyn-border: rgba(42, 46, 51, 0.12);
+  --vyn-border-strong: rgba(42, 46, 51, 0.2);
+
+  --vyn-text: #2a2e33;
+  --vyn-text-muted: #5c6570;
+  --vyn-text-subtle: #7a8491;
+
+  --vyn-accent: #c45a28;
+  --vyn-accent-strong: #a8481f;
+  --vyn-accent-soft: rgba(196, 90, 40, 0.12);
+  --vyn-accent-info: #3d6f99;
+  --vyn-accent-info-soft: rgba(61, 111, 153, 0.12);
+
+  --vyn-status-ok: #2f9e6e;
+  --vyn-status-ok-soft: rgba(47, 158, 110, 0.12);
+  --vyn-status-ok-border: rgba(47, 158, 110, 0.35);
+  --vyn-status-warn: #c48a1a;
+  --vyn-status-warn-soft: rgba(196, 138, 26, 0.12);
+  --vyn-status-warn-border: rgba(196, 138, 26, 0.35);
+  --vyn-status-danger: #c44b55;
+  --vyn-status-danger-soft: rgba(196, 75, 85, 0.14);
+  --vyn-status-danger-border: rgba(196, 75, 85, 0.35);
+  --vyn-status-danger-text: #8a2430;
+
+  --vyn-shadow-soft: 0 10px 28px rgba(42, 46, 51, 0.07);
+  --vyn-shadow-float: 0 14px 40px rgba(42, 46, 51, 0.12);
+  --vyn-hero-glow: rgba(196, 90, 40, 0.16);
+  --vyn-trust-bg: #e7dfd1;
+  --vyn-enterprise-bg: #d9cfc0;
+  --vyn-nav-pill: rgba(250, 247, 241, 0.92);
+
+  --public-bg: var(--vyn-bg);
+  --public-bg-elevated: var(--vyn-bg-elevated);
+  --public-panel: rgba(255, 255, 255, 0.94);
+  --public-border: var(--vyn-border);
+  --public-text: var(--vyn-text);
+  --public-muted: var(--vyn-text-muted);
+  --public-accent: var(--vyn-accent);
+  --public-accent-strong: var(--vyn-accent-strong);
+  --public-accent-soft: var(--vyn-accent-soft);
+  --public-hero-glow: var(--vyn-hero-glow);
+}
+
+/*
+ * Public light/dark is controlled by [data-theme] on .vyn-public-shell
+ * (see public-chrome.css + usePublicTheme). Do not re-apply prefers-color-scheme
+ * here — it fights explicit theme toggles.
+ */

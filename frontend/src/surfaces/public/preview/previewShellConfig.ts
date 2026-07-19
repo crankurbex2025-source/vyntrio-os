@@ -1,7 +1,8 @@
 import type { PublicMessages } from "../../../shared/i18n";
 import type { PublicPreviewShellProps } from "../components/PublicPreviewShell";
+import { buildPreviewNav } from "../nav/publicNavConfig";
 
-type PreviewShellOptions = Pick<PublicPreviewShellProps, "anchorLinks" | "navAriaLabel">;
+type PreviewShellOptions = Pick<PublicPreviewShellProps, "navAriaLabel">;
 
 export function buildPreviewShellProps(
   messages: PublicMessages,
@@ -9,25 +10,12 @@ export function buildPreviewShellProps(
 ): Omit<PublicPreviewShellProps, "children"> {
   return {
     banner: messages.previewBanner,
-    brand: messages.brand,
-    brandTo: "/design-preview/landing",
-    downloadLabel: messages.nav.download,
-    downloadTo: "/design-preview/download",
-    signInLabel: messages.nav.signIn,
-    footerTagline: messages.footer.tagline,
-    footerNote: messages.footer.previewNote,
-    routeLinks: [
-      { label: messages.nav.previewLanding, to: "/design-preview/landing" },
-      { label: messages.nav.download, to: "/design-preview/download" },
-      { label: messages.nav.docs, to: "/design-preview/docs" },
-    ],
-    footerLinks: [
-      { label: messages.footer.download, to: "/design-preview/download" },
-      { label: messages.footer.docs, to: "/design-preview/docs" },
-      { label: messages.footer.signIn, to: "/login" },
-    ],
-    navAriaLabel: options.navAriaLabel ?? "Preview navigation",
-    anchorLinks: options.anchorLinks,
+    nav: buildPreviewNav(messages),
+    navAriaLabel: options.navAriaLabel ?? messages.chrome.navAriaLabel,
+    menuOpenLabel: messages.chrome.menuOpen,
+    menuCloseLabel: messages.chrome.menuClose,
+    mobileNavLabel: messages.chrome.mobileNav,
+    themeToggleLabel: messages.chrome.themeToggle,
     premiumSurface: true,
   };
 }

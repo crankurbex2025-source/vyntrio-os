@@ -5,7 +5,6 @@ import {
   PublicDocsSection,
   PublicHeroSection,
   PublicInlineCtaBand,
-  PublicPreviewPageContext,
   PublicProductStatusBlock,
   PublicReleaseStrip,
   PublicSectionBand,
@@ -24,20 +23,11 @@ export function PublicDocsView({ surface }: PublicDocsViewProps) {
   const { idPrefix } = surface;
   const inlineCta =
     surface.mode === "production" ? messages.docsPage.productionInlineCta : messages.docsPage.inlineCta;
-  const contextAriaLabel =
-    surface.mode === "production"
-      ? messages.productContext.ariaLabel
-      : messages.previewContext.ariaLabel;
 
   return (
     <div className="vyn-public-preview-page">
       <PreviewPageMotion>
         <PublicSectionBand tone="elevated" surface="route-hero">
-          <PublicPreviewPageContext
-            ariaLabel={contextAriaLabel}
-            links={surface.contextLinks}
-            currentKey={surface.contextCurrentKey}
-          />
           <PublicHeroSection
             eyebrow={messages.docsPage.hero.eyebrow}
             title={messages.docsPage.hero.title}

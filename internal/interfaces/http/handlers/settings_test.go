@@ -19,6 +19,7 @@ import (
 	appoverview "github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
+	appstorage "github.com/crankurbex2025-source/vyntrio-os/internal/application/storage"
 	domainidentity "github.com/crankurbex2025-source/vyntrio-os/internal/domain/identity"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
@@ -28,6 +29,8 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/storageinventory"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/storagepool"
 )
 
 const (
@@ -55,6 +58,7 @@ type settingsRouterOpts struct {
 	hostMetrics     appoverview.HostMetricsCollector
 	backupStatus    appoverview.BackupStatusLoader
 	networkPresence appoverview.NetworkPresenceCollector
+	storageReader   storageinventory.BlockDeviceReader
 }
 
 func newSettingsRouter(t *testing.T, opts settingsRouterOpts) settingsRouter {
@@ -102,16 +106,6 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	if networkPresence == nil {
 		networkPresence = netpresence.NewCollector(netpresence.CollectorDeps{})
 	}
-	overviewLoader := appoverview.NewLoader(
-		settingsRepo,
-		readiness,
-		hostMetrics,
-		backupStatus,
-		networkPresence,
-		settingsTestVersion,
-		"test-commit",
-		settingsTestEnvironment,
-	)
 
 	hasher, err := appidentity.NewPasswordHasher(appidentity.Argon2idConfig{
 		Memory:      4096,
@@ -142,10 +136,41 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 	login := handlers.NewLogin(handlers.LoginDeps{Service: loginService, CookiePolicy: cookiePolicy})
 	logout := handlers.NewLogout(handlers.LogoutDeps{Service: logoutService, CookiePolicy: cookiePolicy})
 	settings := handlers.NewSettings(handlers.SettingsDeps{Loader: settingsLoader})
-	overview := handlers.NewOverview(handlers.OverviewDeps{Loader: overviewLoader})
 	instanceDisplayNameRepo := sqlite.NewInstanceDisplayNameRepository(store.DB())
 	updateInstanceService := appsettings.NewUpdateInstanceDisplayNameService(instanceDisplayNameRepo)
 	updateInstance := handlers.NewUpdateInstanceSettings(handlers.UpdateInstanceSettingsDeps{Service: updateInstanceService})
+
+	storageCollector := storageinventory.NewCollector(stateDir, storageinventory.CollectorDeps{
+		Reader: opts.storageReader,
+	})
+	storageLoader := appstorage.NewInventoryLoader(storageCollector)
+	poolStore := storagepool.NewStore(stateDir)
+	poolsLoader := appstorage.NewPoolsLoader(storageLoader, poolStore)
+	sharesLoader := appstorage.NewSharesLoader(storageLoader, poolStore)
+	createPool := appstorage.NewCreatePoolService(storageLoader, poolStore)
+	addDataset := appstorage.NewAddDatasetService(poolStore)
+	createShare := appstorage.NewCreateShareService(poolStore)
+	storage := handlers.NewStorage(handlers.StorageDeps{
+		Loader:             storageLoader,
+		PoolsLoader:        poolsLoader,
+		SharesLoader:       sharesLoader,
+		CreatePoolService:  &createPool,
+		AddDatasetService:  &addDataset,
+		CreateShareService: &createShare,
+	})
+	overviewLoader := appoverview.NewLoader(
+		settingsRepo,
+		readiness,
+		hostMetrics,
+		backupStatus,
+		networkPresence,
+		storageLoader,
+		poolStore,
+		settingsTestVersion,
+		"test-commit",
+		settingsTestEnvironment,
+	)
+	overview := handlers.NewOverview(handlers.OverviewDeps{Loader: overviewLoader})
 
 	resolver := opts.resolver
 	if resolver == nil {
@@ -173,6 +198,7 @@ func buildSettingsRouter(t *testing.T, store *sqlite.Store, opts settingsRouterO
 		overview,
 		settings,
 		updateInstance,
+		storage,
 		&httpapi.SessionAuth{
 			Resolver:   resolver,
 			Authorizer: authorizer,

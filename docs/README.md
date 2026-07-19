@@ -6,7 +6,7 @@ Read in this order for onboarding.
 
 | Doc | Topic |
 |-----|-------|
-| [00_PROJECT.md](00_PROJECT.md) | Vision, goals, positioning |
+| [00_PROJECT.md](00_PROJECT.md) | Vision, goals, positioning, **primary USB-first delivery path** |
 | [01_MASTERPLAN.md](01_MASTERPLAN.md) | Phases, governance, delivery |
 | [02_ARCHITECTURE.md](02_ARCHITECTURE.md) | Clean Architecture, modules |
 | [03_ROADMAP.md](03_ROADMAP.md) | Version roadmap (0.1 → 1.0) |
@@ -31,6 +31,7 @@ Read in this order for onboarding.
 | [17_SECURITY.md](17_SECURITY.md) | Security program |
 | [18_TESTING.md](18_TESTING.md) | Test strategy |
 | [19_RELEASE.md](19_RELEASE.md) | Release engineering |
+| [24_INSTALL_MEDIA.md](24_INSTALL_MEDIA.md) | Download & install media (BIOS raw image) |
 
 ## Engineering & process
 

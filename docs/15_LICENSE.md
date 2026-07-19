@@ -1,12 +1,20 @@
 # Lizenzsystem
 
-## Editionen
+## Primärmodell (Ziel)
+
+Lizenzierung ist an **Geräte- bzw. Server-Tiers** gebunden (z. B. Community / Pro / Enterprise
+als Kapazitäts- und Support-Stufen), **nicht** an fragmentierte Per-Feature-Gates einzelner
+Module. Ein Tier umfasst das gesamte Produkt innerhalb seiner Kapazitätsgrenzen; optionale
+Add-ons sind Ausnahmen und benötigen ein eigenes ADR.
+
+## Editionen (Tier-Namen)
 - Community
 - Pro
 - Enterprise
 
 ## Ziele
-Edition-basierte Feature-Freischaltung ohne Beeinträchtigung der Systemstabilität.
+Gerätegebundene Tier-Validierung ohne Beeinträchtigung der Systemstabilität. Keine
+dauerhafte Deaktivierung einzelner Kernmodule über versteckte Feature-Flags.
 
 ## Funktionen
 - Hardwarebindung

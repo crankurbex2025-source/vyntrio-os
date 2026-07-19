@@ -1,0 +1,61 @@
+.vyn-public-trust-band {
+  text-align: center;
+  max-width: min(56rem, 100%);
+  margin-inline: auto;
+}
+
+.vyn-public-trust-band-heading {
+  margin: 0;
+  font-family: var(--vyn-font-display);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--vyn-text);
+  line-height: 1.2;
+}
+
+.vyn-public-trust-band-emphasis {
+  color: var(--vyn-accent);
+}
+
+.vyn-public-trust-band-intro {
+  margin: 0.65rem auto 0;
+  max-width: 46ch;
+  color: var(--vyn-text-muted);
+  line-height: 1.5;
+  font-size: 0.98rem;
+}
+
+.vyn-public-trust-band-marks {
+  list-style: none;
+  margin: clamp(1.25rem, 3vw, 1.85rem) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.vyn-public-trust-band-mark {
+  display: grid;
+  gap: 0.25rem;
+  align-content: center;
+  min-height: 4.5rem;
+  padding: 0.95rem 0.85rem;
+  border-radius: var(--vyn-radius-xl);
+  border: 1px solid var(--vyn-border);
+  background: var(--vyn-panel);
+  box-shadow: var(--vyn-shadow-soft, 0 8px 24px rgba(42, 46, 51, 0.06));
+}
+
+.vyn-public-trust-band-mark-label {
+  font-weight: 650;
+  font-size: 0.95rem;
+  color: var(--vyn-text);
+  letter-spacing: 0.01em;
+}
+
+.vyn-public-trust-band-mark-detail {
+  font-size: 0.8rem;
+  color: var(--vyn-text-muted);
+  line-height: 1.35;
+}

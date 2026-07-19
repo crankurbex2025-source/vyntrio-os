@@ -1,6 +1,6 @@
 # Restore Safety Contract
 
-- **Status:** Safety contract only — **restore is not implemented**
+- **Status:** Restore CLI **implemented** (`vyntrio-restore`) — see section 12
 - **Block:** 7
 - **Slice:** 7.11 (documentation)
 - **Authority:** This document elaborates fail-closed restore **requirements** for a
@@ -10,12 +10,25 @@
 
 ## 1. Explicit status
 
-Restore is **architecture and safety contract only**. There is no restore command,
-no `cmd/restore/`, no restore package, no host restore procedure, and no restore
-tests in the repository today.
+Restore CLI **`vyntrio-restore`** is implemented for offline root-only restore from
+completed local backup artifacts under `/var/lib/vyntrio/backups/`.
 
-Backup (`vyntrio-backup`, Slice 7.9) is **implemented** and production-verified.
-Restore tooling must not be inferred from backup code paths.
+- **Command:** `vyntrio-restore validate <artifact-basename>` — manifest-first preflight only
+- **Dry-run:** `vyntrio-restore <artifact-basename> --dry-run` — preflight + scope summary, no mutation
+- **Destructive:** `vyntrio-restore <artifact-basename> --force` — requires explicit `--force`
+
+**Scope (v1):** SQLite state files and `config/config.toml` from `vyntrio-backup-v1`
+archives only. Does **not** replace binaries, systemd units, TLS, or install media.
+
+**Not implemented:** remote restore, API/UI restore,
+offline service worker, or full disaster-recovery runbook automation.
+
+**Post-restore rollback (Slice 7.13):** when placement succeeds but service
+startup or local health/readiness fails, `vyntrio-restore` attempts a bounded
+rollback from the preservation copy, restarts the service, and reprobes. This is
+**not** guaranteed after external interruption (power loss, `kill -9`).
+
+Backup (`vyntrio-backup`, Slice 7.9) remains the sole backup writer.
 
 ## 2. Access model and non-goals
 
@@ -234,11 +247,16 @@ contract defers them intentionally; silent defaults are forbidden:
 
 - **No success** may be reported unless local `/readyz` succeeds within the bounded
   post-start probe policy (ADR-0005 §F, §G.0).
-- On failure after preservation copy (validation re-check, placement, ownership,
-  service start, health, or readiness): the operator procedure must document
-  **attempting rollback** to the preservation copy (ADR-0005 §H.3).
-- **Rollback execution model is deferred** (section 8). Until defined, documentation
-  and runbooks must not imply automatic rollback.
+- On failure after placement when service startup or local health/readiness fails,
+  `vyntrio-restore` **attempts rollback** from the preservation copy, repairs
+  ownership, restarts the service, and reprobes. CLI outcomes:
+  - `restore succeeded` — placement + service + probes passed
+  - `restore failed: rollback=succeeded preserve=<basename> category=...` — live
+    state restored from preservation; preservation copy retained for diagnosis
+  - `restore failed: rollback=failed preserve=<basename> category=...` — manual
+    recovery required; preservation copy retained
+- On failure during placement or ownership (before post-restore verification),
+  rollback is attempted without the extended restart/reprobe orchestration.
 - **Interruption rollback is not guaranteed** (power loss, `kill -9`, manual deletion
   mid-restore). Failed restore is an incident; inspect preservation copies manually.
 
@@ -300,4 +318,6 @@ but do **not** satisfy these restore categories.
 - `distro/systemd/README.md` — deployment and backup command
 - `docs/17_SECURITY.md` — security boundary
 - `docs/02_ARCHITECTURE.md` — Block 7 status
-- `internal/platform/backup/` — backup implementation and validation primitives (not restore)
+- `internal/platform/backup/` — backup implementation and validation primitives
+- `internal/platform/restore/` — restore CLI implementation (`vyntrio-restore`)
+- `cmd/restore/` — restore command entrypoint

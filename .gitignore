@@ -48,10 +48,22 @@ build/output/
 distro/output/
 distro/install-media/staging/
 distro/install-media/envelope/
+distro/install-media/build/
 distro/installer/dry-run/
 distro/installer/target-sandbox/
+distro/release/staging/
+distro/release/writer/
 *.iso
 *.img
+*.AppImage
+*.deb
+
+# Desktop / Tauri build output
+desktop/**/target/
+desktop/**/dist/
+
+# Local Cursor / agent chrome (not product source)
+.cursor/
 
 # Archives (do not commit source bundles)
 *.zip

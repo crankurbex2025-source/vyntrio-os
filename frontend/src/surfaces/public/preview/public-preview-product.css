@@ -11,9 +11,7 @@
 }
 
 .vyn-public-shell-product .vyn-public-header-scrolled {
-  background: rgba(8, 11, 17, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: transparent;
 }
 
 .vyn-public-preview-context {
@@ -86,7 +84,7 @@
   border: 1px solid var(--vyn-border);
   border-radius: var(--vyn-radius-md);
   padding: 1rem 1.1rem;
-  background: linear-gradient(165deg, var(--vyn-panel) 0%, rgba(12, 16, 24, 0.92) 100%);
+  background: linear-gradient(165deg, var(--vyn-panel) 0%, var(--vyn-bg-elevated) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
@@ -141,7 +139,7 @@
   padding-top: clamp(2rem, 4vw, 3rem);
   padding-bottom: clamp(1.5rem, 3vw, 2.25rem);
   border-bottom: 1px solid var(--vyn-border);
-  background: linear-gradient(180deg, rgba(12, 16, 24, 0.95) 0%, rgba(6, 8, 13, 0.88) 100%);
+  background: linear-gradient(180deg, var(--vyn-panel) 0%, var(--vyn-bg-elevated) 100%);
 }
 
 .vyn-public-preview-page .vyn-public-section-band-surface-artifact {
@@ -157,6 +155,20 @@
 
 .vyn-public-preview-page .vyn-public-download-panel h2 {
   font-size: clamp(1.05rem, 2.2vw, 1.15rem);
+}
+
+.vyn-public-preview-page .vyn-public-download-subheading {
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.vyn-public-preview-page .vyn-public-download-limitations {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.vyn-public-preview-page .vyn-public-download-limitations li {
+  margin-bottom: 0.35rem;
 }
 
 .vyn-public-preview-page .vyn-public-docs-section {
@@ -229,7 +241,7 @@
   padding: clamp(1rem, 2.2vw, 1.35rem);
   border: 1px solid rgba(61, 139, 253, 0.18);
   border-radius: var(--vyn-radius-md);
-  background: linear-gradient(165deg, rgba(12, 16, 24, 0.92) 0%, rgba(6, 8, 13, 0.88) 100%);
+  background: linear-gradient(165deg, var(--vyn-panel) 0%, var(--vyn-bg-elevated) 100%);
 }
 
 .vyn-public-preview-page .vyn-public-docs-section + .vyn-public-docs-section {
@@ -266,4 +278,108 @@
   .vyn-public-journey-step {
     transition: none;
   }
+}
+
+
+/* Platform-first Media Creator download hero */
+.vyn-public-platform-hero {
+  max-width: min(56rem, 100%);
+}
+.vyn-public-platform-hero-title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.85rem, 4.2vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.vyn-public-platform-hero-desc {
+  margin: 0 0 1.35rem;
+  color: var(--vyn-text-muted);
+  max-width: 48ch;
+  line-height: 1.5;
+}
+.vyn-public-platform-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+.vyn-public-platform-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.15rem;
+  border-radius: 999px;
+  background: #edf2f8;
+  color: #0a0f17;
+  text-decoration: none;
+  font-weight: 650;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+}
+.vyn-public-platform-cta.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: rgba(237, 242, 248, 0.35);
+  color: var(--vyn-text-muted);
+}
+.vyn-public-platform-hero-note {
+  margin: 0 0 1.75rem;
+  color: var(--vyn-text-subtle);
+  font-size: 0.88rem;
+  max-width: 62ch;
+}
+.vyn-public-platform-cards {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin-top: 0.85rem;
+}
+.vyn-public-platform-card {
+  border: 1px solid var(--vyn-border);
+  border-radius: var(--vyn-radius-xl);
+  background: linear-gradient(180deg, #121925 0%, #0a0f17 100%);
+  padding: 1rem 1.05rem 1.15rem;
+}
+.vyn-public-platform-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+.vyn-public-platform-card-hint,
+.vyn-public-platform-card-meta {
+  color: var(--vyn-text-muted);
+  font-size: 0.88rem;
+  margin: 0 0 0.75rem;
+}
+.vyn-public-creator-preview-frame {
+  border: 1px solid var(--vyn-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0a0f17;
+  max-width: 48rem;
+}
+.vyn-public-creator-preview-titlebar {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid rgba(232, 93, 43, 0.55);
+  color: var(--vyn-accent);
+  font-weight: 650;
+}
+.vyn-public-creator-preview-body {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+.vyn-public-creator-preview-pane {
+  border: 1px solid var(--vyn-border);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  background: #111722;
+  display: grid;
+  gap: 0.25rem;
+}
+.vyn-public-creator-preview-pane span {
+  color: var(--vyn-text-muted);
+  font-size: 0.86rem;
 }

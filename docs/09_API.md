@@ -13,8 +13,16 @@ REST für Konfiguration und Ressourcen, WebSocket für Live-Events. JSON-only. V
 | GET | `/api/v1/overview` | Session; Permission `system:health` (Owner, Operator, Read-only) | Sichere Appliance-Overview (read-only) |
 | GET | `/api/v1/settings` | Session; Permission `settings:admin:read` (Owner) | Sichere Admin-Settings-Ansicht (read-only) |
 | PATCH | `/api/v1/settings/instance` | Session; Permission `settings:admin:write` (Owner); `X-CSRF-Token` | Instanz-Anzeigename (`display_name`) ändern |
+| GET | `/api/v1/storage/disks` | Session; Permission `storage:read` (Owner, Operator, Read-only) | Read-only Blockgeräte-Inventar mit Eligibility (Slice 12.1) |
+| GET | `/api/v1/storage/pools` | Session; Permission `storage:read` | Declared pools (Slice 12.3); `disk_format_applied: false` |
+| GET | `/api/v1/storage/shares` | Session; Permission `storage:read` | Planned shares (Slice 12.3); SMB/NFS noch nicht verfügbar |
+| POST | `/api/v1/storage/pools` | Session; `storage:write`; CSRF | Declare pool from eligible disks (no disk format) |
+| POST | `/api/v1/storage/pools/{poolID}/datasets` | Session; `storage:write`; CSRF | Prepare dataset plan under a declared pool |
+| POST | `/api/v1/storage/shares` | Session; `storage:write`; CSRF | Prepare share plan (protocol remains planned) |
 
-Weitere Probes ohne Auth: `/healthz`, `/readyz`, `/api/v1/version`.
+Weitere Probes ohne Auth: `/healthz`, `/readyz`, `/api/v1/version`, `/api/v1/public/install-media`.
+
+Optional (wenn `VYNTRIO_RELEASE_STAGING_DIR` gesetzt): `/release/vyntrio-install-media.img`, `/release/release-manifest.json`.
 
 ## UI-Serving und Routen-Priorität (v1, implementiert)
 
@@ -63,6 +71,7 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
   - `software`: read-only Software-/Release-Metadaten (Slice 8.9; siehe unten)
   - `runtime`: read-only Runtime-Readiness-Label (Slice 8.10; siehe unten)
   - `health`: read-only Health-Summary (Slice 8.11; siehe unten)
+  - `storage`: read-only Storage-Zusammenfassung aus Block-Inventar (Slice 12.2; siehe unten)
   - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
 - **Readiness in 200:** Datenbankfehler liefern **200** mit `readiness.status = "not_ready"` und `readiness.database = "error"` — kein **503**, keine Behauptung voller Appliance-Gesundheit.
 - **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler — kanonisches JSON-Fehler-Envelope.
@@ -221,6 +230,110 @@ Kein JWT, kein Refresh-Token in v1. Session ist ein opaques serverseitiges Cooki
 - **No-Op:** Identischer normalisierter Name → **200** ohne DB-Update, Timestamp-Update oder Audit.
 - **Fehler:** **400** ungültige Anfrage; **401** fehlende Session; **403** fehlende Berechtigung oder CSRF; **405** andere Methoden; **500** Persistenzfehler.
 - Persistiert in `system.hostname` (kanonischer Speicherort für `instance.name` in GET `/api/v1/settings`).
+
+### GET `/api/v1/storage/disks`
+
+- **Auth:** Session erforderlich; Permission `storage:read` (Owner, Operator, Read-only).
+- **CSRF:** nicht erforderlich (read-only GET).
+- **Cache:** `Cache-Control: no-store`.
+- **Erfolg:** **200** mit read-only Inventar:
+  - `collected_at`: UTC-Zeitstempel (RFC3339Nano)
+  - `status`: `ok` (Discovery gelang) oder `unavailable` (Plattform-/Collector-Fehler)
+  - `disks`: Array klassifizierter Blockgeräte (bei `unavailable` typischerweise `null`)
+- **Disk-Eintrag:**
+  - `id`: stabile opaque ID (`disk-<sha256-prefix>`) — **kein** `/dev/sdX`, kein Kernel-Name
+  - `status`: `ok` oder `unavailable` (pro Gerät bei Integritätsfehler)
+  - `size_bytes`, `rotational`, `removable`: optional, nur wenn bekannt
+  - `eligibility`: `eligible`, `excluded` oder `unknown`
+  - `reasons`: Ausschlussgründe (`root_disk`, `state_filesystem`, `removable`, `read_only`, `mounted_in_use`, `unsupported_filesystem`, `install_media`, `virtual_device`, `ambiguous_identity`)
+- **Fehler:** **401** fehlende Session; **403** fehlende Permission; **500** interner Fehler.
+- **Keine Mutation:** kein Format, kein Wipe, kein Auto-Select; Discovery-Fehler liefern `status: unavailable` ohne Rohfehler oder Pfade.
+- Details und Nicht-Ziele: `docs/05_STORAGE.md`.
+
+```json
+{
+  "collected_at": "2026-07-15T12:00:00.000000000Z",
+  "status": "ok",
+  "disks": [
+    {
+      "id": "disk-a1b2c3d4e5f6",
+      "status": "ok",
+      "size_bytes": 2000000000000,
+      "rotational": true,
+      "removable": false,
+      "eligibility": "excluded",
+      "reasons": ["root_disk"]
+    },
+    {
+      "id": "disk-f6e5d4c3b2a1",
+      "status": "ok",
+      "size_bytes": 4000000000000,
+      "rotational": false,
+      "removable": false,
+      "eligibility": "eligible"
+    }
+  ]
+}
+```
+
+### GET `/api/v1/storage/pools`
+
+- **Auth:** Session; Permission `storage:read`.
+- **Erfolg:** **200** mit Layout:
+  - `pools`: declared pools from appliance state (`status: declared`, `disk_format_state: pending`)
+  - `pool_management`: `"declared_pools"`
+  - `mutation_available`: `true`
+  - `disk_format_applied`: `false` (honest — disks are not formatted yet)
+- Details: `docs/05_STORAGE.md` (Slice 12.3).
+
+### POST `/api/v1/storage/pools`
+
+- **Auth:** Session; Permission `storage:write`; `X-CSRF-Token`.
+- **Body:** `{ "name": "tank", "disk_ids": ["disk-..."], "confirm": true }`
+- **Erfolg:** **201** declared pool. Does **not** wipe or format disks.
+- **Fehler:** `CONFIRM_REQUIRED`, `DISK_NOT_ELIGIBLE`, `DISK_IN_USE`, `INVALID_NAME`, `NO_DISKS`.
+
+### POST `/api/v1/storage/pools/{poolID}/datasets`
+
+- Prepare a dataset plan under a declared pool (`path_intent` only; no filesystem creation).
+
+### GET `/api/v1/storage/shares`
+
+- **Auth:** Session; Permission `storage:read`.
+- **Erfolg:** **200** mit planned shares:
+  - `share_management`: `"planned_shares"`
+  - `protocol_support`: `"not_available"`
+  - `mutation_available`: `true`
+
+### POST `/api/v1/storage/shares`
+
+- Prepare a share plan. Protocol is stored as `planned` until SMB/NFS ships.
+
+**Overview-Feld `storage` (Slice 12.3):**
+
+```json
+"storage": {
+  "status": "ok",
+  "disk_count": 2,
+  "eligible_count": 1,
+  "excluded_count": 1,
+  "unknown_count": 0,
+  "pool_count": 0,
+  "share_count": 0,
+  "mutation_available": true
+}
+```
+
+### GET `/api/v1/public/install-media`
+
+- **Auth:** nicht erforderlich.
+- **Cache:** `Cache-Control: no-store`.
+- **Erfolg:** **200** mit Install-Media-Metadaten:
+  - `publication_status`: `not_built`, `local_staging`, oder `unavailable`
+  - `primary_artifact`: Name, Format, Firmware-Modus (`bios+uefi`), `bios_support` / `uefi_support` / `dual_mode`, optional Größe/SHA-256, `download_available`
+  - `build_target`, `stage_target`, `limitations`
+- **Download:** Binärdateien werden **nicht** über diesen Endpoint geliefert. Bei gesetztem `VYNTRIO_RELEASE_STAGING_DIR` liefert `/release/vyntrio-install-media.img` die gestagte Datei.
+- Details: `docs/24_INSTALL_MEDIA.md`.
 
 ## Resource Families (geplant)
 - /users

@@ -50,8 +50,8 @@ Control Plane läuft lokal auf dem Host. Systemnahe Services werden über system
 **Implementiert (v1):** Das produktive Frontend wird als statisches Vite-Bundle gebaut, per `go:embed` in das API-Binary eingebettet und same-origin vom selben Binary ausgeliefert (`/assets/*` plus `index.html`-SPA-Fallback für erlaubte GET/HEAD-Pfade). API-, Health- und Readiness-Routen behalten Priorität. Der API-Server lädt Laufzeitkonfiguration aus `/etc/vyntrio/config.toml` (TOML, Fail-Closed, Neustart statt Live-Reload); persistenter State unter `/var/lib/vyntrio/` mit startup-time Pfad-/Symlink-Validierung (ohne race-freie SQLite-Eindämmung). **Slice 7.3:** systemd-Unit, statisches `vyntrio`-Konto und Ownership-Modell (`distro/systemd/`). Details: `docs/09_API.md`, `docs/17_SECURITY.md`, `docs/19_RELEASE.md`, `docs/ADR/0005-appliance-runtime-operations.md`.
 
 **Beschlossener Block-7-Vertrag (teilweise implementiert):** Backup-Befehl
-`vyntrio-backup` (Slice 7.9); Restore-Sicherheitsvertrag
-(`docs/ops/restore-safety-contract.md`, Slice 7.11, noch ohne Restore-CLI);
+`vyntrio-backup` (Slice 7.9); `vyntrio-restore` (Slice 7.12);
+Restore-Sicherheitsvertrag (`docs/ops/restore-safety-contract.md`, Slice 7.11).
 Packaging bleibt zukünftige Slice. Docker/OCI, ISO, Kubernetes, Clustering und
 Multi-Node bleiben ausdrücklich zurückgestellt.
 
@@ -134,8 +134,59 @@ Zielplatten-Schreiben.
 **Block 9 / Slice 9.9 (Gerüst, dokumentiert):** Bootability-Initialisierungs-
 Gerüst in `distro/install-media/bootability-contract.md` und
 `bootability-manifest.yaml` — definiert bootfähige Initialisierung über
-Envelope-Assembly hinaus; Bootability ≠ Installation; deklarativ nur; kein
-Bootloader/Live-Root/ISO-Generator.
+Envelope-Assembly hinaus; Bootability ≠ Installation; deklarativ nur.
+
+**Block 9 / Slice 9.11 (implementiert, Stub):** Bootability-Foundation via
+`make install-media-bootability` — ersetzt `boot/`/`live_root/`-Platzhalter durch
+Struktur-Stubs, validiert Layout, schreibt `BOOTABILITY.txt`, emittiert
+`distro/install-media/build/*-NOT-BOOTABLE.stub.tar` (**nicht** firmware-bootfähig);
+USB-Creator und echtes ISO/USB deferred. Vertrag:
+`docs/ops/install-media-bootability.md`.
+
+**Block 9 / Slices 9.12–9.17 (implementiert):** USB-first Boot-Media-Kette über
+die Foundation hinaus — 9.12 realer Boot-Chain (echter Kernel/Initrd/GRUB-Core +
+`grub.cfg`, `make install-media-image`), 9.13 firmware-bootfähiges Raw-BIOS-Image
+via `grub-bios-setup` + strukturelle Verifikation (`make install-media-wrap`),
+9.14 gated qemu-Runtime-Boot-Harness + First-Boot-Dashboard-Pfad
+(`make install-media-runtime`), 9.15 minimale Live-Rootfs-Userland (Loader/libc-
+Closure, busybox, `vyntrio-api`, `/init`), verifiziert per chroot-Exec +
+Dashboard-HTTP-200-Probe (`make install-media-live-rootfs`), 9.16
+Live-Initramfs-Hardware-Enablement — dep-aufgelöste Storage/Netzwerk-Kernelmodule
++ DHCP-Bring-up in `/init`, Live-Initramfs neu emittiert
+(`make install-media-hardware`), und 9.17 Image-Initrd-Swap
+(`make install-media-initrd-swap`) — das Firmware-Image bootet jetzt das Vyntrio
+Live-Initramfs statt des Host-Debian-Initrd, per sha256 aus dem Image bewiesen,
+fail-closed mit Host-Initrd-Restore. Damit ist **Stage 1 abgeschlossen**. Ehrlich:
+kein verifizierter Runtime-Boot (kein qemu hier), Dashboard-on-Boot und
+USB-Creator weiter deferred. Verträge: `distro/install-media/bootability-contract.md`,
+`docs/ops/install-media-{image,wrapper,runtime-boot,live-rootfs,hardware-enable,initrd-swap,runtime-verify}.md`.
+
+**Stage 2 / Slice 10.1 (implementiert, hier blockiert):** Runtime-Boot-Verifikation
+via `make install-media-runtime-verify` (`scripts/verify-live-boot-runtime.sh`) —
+erste Stage-2-Slice (First-Boot-Dashboard), **unabhängig** vom staged-installer
+„Block 10 / Slice 10.1“ (Audit) weiter unten. Ein **read-only** Verifier bootet
+das initrd-getauschte Image auf einem VM/Hardware-Harness und erbringt einen
+**echten HTTP-200-Nachweis vom gebooteten Gast** (qemu user-net hostfwd), oder
+**fail-closed** mit exakten Blockern. Er ändert **niemals** Image/Initrd/
+Bootloader/live-rootfs (per sha256 vor/nach im Test erzwungen). Auf diesem Host:
+kein `qemu`/`/dev/kvm` → `status: blocked`, `chain_modified: false`. Dashboard-on-
+Boot-Nachweis = echte HTTP-Antwort, nicht chroot/strukturell.
+
+**Stage 2 / Slice 10.2 (implementiert — lokale Dashboard-Stabilität):** Die lokale
+Browser-WebGUI (`vyntrio-api`) ist die **primäre** Verwaltungsfläche (dashboard-first).
+Behobener Defekt: `firstboot.sh` lief unter `#!/usr/bin/env bash`, aber die
+Live-Initramfs liefert nur busybox (kein bash/`env`) — der Dashboard-Entrypoint
+konnte nie starten; jetzt `#!/bin/sh` (busybox/POSIX). Das Dashboard wird
+**beaufsichtigt** (begrenzter Respawn-Loop) und bleibt oben; die Build-Zeit-Probe
+beweist zusätzlich `/readyz` (DB-ready), nicht nur `/`. **Slice 10.3** ergänzt
+eine klare First-Boot-Onboarding-Ausgabe (Boot → lokales Dashboard → Anmeldung/
+Owner → read-only Übersicht) und die Landing-Seiten-Sektion `#first-boot-setup`,
+die denselben lokalen Flow wiedergibt. **Slice 10.4** entfernt den TLS-**Config-Blocker**:
+`vyntrio-api` unterstützt optionale `tls_cert_file`/`tls_key_file` und HTTPS;
+Runtime-TLS-Prep via `prepare-live-dashboard-tls.sh` wenn `VYNTRIO_LAN_BIND_IP`
+gesetzt (Loopback-HTTP bleibt Default). `tls_readiness: ready`;
+`dashboard_reachable: false` ehrlich (kein Boot-Harness). Kein Installer/Target-Write,
+Boot/Image-Chain unverändert. `docs/ops/install-media-dashboard-tls.md`.
 
 **Block 10 / Slice 10.1 (Audit, dokumentiert):** Read-only Installer-Vertrags-
 Audit — Grenze zwischen Media-Erstellung (Block 9) und Install-Ausführung
@@ -178,6 +229,84 @@ kein Bootstrap.
 `make installer-enable-service` — preflight/prep-gated; systemd wants-Symlink und
 `SERVICE_ENABLE.txt` in `target-sandbox/`; kein systemctl, kein Service-Start,
 kein Bootstrap.
+
+**Block 12 / Slice 12.1 (implementiert):** Read-only Storage-Inventar via
+`GET /api/v1/storage/disks` — Linux-sysfs/mountinfo-Discovery in
+`internal/platform/storageinventory`, Eligibility-Klassifikation (fail-closed),
+opaque Geräte-IDs; Permission `storage:read`; keine Mutation, kein Pool/Share/SMART.
+Details: `docs/05_STORAGE.md`.
+
+**Block 9 / Slice 9.10 (implementiert):** Release-Artefakt-Verifikation via
+`vyntrio-verify-artifact` — JSON-Manifest `vyntrio-release-manifest-v1`, lokale
+SHA-256- und Größenprüfung, fail-closed Parsing; Ed25519-Signaturfeld reserviert
+aber nicht verifiziert; keine Disk-Writes, kein Media-Build. Vertrag:
+`docs/ops/release-artifact-verification.md`.
+
+**Block 10 / Slice 10.10 (implementiert):** Read-only Install-Target- und
+Media-Preflight via `vyntrio-installer preflight` — explizite `--target-disk-id`,
+storageinventory-basierte Eignung, optionale Envelope- und Release-Manifest-Prüfung;
+keine Partitionierung, kein Schreiben, kein Install. Vertrag:
+`docs/ops/install-target-preflight.md`.
+
+**Block 10 / Slice 10.11 (implementiert):** Begrenzter Payload-Install-Write via
+`vyntrio-installer install` — erfordert `--force`, Preflight-Gates, Kopie der sechs
+Allowlist-Payloads nur unter `distro/installer/target-sandbox/`; Post-Write-
+Verifikation; kein Block-Device-Write, kein Service-Start. Vertrag:
+`docs/ops/install-payload-write.md`.
+
+**Block 10 / Slice 10.12 (implementiert):** Installer-Postflight und Operator-
+Handover — strukturierte Zusammenfassung, `HANDOVER_RECORD.txt`, `vyntrio-installer
+postflight`; ehrliche Deferred-Liste; kein Vollinstall-Anspruch. Vertrag:
+`docs/ops/install-staged-workflow.md`.
+
+**Block 10 / Slice 10.13 (implementiert):** Guarded Target-Mutation via
+`vyntrio-installer install --apply-target` — erfordert `--force`, erfolgreiches
+Preflight, explizite Disk-ID; mountet genau eine berechtigte, ungemountete
+Partition (ext4/xfs/btrfs), kopiert dieselben sechs Payloads, Rollback bei Fehler;
+`TARGET_MUTATION_RECORD.txt`; kein Partitionieren/Formatieren, kein Vollinstall.
+Vertrag: `docs/ops/install-target-mutation.md`.
+
+**Block 10 / Slice 10.14 (implementiert):** Dedizierter Existing-Partition-Apply-
+Flow via `vyntrio-installer apply` — gleiche Gates wie `--apply-target`, eigenes
+`installapply`-Orchestrierungspaket, `PARTITION_APPLY_RECORD.txt`, explizite
+Mount/Copy/Rollback-Phasen; kein Sandbox-Fallback. Vertrag:
+`docs/ops/install-partition-apply.md`.
+
+**Block 10 / Slice 10.15 (implementiert):** Installer-Policy und Flow-
+Konsolidierung — kanonisches Staged-Pipeline-Policy-Dokument, `vyntrio-installer
+workflow`, gemeinsame CLI-Hilfetexte (`internal/platform/installpolicy`), klare
+Grenzen zwischen verify/preflight/install/apply/postflight; explizit sekundär zum
+USB-first-Auslieferungsweg. Vertrag: `docs/ops/installer-policy.md`.
+
+## Primärer Produkt-Auslieferungsweg
+
+| Phase | Block | Operator-Erlebnis |
+|-------|-------|-------------------|
+| 1 | 9 | USB Creator schreibt bootfähiges Install-Medium |
+| 2 | 9 | Boot Linux-basiertes Vyntrio-Install-Image auf Zielhardware |
+| 3 | 8 + 4 | Lokales Browser-Dashboard (`vyntrio-api`); Install-Assistent |
+| 4 | 10 | Zielplatten-Installation aus Live-Session (interne Installer-Infra) |
+| 5 | 4 | Bootstrap / Owner (ADR-0004) auf installiertem System |
+
+**Fortschritt Block 9:** Payload-Staging + Envelope + Bootability-Foundation (9.11),
+realer Boot-Chain (9.12), firmware-bootfähiges Raw-BIOS-Image (9.13), Runtime-Boot-
+Harness + First-Boot-Pfad (9.14), Live-Rootfs-Userland mit chroot-verifiziertem
+Dashboard (9.15), hardware-enabled Live-Initramfs (Storage/Netzwerk-Module +
+DHCP, 9.16) und Image-Initrd-Swap auf das Live-Initramfs (9.17, sha256-bewiesen)
+vorhanden — **Stage 1 abgeschlossen**. Stage 2 aktiv: Runtime-Boot-Verifikation
+(Slice 10.1, read-only) implementiert, hier blockiert (kein qemu/`/dev/kvm`);
+lokale Dashboard-Stabilität (Slice 10.2) und First-Boot-Onboarding-Klarheit
+(Slice 10.3) — dashboard-first, busybox-sh First-Boot, beaufsichtigte WebGUI,
+`/readyz`-Lokalnachweis, klare Boot→Dashboard→Login→Übersicht-Prompt in Produkt
+und Landing-Page. LAN-Bind auf TLS blockiert. Offen für den Dashboard-on-Boot-
+Nachweis: ein VM/Hardware-Boot-Harness; TLS vor LAN-Exposure; danach UEFI und
+Host-USB-Creator.
+
+**Nicht primär:** `distro/systemd/README.md` (manuell, Lab), Sandbox-`vyntrio-installer
+install`, Make-`installer-*`-Skripte — Entwicklung und Übergang.
+
+**Reihenfolge:** Block 9 bootfähiges Medium **vor** vollständiger Block-10-Produktreise;
+bestehende Block-10-CLI ist wiederverwendbare Infrastruktur.
 
 ## Architekturregeln
 - Keine Domain-Abhängigkeit auf Infrastrukturpakete.

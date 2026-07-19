@@ -6,10 +6,12 @@
 
 ## Context
 
-Block 9 is complete through bootability initialization: install-media payload
-staging, envelope assembly, and bootable-init contracts exist. Block 9 governs
-**media creation** — how immutable payloads are packaged into a future bootable
-install image. It does **not** define install **execution** on target hardware.
+Block 9 **contracts** are complete through bootability initialization scaffolds:
+install-media payload staging, envelope assembly, and bootable-init **documentation**
+exist. **Executable** bootable ISO/USB emission and host USB creator are **not**
+implemented. Block 9 governs **media creation** — how immutable payloads are packaged
+into a future bootable install image. It does **not** define install **execution** on
+target hardware.
 
 Block 10, Slice 10.1 audited the installer boundary. The separation is already
 implied by ADR-0004 (bootstrap), ADR-0005 (runtime paths and persistent state),
@@ -18,11 +20,15 @@ media contracts — but no formal **installer contract** existed.
 
 Current repository truth:
 
-- `cmd/installer/main.go` is an **empty stub** (Phase 0.2 placeholder).
-- Supported production install today is **manual** per `distro/systemd/README.md`.
-- Install payloads are declared in `distro/install-media/manifest.yaml`; media
-  build prep exists locally (`make install-media-stage`, `make install-media-envelope`).
-- No installer preflight, disk layout, or target-disk mutation code exists.
+- **Primary product path (intended):** USB creator → bootable install medium → boot →
+  local dashboard → install execution (Block 10) on target disk.
+- **Interim path:** manual systemd install per `distro/systemd/README.md` (developer/lab).
+- `vyntrio-installer` implements **staged internal infrastructure** (preflight, sandbox
+  install, partition apply, postflight) for use **inside** a future live install session —
+  not the primary operator journey today.
+- Install payloads are declared in `distro/install-media/manifest.yaml`; local media prep
+  exists (`make install-media-stage`, `make install-media-envelope`); boot layers are
+  placeholders only.
 
 Without an explicit installer contract, future `vyntrio-installer` work risks
 mixing media creation (Block 9), recovery procedures (Block 7), bootstrap
@@ -212,9 +218,11 @@ scope for Block 10 installer implementation.
 
 ### Negative / trade-offs
 
-- Manual install (`distro/systemd/README.md`) remains the only supported path until implementation slices land
 - Partition/LUKS details still deferred — installer contract does not fix hardware targets
-- Host media creator is documented but not specified — separate future work
+- Host media creator is documented but not specified — separate future work (Block 9;
+  **before** operator-facing install execution is product-complete)
+- Staged `vyntrio-installer` CLI is **internal infrastructure**; sandbox and bare-metal
+  apply paths are for development until live-boot install wizard consumes them
 
 ### Follow-up
 

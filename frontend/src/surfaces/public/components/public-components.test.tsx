@@ -16,8 +16,10 @@ import {
   PublicPreviewShell,
   PublicProductStatusBlock,
   PublicReleaseStrip,
+  PublicProcedureOutline,
   PublicResourceList,
   PublicSectionBand,
+  PublicUseCaseSection,
 } from "./index";
 import { buildPreviewShellProps } from "../preview/previewShellConfig";
 
@@ -84,6 +86,62 @@ describe("public surface components", () => {
     expect(screen.getByRole("heading", { name: de.pillars.heading })).toBeInTheDocument();
     expect(screen.getByText(de.pillars.storage.tag)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: de.pillars.storage.title })).toBeInTheDocument();
+  });
+
+  it("PublicProcedureOutline renders first-boot local setup steps without API dependencies", () => {
+    render(
+      <PublicProcedureOutline
+        eyebrow={de.firstBootSetup.eyebrow}
+        heading={de.firstBootSetup.heading}
+        intro={de.firstBootSetup.intro}
+        ariaLabel={de.firstBootSetup.ariaLabel}
+        steps={[...de.firstBootSetup.steps]}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: de.firstBootSetup.heading })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: de.firstBootSetup.ariaLabel })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(de.firstBootSetup.steps.length);
+    expect(screen.getByRole("heading", { name: de.firstBootSetup.steps[0].title })).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("PublicUseCaseSection renders intended-user cases as a labelled list", () => {
+    render(
+      <PublicUseCaseSection
+        eyebrow={de.useCases.eyebrow}
+        heading={de.useCases.heading}
+        intro={de.useCases.intro}
+        ariaLabel={de.useCases.ariaLabel}
+        cases={[...de.useCases.cases]}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: de.useCases.heading })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: de.useCases.ariaLabel })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(de.useCases.cases.length);
+    expect(screen.getByText(de.useCases.cases[0].tag)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: de.useCases.cases[0].title })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("PublicUseCaseSection renders creator audience cases", () => {
+    render(
+      <PublicUseCaseSection
+        eyebrow={de.creatorAudience.eyebrow}
+        heading={de.creatorAudience.heading}
+        intro={de.creatorAudience.intro}
+        ariaLabel={de.creatorAudience.ariaLabel}
+        cases={[...de.creatorAudience.cases]}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: de.creatorAudience.heading })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: de.creatorAudience.ariaLabel })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(de.creatorAudience.cases.length);
+    expect(screen.getByText(de.creatorAudience.cases[0].tag)).toBeInTheDocument();
   });
 
   it("PublicControlSurfaceShowcase composes intro and frame", () => {

@@ -1,41 +1,102 @@
 {
   "previewBanner": "Design preview — mirrors the production homepage. Route / is the shipped landing.",
   "brand": "Vyntrio",
+  "chrome": {
+    "navAriaLabel": "Primary",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu",
+    "mobileNav": "Site menu",
+    "themeToggle": "Toggle color theme"
+  },
   "nav": {
     "previewLanding": "Home",
     "home": "Product",
-    "capabilities": "Capabilities",
-    "docs": "Documentation",
-    "download": "Release",
+    "capabilities": "Storage",
+    "useCases": "Why Vyntrio",
+    "docs": "Docs",
+    "download": "Download",
     "signIn": "Sign in",
     "localeDe": "DE",
     "localeEn": "EN"
   },
   "hero": {
-    "eyebrow": "Vyntrio OS",
-    "title": "What runs on your server?",
-    "description": "Appliance platform for your host. Storage, services, and administration run on the device — not in someone else's cloud.",
-    "ctaDownload": "Release & download",
-    "ctaDownloadHint": "Install media ships when publicly released",
-    "ctaSignIn": "Sign in to your appliance",
-    "ctaSignInHint": "For existing Vyntrio appliances"
+    "eyebrow": "USB appliance OS",
+    "title": "Vyntrio",
+    "description": "Boot install media on your own hardware into a local setup dashboard. Own the appliance path — not a rented cloud console.",
+    "ctaDownload": "Download install media",
+    "ctaDownloadHint": "USB image, checksums, and Media Creator",
+    "ctaSignIn": "Sign in to appliance",
+    "ctaSignInHint": "For hosts that already run Vyntrio"
   },
   "heroStory": {
     "ariaLabel": "Appliance signal path from hardware to control center",
     "steps": [
-      { "label": "Hardware", "detail": "Physical host" },
-      { "label": "Vyntrio OS", "detail": "Appliance on device" },
-      { "label": "Control center", "detail": "Local after sign-in" }
+      {
+        "label": "Hardware",
+        "detail": "Physical host"
+      },
+      {
+        "label": "Vyntrio OS",
+        "detail": "Appliance on device"
+      },
+      {
+        "label": "Control center",
+        "detail": "Local after sign-in"
+      }
+    ]
+  },
+  "trustBand": {
+    "heading": "Built for people who keep data",
+    "headingEmphasis": "on their own hardware.",
+    "intro": "Vyntrio is shaped for local appliances — not rented control planes. These marks describe the operating model, not partner sponsorships.",
+    "marks": [
+      {
+        "label": "Local-first",
+        "detail": "Appliance on your host"
+      },
+      {
+        "label": "Self-hosted",
+        "detail": "No cloud console required"
+      },
+      {
+        "label": "Media libraries",
+        "detail": "Creator and archive workflows"
+      },
+      {
+        "label": "Homelab / studio",
+        "detail": "Dedicated machine, clear ownership"
+      },
+      {
+        "label": "Owner control",
+        "detail": "Sign-in on the device"
+      }
     ]
   },
   "previewContext": {
     "ariaLabel": "Product areas in the preview",
     "landing": "Product",
-    "download": "Release",
-    "docs": "Documentation"
+    "download": "Download",
+    "docs": "Docs"
   },
   "productContext": {
     "ariaLabel": "Product areas"
+  },
+  "liveRelease": {
+    "eyebrow": "Current release",
+    "heading": "Install media and checksums",
+    "intro": "Live values from this host’s release staging API. Empty fields mean the artifact is not staged here — not a fake download.",
+    "downloadCta": "Open full download page"
+  },
+  "appsVms": {
+    "eyebrow": "Apps and virtual machines",
+    "heading": "Where containers and VMs sit in the product",
+    "intro": "TrueNAS/Unraid-class products eventually include apps and VMs. Vyntrio states the gap plainly: those layers are not shipping yet.",
+    "appsTitle": "Apps / containers",
+    "appsBody": "No app catalog, no container runtime UI, and no compose deploy path in the current appliance. Roadmap docs are not product capability.",
+    "appsStatus": "Not available",
+    "vmsTitle": "Virtual machines",
+    "vmsBody": "No in-product hypervisor manager. Dev-only install-media VM helpers are not a VM product.",
+    "vmsStatus": "Not available"
   },
   "installJourney": {
     "eyebrow": "Install path",
@@ -103,8 +164,8 @@
   },
   "release": {
     "label": "Release status",
-    "title": "Public install media not available yet",
-    "body": "Vyntrio OS is in active development. Artifact status, requirements, and workflow are visible here — no file, no version number, and no invented timeline."
+    "title": "Early-access USB appliance image (build + local staging)",
+    "body": "Vyntrio ships a firmware-bootable raw BIOS disk image built from this repository. There is no production CDN yet — operators build locally, stage under distro/release/staging, and optionally expose /release/* from the API host."
   },
   "pillars": {
     "eyebrow": "Appliance platform",
@@ -113,7 +174,7 @@
     "storage": {
       "tag": "Storage",
       "title": "State on disk",
-      "body": "Persistent appliance state under a clear operations boundary — prepared for pools, shares, and controlled administration on the target device."
+      "body": "Read-only block device inventory is available in the signed-in dashboard today. Pools, shares, and storage actions remain planned for later releases."
     },
     "services": {
       "tag": "Services",
@@ -125,6 +186,118 @@
       "title": "Local control center",
       "body": "After sign-in you get a read-only overview with real API data. Additional modules appear only when the appliance supports them."
     }
+  },
+  "useCases": {
+    "eyebrow": "Who it's for",
+    "heading": "Built for people who run their own host",
+    "intro": "Vyntrio OS targets owners of dedicated hardware who want storage, services, and control on the device. These describe the intended users — not a list of shipped features.",
+    "ariaLabel": "Intended users for Vyntrio OS",
+    "cases": [
+      {
+        "tag": "Homelab & power users",
+        "title": "One host instead of scattered boxes",
+        "body": "Consolidate storage and host services on a single dedicated machine you administer locally — the appliance model this project is built around."
+      },
+      {
+        "tag": "Small office",
+        "title": "Files and services on owned hardware",
+        "body": "Keep working data and internal services on a device under your control, not in a foreign cloud or a multi-tenant admin plane."
+      },
+      {
+        "tag": "Personal cloud",
+        "title": "Your data stays on your device",
+        "body": "A private-cloud alternative for people who prefer their storage and administration to live on hardware they own."
+      },
+      {
+        "tag": "Self-hosters",
+        "title": "A dedicated appliance base",
+        "body": "A Linux-based appliance foundation for running your own services on the host, with a local control center after sign-in as modules land."
+      }
+    ]
+  },
+  "creatorAudience": {
+    "eyebrow": "Creators & media",
+    "heading": "Built for people who keep work on their own hardware",
+    "intro": "Vyntrio is a local-first appliance for creators, homelab builders, and self-hosters who want libraries, projects, and tools on a machine they control — not in a rented cloud admin plane. This describes who the product speaks to and what the current release supports; it is not a shipped feature checklist.",
+    "ariaLabel": "Creator and media positioning for Vyntrio OS",
+    "cases": [
+      {
+        "tag": "Media libraries",
+        "title": "Libraries that stay on your device",
+        "body": "Plan photo, video, and audio libraries on owned storage. Today the signed-in dashboard offers disk inventory plus declared pools and share plans; on-disk formatting and SMB/NFS are not available — there is no bundled streaming app in this release."
+      },
+      {
+        "tag": "Project archives",
+        "title": "Exports and working sets close to the host",
+        "body": "Keep render outputs, RAW folders, and project trees on the appliance instead of shuttling them through third-party sync. Local backup status appears in the overview; automated archive workflows are not shipped yet."
+      },
+      {
+        "tag": "Self-hosted tools",
+        "title": "A base for software you choose to run",
+        "body": "Vyntrio is a Linux appliance foundation for running your own services on the host. There is no app marketplace or one-click container catalog yet — administration starts in the local WebGUI after sign-in."
+      },
+      {
+        "tag": "Homelab & studio",
+        "title": "One local control center for your rack or desk",
+        "body": "Consolidate administration for a home lab, small studio, or side-project server. Remote management and licensing layers are intentionally deferred until the local product path is solid."
+      }
+    ]
+  },
+  "localToday": {
+    "eyebrow": "What works today",
+    "heading": "What you can do locally right now",
+    "intro": "The public site describes direction; the appliance shows only what is implemented. After sign-in on a running Vyntrio host you can use the capabilities below — nothing here requires Remote Connect or a license check.",
+    "ariaLabel": "Locally available appliance capabilities today",
+    "steps": [
+      {
+        "step": "01",
+        "title": "Manage from the local WebGUI",
+        "body": "Sign in on the device to open the read-only control center with real host and service data from the appliance API."
+      },
+      {
+        "step": "02",
+        "title": "Review storage inventory",
+        "body": "See classified block devices and eligibility reasons in the dashboard. You can declare pools and prepare dataset/share plans; formatting disks and publishing SMB/NFS shares are not available yet."
+      },
+      {
+        "step": "03",
+        "title": "Reach the dashboard on your LAN",
+        "body": "When the operator enables HTTPS bind on the appliance, browsers on the local network can open the dashboard — there is no remote cloud relay in this release."
+      },
+      {
+        "step": "04",
+        "title": "Know what is still deferred",
+        "body": "App containers, VMs, advanced NAS workflows, Remote Connect, and licensing pages are not part of the current product surface. Install media is built locally — see the release area for the BIOS image path."
+      }
+    ]
+  },
+  "firstBootSetup": {
+    "eyebrow": "First boot",
+    "heading": "What happens when you start the appliance",
+    "intro": "Vyntrio is a local-first appliance. After the device boots, the dashboard is the primary management surface on the machine itself. No remote account, no cloud login, and no feature gates are needed for the first steps.",
+    "ariaLabel": "First boot local setup steps for Vyntrio OS",
+    "steps": [
+      {
+        "step": "01",
+        "title": "Boot from verified media",
+        "body": "Start the target device from the verified install medium. The live runtime boots into RAM and starts the local dashboard service automatically."
+      },
+      {
+        "step": "02",
+        "title": "Open the dashboard on the device",
+        "body": "The dashboard runs on the appliance itself. Open it in a browser on the same machine, or on the LAN when the operator enables HTTPS bind (VYNTRIO_LAN_BIND_IP)."
+      },
+      {
+        "step": "03",
+        "title": "Sign in or create the owner account",
+        "body": "First boot creates the owner account locally. No external identity provider, no cloud sign-up, and no license check before sign-in."
+      },
+      {
+        "step": "04",
+        "title": "Review the local overview",
+        "body": "After sign-in you see an overview with real data from the appliance. Storage inventory, declared pools, and share plans are available in the dashboard; on-disk format and protocol services come later."
+      }
+    ]
   },
   "surfaceShowcase": {
     "eyebrow": "Control surface",
@@ -141,44 +314,142 @@
       "linkLabel": "Not connected"
     },
     "rows": [
-      { "label": "Instance", "value": "—" },
-      { "label": "Readiness", "value": "After sign-in" },
-      { "label": "Data source", "value": "None (preview)" },
-      { "label": "Scope", "value": "Read-only overview" }
+      {
+        "label": "Instance",
+        "value": "—"
+      },
+      {
+        "label": "Readiness",
+        "value": "After sign-in"
+      },
+      {
+        "label": "Data source",
+        "value": "None (preview)"
+      },
+      {
+        "label": "Scope",
+        "value": "Read-only overview"
+      }
     ]
   },
   "productStatus": {
-    "eyebrow": "Product boundary",
-    "heading": "What this page does not show",
-    "body": "Public pages describe the product. They do not fake operations, availability, or admin actions.",
+    "eyebrow": "Current product truth",
+    "heading": "What works today vs what does not",
+    "body": "This is the availability boundary for Vyntrio OS right now — not a marketing wish list.",
     "points": [
-      "No live metrics on marketing pages",
-      "No invented downloads or testimonials",
-      "Live status only in the authenticated appliance view"
+      "Available: download metadata, USB appliance image when staged, Media Creator tools, owner sign-in, disk inventory, declared pool/share plans",
+      "Runtime-proven on appliance media: kernel → initramfs → squashfs → firstboot → local dashboard/WebUI (QEMU UEFI proof)",
+      "Not available: on-disk pool format, SMB/NFS/iSCSI, filesystem ACLs, apps/containers, VMs, remote/cloud control",
+      "Public pages never invent download links or live metrics"
     ]
   },
   "finalCta": {
-    "heading": "Next steps",
-    "body": "When install media is ready, head to the release area. If you already run an appliance, sign in on the device.",
-    "ctaDownload": "Go to release area",
+    "heading": "Install media and docs",
+    "body": "Get the current image and media creator from Download. Read Docs for build/stage/boot limits. Sign in only on a running appliance.",
+    "ctaDownload": "Go to Download",
     "ctaSignIn": "Sign in to appliance"
   },
   "downloadPage": {
     "hero": {
-      "eyebrow": "Release",
-      "title": "Install media and artifact status",
-      "description": "Artifact status, requirements, and the planned install flow in one place. Published images appear with checksum and release notes — not before."
+      "eyebrow": "Download",
+      "title": "Getting started with Vyntrio Media Creator",
+      "description": "Download the native desktop creator for your host OS, then write the dual-mode (BIOS + UEFI) USB appliance image to flash media."
+    },
+    "platformHero": {
+      "eyebrow": "Getting started",
+      "title": "Download Media Creator for your platform",
+      "description": "Install the native Vyntrio Media Creator, choose the current dual-mode release, select USB storage, and write. UEFI support is required for modern hardware.",
+      "windowsCta": "Download for Windows →",
+      "macosCta": "Download for Mac →",
+      "linuxCta": "Download for Linux →",
+      "macosBlockedNote": "macOS .app/.dmg not produced on this Linux build host (hdiutil/notarization unavailable). Tauri source lives under desktop/vyntrio-media-creator.",
+      "cardsHeading": "First, download the Media Creator",
+      "cardsIntro": "Platform packages below appear only when staged on this host. Loopback browser wizards are not native desktop parity."
+    },
+    "creatorPreview": {
+      "heading": "Creator flow",
+      "intro": "Welcome → release selection → USB target → write/confirm → progress → completion with boot guidance. Original Vyntrio UI preview (not a third-party screenshot)."
+    },
+    "installMedia": {
+      "heading": "Install image status",
+      "intro": "Primary artifact: dual-mode GPT hybrid disk image (vyntrio-install-media.img) with BIOS + UEFI. BIOS-only media is incomplete. Status is loaded from GET /api/v1/public/install-media on this host.",
+      "buildHeading": "Build and stage locally",
+      "buildIntro": "There is no hidden production download. Build the image in this repository, stage it for HTTP serving, and verify the manifest before booting hardware.",
+      "downloadHeading": "Download on this host:",
+      "limitationsHeading": "Known limitations",
+      "statusLabels": {
+        "notBuilt": "Not staged on this host",
+        "localStaging": "Available on this host",
+        "unavailable": "Staged copy invalid",
+        "loading": "Loading status…",
+        "error": "Status unavailable"
+      },
+      "rowLabels": {
+        "installImage": "Install image",
+        "imageFormat": "Image format",
+        "checksum": "Checksum (SHA-256)",
+        "verification": "Verification",
+        "releaseChannel": "Release",
+        "buildTarget": "Build target",
+        "stageTarget": "Stage target",
+        "download": "Download size",
+        "generatedAt": "Generated",
+        "supportStatus": "Support status"
+      }
+    },
+    "mediaWriter": {
+      "heading": "Native Media Creator packages",
+      "intro": "Windows: NSIS installer. Linux: .deb and AppImage. Built with Tauri (native desktop WebView). macOS packaging is blocked without a macOS host. CLI writer aliases remain optional.",
+      "honestNote": "Withdrawn as native GUI: Go loopback localhost wizard packages. Windows NSIS is unsigned (SmartScreen may warn). AppImage/.deb are unsigned. Elevation required to write USB. Install image is dual-mode BIOS+UEFI.",
+      "flowHeading": "Creator workflow",
+      "flowSteps": [
+        "Download the native Media Creator for your platform when staged.",
+        "Download vyntrio-install-media.img and verify SHA-256.",
+        "Open Media Creator: welcome → select release → select USB → confirm → write.",
+        "Eject and boot the USB in UEFI (preferred) or BIOS/legacy mode."
+      ],
+      "commandHeading": "CLI equivalents (optional)",
+      "listCommand": "vyntrio-write-media list\nvyntrio-write-media info --image vyntrio-install-media.img",
+      "writeCommand": "vyntrio-write-media write --image vyntrio-install-media.img --device <device-from-list> --dry-run\nvyntrio-write-media write --image vyntrio-install-media.img --device <device-from-list> --yes",
+      "verifyHeading": "Verify SHA-256 before writing",
+      "verifyWindows": "Get-FileHash .\\vyntrio-install-media.img -Algorithm SHA256",
+      "verifyMacOS": "shasum -a 256 vyntrio-install-media.img",
+      "verifyLinux": "sha256sum vyntrio-install-media.img",
+      "buildNote": "make package-media-creator-native && make package-write-media",
+      "downloadsHeading": "Platform availability",
+      "downloadsIntro": "Links appear only for staged files. Native installer kinds are labeled explicitly.",
+      "downloadUnavailable": "Not staged on this host — build from source",
+      "guiDownloadsHeading": "Native desktop packages",
+      "cliDownloadsHeading": "CLI aliases"
     },
     "panel": {
       "heading": "Artifact status",
       "intro": "All entries are static and will be filled with the first public release. There is currently no file to download.",
       "rows": [
-        { "label": "Install image", "value": "Not published" },
-        { "label": "Image format", "value": "Not decided yet" },
-        { "label": "Checksum (SHA-256)", "value": "—" },
-        { "label": "Signature / verification", "value": "Pending" },
-        { "label": "Release channel", "value": "Not open yet" },
-        { "label": "Companion docs", "value": "In progress" }
+        {
+          "label": "Install image",
+          "value": "Not published"
+        },
+        {
+          "label": "Image format",
+          "value": "Not decided yet"
+        },
+        {
+          "label": "Checksum (SHA-256)",
+          "value": "—"
+        },
+        {
+          "label": "Signature / verification",
+          "value": "Pending"
+        },
+        {
+          "label": "Release channel",
+          "value": "Not open yet"
+        },
+        {
+          "label": "Companion docs",
+          "value": "In progress"
+        }
       ],
       "note": "On release, filename, checksum, signature status, and release notes appear here. Until then there is no hidden download link."
     },
@@ -193,8 +464,8 @@
           "statusLabel": "Check"
         },
         {
-          "title": "EFI boot",
-          "description": "Firmware must support UEFI boot. Legacy BIOS-only systems are not the target model.",
+          "title": "Legacy BIOS boot",
+          "description": "The current image targets BIOS/legacy firmware (raw MBR disk). UEFI-only systems are not supported in this release.",
           "statusLabel": "Check"
         },
         {
@@ -213,6 +484,80 @@
           "statusLabel": "Check"
         }
       ]
+    },
+    "mediaCreator": {
+      "heading": "Create bootable install media",
+      "intro": "Step-by-step paths to turn the BIOS raw image into bootable USB media or a VM test disk. There is no in-browser writer — use the helper scripts on a machine you control.",
+      "earlyAccessNote": "Early-access engineering media: not a production release channel. USB writes are destructive. This is a USB-boot appliance image (OS on the stick); Secure Boot is unsupported.",
+      "artifactHeading": "Your install image",
+      "warningsHeading": "Before you write anything",
+      "warnings": [
+        "Writing to the wrong block device erases that disk permanently.",
+        "Use BIOS/legacy firmware only — UEFI-only hosts cannot boot this image.",
+        "Helper scripts run on your computer, not in the browser.",
+        "Boot is structurally verified on the build host — confirm on your own hardware or VM."
+      ],
+      "usbHeading": "USB stick (bare metal)",
+      "usbIntro": "For a physical server or PC: download or build the image, verify the checksum, then write the entire raw disk image to a USB stick.",
+      "usbSteps": [
+        {
+          "step": "1",
+          "title": "Get the image",
+          "body": "Download from this page when staged, or run make install-media then make release-install-media-stage in the repository."
+        },
+        {
+          "step": "2",
+          "title": "Verify SHA-256",
+          "body": "Compare the checksum above with sha256sum on the file. Do not write if it mismatches."
+        },
+        {
+          "step": "3",
+          "title": "Choose the USB device",
+          "body": "Use lsblk or your OS disk tool. Unmount partitions and confirm the whole-disk path — not a partition number."
+        },
+        {
+          "step": "4",
+          "title": "Dry-run, then write",
+          "body": "Run the helper with --dry-run first, then run with sudo and type the device path to confirm."
+        },
+        {
+          "step": "5",
+          "title": "Boot in BIOS mode",
+          "body": "Select legacy BIOS boot from the USB stick. Do not use UEFI-only boot settings."
+        }
+      ],
+      "usbHelperLabel": "Helper script (from repository root):",
+      "usbHelperCommand": "# dry-run (validates image + checksum)\n./scripts/write-install-media-usb.sh --dry-run\n\n# write (destructive — replace /dev/sdX with your device)\nsudo ./scripts/write-install-media-usb.sh --device /dev/sdX",
+      "vmHeading": "Virtual machine (non-destructive)",
+      "vmIntro": "For evaluation without touching a USB stick: attach the .img file as a virtual disk. The image file is read, not overwritten.",
+      "vmSteps": [
+        {
+          "step": "1",
+          "title": "Get the image",
+          "body": "Same artifact as bare metal — staged download or local build output."
+        },
+        {
+          "step": "2",
+          "title": "Set firmware to BIOS",
+          "body": "In QEMU, VirtualBox, or VMware: choose legacy BIOS, not UEFI."
+        },
+        {
+          "step": "3",
+          "title": "Attach as raw disk",
+          "body": "Point the VM at vyntrio-install-media.img as an IDE/SATA disk. Use --firmware uefi (OVMF) or --firmware bios."
+        },
+        {
+          "step": "4",
+          "title": "Optional helper",
+          "body": "From the repo, run the VM helper below if qemu-system-x86_64 is installed."
+        }
+      ],
+      "vmHelperLabel": "Helper script (from repository root):",
+      "vmHelperCommand": "# print command without booting\n./scripts/run-install-media-vm.sh --dry-run\n\n# boot when qemu is available\n./scripts/run-install-media-vm.sh",
+      "afterBootHeading": "After the VM or USB boot",
+      "afterBootBody": "GRUB loads the live initramfs. Open the dashboard on the appliance (loopback HTTP by default). There is no target-disk install step yet — see docs for first boot and limitations.",
+      "checksumPending": "Available after staging on this host",
+      "downloadPending": "Build and stage locally — see status section above"
     },
     "installOutline": {
       "eyebrow": "Workflow",

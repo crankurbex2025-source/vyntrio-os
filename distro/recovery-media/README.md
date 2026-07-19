@@ -16,7 +16,7 @@ sections C, D, H). Restore mutation rules remain
 | Layout manifest (`manifest.yaml`) | **Scaffold** — declarative only |
 | Boot/live recovery environment | **Not started** — future slice |
 | ISO/USB build pipeline | **Not started** — future slice |
-| `vyntrio-restore` CLI | **Not started** — no `cmd/restore/` |
+| `vyntrio-restore` CLI | **Implemented** — `cmd/restore/` |
 | Install media | **Separate deliverable** — `distro/install-media/` |
 
 ## What recovery media is for

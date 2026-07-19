@@ -1,7 +1,8 @@
 # Website design direction (Block 11R)
 
 **Status:** Accepted for redesign correction track (Slice 11R.1 foundation).
-**Shipped routes `/`, `/download`, `/docs` are v2 public surfaces** (Block 11R.10–11R.11 cutover).
+**Shipped routes `/`, `/download`, `/docs` are v2 public surfaces** (Block 11R.10–11R.12 cutover).
+**Live:** `https://vyntrio.xyz/` serves the embedded SPA from `vyntrio-api`.
 **Preview mirrors:** `/design-preview/landing`, `/design-preview/download`, `/design-preview/docs` (banner + preview links).
 **Rollback review:** `/design-preview/landing-legacy`, `/design-preview/download-legacy`.
 
@@ -12,7 +13,7 @@
 | Router surfaces (`/`, `/login`, `/app`) | English-only copy |
 | Appliance/public split | Purple SaaS template aesthetic |
 | Honesty rules (no fake data) | Symmetric 3-card hero scaffold |
-| Embedded delivery model | Decoupled public/dashboard token families (interim until 11R.6) |
+| Embedded delivery model | Unified `--vyn-*` tokens across public + appliance (11R.6) |
 
 ## Product positioning
 
@@ -63,8 +64,8 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 - `prefers-reduced-motion` mandatory — no GSAP setup when enabled
 - Visual references: restrained grain/depth from [animated-electrician](https://github.com/Ismail-Khan-Dev/animated-electrician); appliance density from [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA); homelab theme discipline from [theme.park](https://github.com/themepark-dev/theme.park)
 - Responsive: fluid `clamp()` gutters/spacing, `auto-fit`/`minmax()` grids, container queries on preview sections (`public-responsive.css`); layout reference patterns from [innovate-tech-landing](https://github.com/CodeWithKarol/innovate-tech-landing) and GitHub.com layout kit (bento/grid rhythm, not visual clone)
-- Performance: `/` and preview routes load landing/motion via `React.lazy` + `Suspense`; Vite `manualChunks` isolates `preview-gsap` from the main app shell
-- Landing visual (11R.7): chassis line-art, hero accent rule, section surface variants (`hero` / `statement` / `finale`), sticky blurred header — references from [theme.park Unraid base](https://github.com/themepark-dev/theme.park/blob/master/css/base/unraid/unraid-base.css) and [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA) panel density
+- Performance: `/`, `/download`, `/docs`, and preview routes load via `React.lazy` + `Suspense`; Vite `manualChunks` isolates `preview-gsap` from the main app shell
+- Landing visual (11R.8): chassis line-art, hero accent rule, section surface variants (`hero` / `statement` / `finale`), sticky blurred header — references from [theme.park Unraid base](https://github.com/themepark-dev/theme.park/blob/master/css/base/unraid/unraid-base.css) and [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA) panel density
 - Landing visual/media (11R.8): signal-path storytelling, pillar glyphs, surface bezel lamps, framed showcase mount — references from [Rackula](https://github.com/RackulaLives/Rackula), [rackpad](https://github.com/Kobii-git/rackpad), [tinyDC](https://github.com/GoodrichDev/tinydc.net) rack composition (product-relevant, not cloned)
 - Product story (11R.9): shared preview context nav, install/operate journey modules, cross-route product CSS — references from [theme.park Unraid](https://github.com/themepark-dev/theme.park), [Unraid-PWA](https://github.com/laurensguijt/Unraid-PWA), homelab ops patterns from [UniFi Homelab Ops](https://github.com/merlijntishauser/unifi-homelab-ops)
 - No fake live metric animation, no looping decoration
@@ -78,15 +79,15 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 | **11R.3** | **Implemented** | Preview landing v2 section architecture on `/design-preview/landing` |
 | **11R.4** | **Implemented** | Public component system for download/docs preview surfaces |
 | **11R.5** | **Implemented** | Restrained GSAP motion layer on `/design-preview/*` |
-| 11R.6 | Planned | Appliance token convergence |
-| 11R.7 | Planned | PWA manifest |
+| 11R.6 | Implemented | Appliance/login token convergence on `vyntrio.tokens.css` |
+| 11R.7 | Implemented | PWA manifest and web shortcut installability (no service worker) |
 | **11R.8** | **Implemented** | Landing visual/media (chassis, signal path, glyphs) |
 | **11R.9** | **Implemented** | Product story modules across preview routes |
 | **11R.10** | **Implemented** | Root cutover `/` → v2; preview mirror + legacy fallback |
 | **11R.11** | **Implemented** | Shipped `/download` + `/docs` cutover; production link cleanup |
 | **11R.12** | **Implemented** | Public docs/release content depth; install readiness guidance |
 
-## Preview artifacts
+## Shipped routes and preview artifacts
 
 - Routed: `/` (`LandingPage.tsx` + `PublicLandingView.tsx`)
 - Routed: `/download` (`DownloadPage.tsx` + `PublicDownloadView.tsx`)
@@ -100,6 +101,14 @@ Structural reference: [unraid.net](https://unraid.net). Dashboard density refere
 - Motion scope: `surfaces/public/preview/motion/PreviewPageMotion.tsx`
 - Static moodboard: `frontend/design-preview/direction-board.html` (not embedded)
 
+## PWA installability (11R.7)
+
+- Manifest: `frontend/public/site.webmanifest` (served at `/site.webmanifest`)
+- Icons: `frontend/public/icons/icon-192.png`, `icon-512.png`, `icon.svg`
+- `start_url` / `scope`: `/` (production routes — not preview mirrors)
+- **Boundary:** browser “install app” adds a web shortcut only. It does **not** install Vyntrio OS on hardware, ship offline support, or replace USB/ISO install media.
+- **No service worker** in this slice — no offline-first or cache claims.
+
 ## Coherence rule
 
-Public site, login, and `/app` must converge on `vyntrio.tokens.css` by slice 11R.6. Until then, legacy `--dashboard-*` aliases remain for appliance stability.
+Public site, login, and `/app` share `vyntrio.tokens.css` (`--vyn-*` primitives). Legacy `--public-*` aliases remain only for Slice 11.1 `PublicLayout` routes.

@@ -86,9 +86,12 @@ Canonical file: `/etc/vyntrio/config.toml`. Development/tests may pass
 | `listen_port` | integer | 1–65535 |
 | `state_dir` | string | Must equal `/var/lib/vyntrio` exactly in production |
 | `log_level` | string | `debug`, `info`, `warn`, or `error` (exact match) |
-| `cookie_secure` | boolean | `false` allowed only with loopback `bind_address` |
+| `cookie_secure` | boolean | `false` allowed only with loopback `bind_address`; non-loopback requires `true` |
+| `tls_cert_file` | string (optional) | Absolute path to TLS certificate PEM; must be paired with `tls_key_file` |
+| `tls_key_file` | string (optional) | Absolute path to TLS private key PEM; must be paired with `tls_cert_file` |
 
-All keys are required. Unknown keys, duplicate keys, wrong types, invalid
-values, and path-boundary violations fail startup. Legacy `VYNTRIO_*` runtime
-environment variables no longer affect the API server. See
+All required keys (first five) must be present. Optional TLS keys must appear
+together. Unknown keys, duplicate keys, wrong types, invalid
+values, and path-boundary violations fail startup. Non-loopback `bind_address`
+requires `cookie_secure=true` and both TLS paths. See
 `docs/ADR/0005-appliance-runtime-operations.md`.

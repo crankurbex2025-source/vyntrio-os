@@ -1,21 +1,39 @@
-# Declarative install-image bootability manifest (scaffold only).
+# Declarative install-image bootability manifest.
 # Authority: docs/ADR/0006-appliance-install-recovery-media.md (install media)
 # Envelope contract: distro/install-media/envelope-contract.md (Slice 9.7)
 # Envelope assembly: scripts/assemble-install-media-envelope.sh (Slice 9.8)
-# Bootability contract: distro/install-media/bootability-contract.md (Slice 9.9)
-# Not consumed by any bootloader, kernel, or ISO/USB builder in Slice 9.9.
+# Bootability contract: distro/install-media/bootability-contract.md
+# Executable foundation: scripts/initialize-install-media-bootability.sh (Slice 9.11)
 
 schema_version: vyntrio-install-media-bootability-v1
 media_role: install
 
 description: >
-  Bootable initialization contract for install images. Defines what must be added
-  to a local envelope before it becomes a bootable ISO/USB deliverable. Does not
-  execute boot loaders, live-root builds, partitioning, or installer logic.
+  Bootable initialization for install images. Slice 9.11 populates boot/ and
+  live_root/ stubs, validates layout, and emits a non-bootable image stub.
+  Slice 9.12 replaces the stubs with a real boot chain (real kernel, initrd,
+  GRUB core, grub.cfg). Slice 9.13 wraps that boot chain into a firmware-bootable
+  image: an ISO when an ISO9660 writer exists, otherwise a real MBR/BIOS raw disk
+  image via grub-bios-setup (emitted + structurally verified here), or an honest
+  documented fallback when no strategy is available. Slice 9.14 adds a gated
+  runtime-boot harness (runs under qemu when present; honest skip here) and wires
+  the first-boot dashboard entrypoint + service into live_root. Slice 9.15 composes
+  the minimal live-rootfs userland (loader + libc closure, busybox, vyntrio-api,
+  /init) and emits a live initramfs; the userland is verified by chroot execution
+  and an HTTP 200 dashboard probe, but that is not a boot. Slice 9.16 adds the
+  smallest hardware bring-up to that initramfs: a dep-resolved storage/network
+  kernel-module set, a module-load + DHCP path in /init, and a re-emitted
+  initramfs carrying the modules (staged + modinfo-validated, not loaded on the
+  build host). Slice 9.17 swaps the image initrd from the host Debian initrd to
+  that live initramfs and rebuilds the firmware image, proven by sha256 of the
+  initrd extracted back out of the image (still not a runtime boot). UEFI,
+  runtime-boot verification, dashboard-reachable-on-first-boot, and USB creator
+  remain deferred.
 
 separate_from:
   recovery_media: distro/recovery-media/
-  installer_execution: deferred
+  installer_execution: secondary_internal_infrastructure
+  usb_creator: deferred
   target_disk_state:
     - /var/lib/vyntrio/
     - deployed /etc/vyntrio/config.toml on a running appliance
@@ -37,29 +55,36 @@ envelope_input:
     Slice 9.8 assembles the envelope tree locally. Bootability initialization
     consumes this tree; it does not replace payload staging (Slice 9.6).
 
-# What bootable initialization adds beyond Slice 9.8 envelope assembly.
 bootability_additions:
   boot_layer:
-    status: deferred
+    status: stub_implemented
     replaces: boot/LAYER.txt
     on_media_path: boot/
-    future_artifacts:
-      - bootloader_config
-      - kernel_image
-      - initrd_image
-    purpose: Firmware handoff to a minimal live runtime (UEFI/BIOS deferred)
-    executable_build: false
+    slice: "9.11"
+    script: scripts/initialize-install-media-bootability.sh
+    artifacts:
+      - bootloader_config: boot/loader/entries/vyntrio-install.conf.stub
+      - kernel_image: boot/vmlinuz.stub
+      - initrd_image: boot/initrd.img.stub
+      - layer_record: boot/BOOT_LAYER.txt
+    purpose: Firmware handoff stubs for a future live runtime
+    firmware_bootable: false
+    executable_build: stub
 
   live_root_layer:
-    status: deferred
+    status: stub_implemented
     replaces: live_root/LAYER.txt
     on_media_path: live_root/
-    future_artifacts:
-      - minimal_root_filesystem
-      - live_init_system
-      - future_installer_host_runtime
-    purpose: Host environment for future install execution only
-    executable_build: false
+    slice: "9.11"
+    script: scripts/initialize-install-media-bootability.sh
+    artifacts:
+      - minimal_root_filesystem: directory skeleton
+      - live_init_system: live_root/usr/lib/vyntrio/live-init.sh
+      - live_env: live_root/etc/vyntrio/live.env
+      - layer_record: live_root/LIVE_ROOT.txt
+    purpose: Host environment skeleton for future install execution only
+    firmware_bootable: false
+    executable_build: stub
     excludes:
       - appliance_sqlite_state
       - owner_credentials
@@ -69,17 +94,395 @@ bootability_additions:
       - instance_secrets
       - recovery_media_tooling
       - preinstalled_target_disk_payloads
+    exclusion_boundary_note: >-
+      "preinstalled_target_disk_payloads" forbids staging payload/ onto a target
+      disk from live_root. It does NOT forbid the live session's own dashboard
+      runtime: Slice 9.15 places vyntrio-api in live_root/usr/bin/ so the live
+      medium can serve the install dashboard (the Unraid-like flow). That copy is
+      the LIVE runtime and is distinct in role from payload/usr/bin/vyntrio-api,
+      which is the target-disk artifact. State, credentials, tokens, licenses and
+      secrets remain forbidden in live_root and are enforced fail-closed.
 
   image_envelope:
-    status: deferred
+    status: stub_implemented
+    slice: "9.11"
+    outputs:
+      - path: distro/install-media/build/vyntrio-install-media-NOT-BOOTABLE.stub.tar
+        format: tar_provenance_archive
+        firmware_bootable: false
+      - path: distro/install-media/build/IMAGE_STUB.txt
+        format: provenance_record
     future_outputs:
       - bootable_iso_file
       - raw_usb_image_file
-    purpose: Ephemeral distribution artifact referencing populated boot/live_root/payload
-    executable_build: false
+    purpose: Tangible emission artifact from initialized envelope (stub only)
+    executable_build: stub
+
+  real_boot_chain:
+    status: implemented
+    slice: "9.12"
+    script: scripts/build-install-media-image.sh
+    replaces: boot/*.stub placeholders (when build host is capable)
+    artifacts:
+      - kernel_image: boot/vmlinuz (real Linux kernel, verified via grub-file)
+      - initrd_image: boot/initrd.img (real initramfs, magic-checked)
+      - bootloader_config: boot/grub/grub.cfg (real GRUB config)
+      - bootloader_core: boot/grub/i386-pc/core.img (real GRUB core via grub-mkimage)
+      - bios_boot_blocks: boot/grub/i386-pc/{boot.img,cdboot.img,*.mod}
+    inputs:
+      kernel: /boot/vmlinuz-*  (override VYNTRIO_HOST_KERNEL)
+      initrd: /boot/initrd.img-*  (override VYNTRIO_HOST_INITRD)
+      grub_pc_dir: /usr/lib/grub/i386-pc  (override VYNTRIO_GRUB_I386_PC_DIR)
+    firmware_bootable: false
+    honest_fallback:
+      condition: real kernel/initrd/grub tooling unavailable
+      result: boot_chain=stub, 9.11 placeholders carried forward
+    outputs:
+      - path: distro/install-media/build/vyntrio-install-media.iso
+        format: iso9660_eltorito
+        firmware_bootable: true
+        emitted_when: grub-mkrescue + xorriso/genisoimage present
+      - path: distro/install-media/build/vyntrio-install-media-REAL-BOOTCHAIN-NO-ISO.tar
+        format: tar_real_bootchain_no_iso
+        firmware_bootable: false
+        emitted_when: real boot chain but no ISO9660/El Torito writer
+      - path: distro/install-media/build/IMAGE.txt
+        format: provenance_record
+    blockers_for_firmware_bootable:
+      - iso9660_or_eltorito_writer_missing   # xorriso / genisoimage
+      - raw_image_filesystem_tooling_missing # mkfs.vfat / mtools / loop-mount
+      - efi_grub_target_missing              # x86_64-efi GRUB modules
+
+  firmware_wrapper:
+    status: implemented
+    slice: "9.13"
+    script: scripts/wrap-install-media-image.sh
+    purpose: Wrap the real boot chain into a firmware-bootable image, or fall back honestly.
+    strategies:
+      - id: iso9660_eltorito
+        tools: [grub-mkrescue, "one of: xorriso|xorrisofs|genisoimage"]
+        available_here: false           # no ISO writer on this host
+        firmware_bootable: true
+      - id: raw_mbr_bios_disk
+        tools: [mke2fs, debugfs, sfdisk, grub-bios-setup, grub-mkimage]
+        requires: non_tmpfs_build_dir   # grub-bios-setup needs a disk-backed FS
+        available_here: true            # emitted + structurally verified
+        firmware_bootable: true
+        boot_mode: bios_legacy
+    outputs:
+      - path: distro/install-media/build/vyntrio-install-media.iso
+        format: iso9660_eltorito
+        emitted_when: ISO strategy available
+      - path: distro/install-media/build/vyntrio-install-media-bios.img
+        format: raw_mbr_bios_disk
+        emitted_when: raw strategy available (this host)
+        firmware_bootable: true
+        structural_verification: "MBR 0x55AA + GRUB embed + bootable ext2 @ sector 2048"
+        runtime_boot_tested: false      # no qemu/VM on build host
+      - path: distro/install-media/build/WRAPPER.txt
+        format: provenance_record
+    honest_fallback:
+      condition: no ISO writer AND (raw tools missing OR build dir is tmpfs) OR boot_chain=stub
+      result: firmware_bootable=false, image_wrapper=absent, concrete blockers in WRAPPER.txt
+    deferred:
+      - uefi_x86_64_efi_target          # BIOS-only until grub-efi-amd64-bin present
+      - iso_image_on_this_host          # until xorriso/genisoimage present
+      - runtime_boot_verification       # see runtime_verification (Slice 9.14)
+
+  runtime_verification:
+    status: implemented
+    slice: "9.14"
+    script: scripts/verify-runtime-boot.sh
+    purpose: Boot the firmware image in a VM when available; wire the first-boot dashboard path.
+    boot_harness:
+      tools: ["one of: qemu-system-x86_64|qemu-system-i386", "/dev/kvm (optional)"]
+      available_here: false             # no qemu/VM on this host
+      method: "headless raw-image boot, serial log, scan for GRUB/kernel markers"
+      runtime_boot_tested_here: false
+      skip_reason: "no_vm_harness: qemu-system-x86_64/i386 not installed and /dev/kvm absent"
+    first_boot_path:
+      entrypoint: live_root/usr/lib/vyntrio/firstboot.sh
+      service: live_root/etc/systemd/system/vyntrio-firstboot.service
+      dashboard: "vyntrio-api embedded UI on http://<host>:8080"
+      dashboard_reachable: false
+      reachable_requires:
+        - live_rootfs_userland_with_vyntrio_api   # api + busybox are dynamically linked
+        - boot_environment_vm_or_hardware
+    outputs:
+      - path: distro/install-media/build/RUNTIME_BOOT.txt
+        format: provenance_record
+      - path: distro/install-media/build/runtime-boot-serial.log
+        format: serial_capture
+        emitted_when: a VM harness actually ran
+
+  live_rootfs_userland:
+    status: implemented
+    slice: "9.15"
+    script: scripts/compose-live-rootfs.sh
+    purpose: Smallest userland that can actually start the first-boot path.
+    contents:
+      - dynamic_loader: live_root/lib64/ld-linux-x86-64.so.2 (dereferenced)
+      - library_closure: live_root/lib/x86_64-linux-gnu/ (ldd closure of busybox + api)
+      - shell_and_coreutils: live_root/bin/busybox + applet symlinks
+      - live_dashboard_runtime: live_root/usr/bin/vyntrio-api  # live session, not a target-disk payload
+      - live_config: live_root/etc/vyntrio/config.toml         # template only, no secrets
+      - init: live_root/init  # PID 1 -> firstboot.sh
+    verified_here:
+      shell_exec_in_chroot: true
+      api_exec_in_chroot: true
+      dashboard_probe: served_http_200   # vyntrio-api served the embedded UI from this userland
+      probe_isolation: throwaway_chroot_copy  # shipped live_root stays state-free
+      note: >-
+        Verification is chroot execution + HTTP probe, NOT a boot. It proves the
+        userland runs and serves; it does not prove the image boots.
+    outputs:
+      - path: distro/install-media/build/vyntrio-live-initramfs.cpio.gz
+        format: initramfs_cpio_gz
+        contains_init_at_root: true
+      - path: distro/install-media/build/LIVE_ROOTFS.txt
+        format: provenance_record
+    not_done_here:
+      wired_into_image_initrd: false   # addressed later: modules in 9.16, initrd swap in 9.17
+      reason: >-
+        At 9.15 the userland carried no kernel modules and no VM existed to verify
+        the boot; Slice 9.16 adds modules and Slice 9.17 swaps the image initrd to
+        this live initramfs (proven structurally, runtime boot still unverified).
+    dashboard_reachable_on_boot: false
+
+  live_initramfs_hardware:
+    status: implemented
+    slice: "9.16"
+    script: scripts/enable-live-initramfs-hardware.sh
+    purpose: Smallest viable hardware bring-up so a real boot can reach the live runtime.
+    runs_after: compose_live_rootfs_userland   # augments live_root; does not recompose 9.15
+    kernel_modules:
+      source: /lib/modules/<kver>  # override VYNTRIO_MODULES_DIR / VYNTRIO_LIVE_KVER
+      matched_to: host kernel shipped by the boot chain (Slice 9.12)
+      selection:
+        storage: [ahci, libahci, sd_mod, sr_mod, nvme, virtio_blk, virtio_scsi, virtio_pci, ata_piix, ata_generic, xhci_pci, ehci_pci, uhci_hcd, usb_storage]
+        filesystem: [ext4, vfat, isofs, overlay, squashfs]
+        network: [virtio_net, e1000, e1000e, r8169, igb, tg3]
+      dependency_resolution: modules.dep (full transitive chain per module)
+      metadata_regenerated: depmod -b live_root <kver>
+      staged_into: live_root/lib/modules/<kver>/
+      load_list: live_root/etc/vyntrio/modules.load
+      not_present_modules: recorded (non-fatal, host-kernel dependent)
+    networking:
+      bring_up_beyond_loopback: true
+      method: busybox_udhcpc_on_ethernet_interfaces
+      lease_handler: live_root/usr/share/udhcpc/default.script
+      bring_up_script: live_root/usr/lib/vyntrio/hw-init.sh
+    init_integration:
+      hw_init_invoked_from: live_root/init
+      order: mount_pseudo_fs -> load_modules -> network_up -> firstboot
+    verified_here:
+      shell_exec_in_chroot: true
+      modules_present_in_live_root: true
+      sample_module_modinfo_ok: true
+      initramfs_contains_kernel_modules: true
+      note: >-
+        Modules are staged + dep-regenerated + modinfo-validated. They are NOT
+        loaded here: modprobe would target the build-host kernel. Actual load
+        happens only inside a real live boot.
+    outputs:
+      - path: distro/install-media/build/vyntrio-live-initramfs.cpio.gz
+        format: initramfs_cpio_gz
+        note: re-emitted, now carrying kernel modules
+      - path: distro/install-media/build/HARDWARE_ENABLE.txt
+        format: provenance_record
+    supersedes_gap: kernel_modules_for_storage_and_network_in_initramfs
+    not_done_here:
+      wired_into_image_initrd: false   # done in Slice 9.17
+      boot_verified: false
+      dashboard_reachable_on_boot: false
+
+  initrd_swap:
+    status: implemented
+    slice: "9.17"
+    script: scripts/swap-live-initramfs-into-image.sh
+    purpose: Boot the Vyntrio live initramfs instead of the host Debian initrd.
+    runs_after: enable_live_initramfs_hardware   # needs the hardware-enabled initramfs
+    reuses: scripts/wrap-install-media-image.sh   # existing 9.13 build + structural verify
+    swap:
+      from: host_debian_initrd (staged by Slice 9.12)
+      to: distro/install-media/build/vyntrio-live-initramfs.cpio.gz
+      target: envelope/boot/initrd.img
+      host_initrd_backup: distro/install-media/build/initrd.host-backup.img
+    verified_here:
+      image_initrd_matches_live_initramfs_sha256: true   # extracted from the image via debugfs
+      image_initrd_differs_from_host: true
+      extracted_initrd_has_init_busybox_modules: true
+      structural_verification: pass
+      proof_method: debugfs_dump_from_partition (raw) / boot_tree_verbatim (iso)
+      note: >-
+        Swap is proven by sha256 of the initrd extracted back out of the image,
+        NOT by a boot. No qemu/VM here.
+    fail_closed:
+      on_failure: restore host initrd, rebuild known-good image, record swap_status=failed, exit non-zero
+      idempotent: re-run detects already_swapped_on_entry and preserves the backup
+    outputs:
+      - path: distro/install-media/build/vyntrio-install-media-bios.img
+        format: raw_mbr_bios_disk
+        note: rebuilt; now boots the Vyntrio live initramfs
+      - path: distro/install-media/build/INITRD_SWAP.txt
+        format: provenance_record
+    not_done_here:
+      runtime_boot_tested: false
+      dashboard_reachable_on_boot: false
+    closes_gap: swap_image_initrd_to_live_initramfs
+
+  local_dashboard_stability_stage2:
+    status: implemented
+    slice: "10.2"
+    stage: "2"
+    subsystem: install-media-first-boot-dashboard
+    model: dashboard_first   # local browser WebGUI is the primary management surface
+    scripts:
+      - scripts/verify-runtime-boot.sh   # generates the hardened firstboot.sh + records
+      - scripts/compose-live-rootfs.sh   # local / and /readyz probe
+    changes:
+      firstboot_shell: /bin/sh   # was '#!/usr/bin/env bash' — could not exec in busybox-only live runtime
+      dashboard_supervised: true # bounded respawn loop (VYNTRIO_DASHBOARD_MAX_RESTARTS, default 5)
+      local_readiness_proof: readyz_http_200_from_throwaway_chroot   # DB-ready, not just static UI
+    honest_limits:
+      dashboard_bind_default: loopback
+      tls_readiness: ready
+      dashboard_reachable_on_boot: false   # no qemu/VM boot proof here (see runtime_verification_stage2)
+    boot_image_chain_modified: false   # first-boot wiring only; no kernel/initrd-build/bootloader change
+    outputs:
+      - path: distro/install-media/build/RUNTIME_BOOT.txt
+        note: records dashboard_primary_surface/dashboard_supervised/lan_exposure_blocked_on
+      - path: distro/install-media/build/LIVE_ROOTFS.txt
+        note: records dashboard_ready_probe + dashboard_readyz_status
+      - path: distro/install-media/envelope/live_root/usr/lib/vyntrio/firstboot.sh
+        note: busybox-sh, supervised dashboard entrypoint
+    remaining_for_remote_connect:
+      - vm_or_hardware_boot_harness_for_reachability_proof
+      - first_boot_onboarding_polish
+
+  tls_lan_dashboard_readiness_stage2:
+    status: implemented
+    slice: "10.4"
+    stage: "2"
+    subsystem: install-media-first-boot-dashboard
+    model: dashboard_first
+    purpose: Remove the TLS config blocker for safe non-loopback LAN dashboard bind
+    scripts:
+      - scripts/prepare-live-dashboard-tls.sh
+      - scripts/verify-runtime-boot.sh
+      - scripts/compose-live-rootfs.sh
+    api_changes:
+      optional_tls_keys:
+        - tls_cert_file
+        - tls_key_file
+      non_loopback_invariant: cookie_secure=true and TLS file pair required
+      server: ListenAndServeTLS when TLS paths configured
+    runtime_changes:
+      tls_runtime_prep: live_root/usr/lib/vyntrio/prepare-live-dashboard-tls.sh
+      lan_bind_enable: VYNTRIO_LAN_BIND_IP
+      default_bind: loopback_http
+    honest_limits:
+      dashboard_reachable_on_boot: false
+      lan_https_requires: operator VYNTRIO_LAN_BIND_IP plus openssl in live userland
+      no_remote_connect: true
+      no_certificate_manager: true
+    records:
+      tls_readiness: ready
+      replaces: lan_exposure_blocked_on_tls_required_for_non_loopback_bind
+    outputs:
+      - path: distro/install-media/build/RUNTIME_BOOT.txt
+      - path: distro/install-media/build/LIVE_ROOTFS.txt
+      - path: internal/platform/config/tls.go
+      - path: internal/platform/tlsutil/generate.go
+    remaining_for_remote_connect:
+      - booted_guest_reachability_proof
+      - owner_bootstrap_on_booted_live_runtime
+      - trusted_lan_certificate_story_beyond_runtime_self_signed
+
+  first_boot_onboarding_clarity_stage2:
+    status: implemented
+    slice: "10.3"
+    stage: "2"
+    subsystem: install-media-first-boot-dashboard
+    model: dashboard_first
+    purpose: Make the first-boot local path obvious to the operator and to customers
+    scripts:
+      - scripts/verify-runtime-boot.sh   # generates the onboarding banner + provenance fields
+    product_changes:
+      firstboot_onboarding_banner: clear   # printed at dashboard start in the live runtime
+      onboarding_steps:
+        - boot verified media
+        - open the local dashboard on the booted device (http://<host>:8080)
+        - sign in or create the owner account on first boot
+        - review the read-only overview with real appliance data
+    website_changes:
+      - path: frontend/src/surfaces/public/landing/PublicLandingView.tsx
+        note: '#first-boot-setup' local setup section (DE/EN), mirrors product steps exactly
+    records:
+      - path: distro/install-media/envelope/live_root/usr/lib/vyntrio/FIRST_BOOT.txt
+      - path: distro/install-media/build/RUNTIME_BOOT.txt
+    honest_limits:
+      - storage/services/remote explicitly deferred in the onboarding text
+      - LAN HTTPS requires operator VYNTRIO_LAN_BIND_IP (Slice 10.4); not auto-exposed
+    remaining_for_remote_connect:
+      - booted-guest proof of owner bootstrap flow
+
+  storage_ui_foundation_stage3:
+    status: implemented
+    slice: "11.1"
+    stage: "3"
+    subsystem: appliance-dashboard-storage
+    purpose: First honest read-only storage/NAS management surface in the local WebGUI
+    frontend:
+      - frontend/src/features/storage/storageDto.ts
+      - frontend/src/features/storage/StorageShell.tsx
+      - frontend/src/surfaces/appliance/ApplianceApp.tsx
+    api: GET /api/v1/storage/disks
+    honest_limits:
+      - read_only_inventory_only
+      - no_pools_shares_smart_or_destructive_actions
+      - no_booted_guest_proof_of_storage_on_live_runtime
+    remaining:
+      - storage_mutation_flows
+      - pools_shares_ui
+      - boot_harness_for_end_to_end_proof
+
+  runtime_verification_stage2:
+    status: implemented_blocked_here
+    slice: "10.1"
+    stage: "2"
+    subsystem: install-media-runtime-verification
+    not_block10_installer: >-
+      Stage-2 (first-boot dashboard) boot verification; unrelated to the
+      staged-installer Block 10, which remains secondary internal infrastructure.
+    script: scripts/verify-live-boot-runtime.sh
+    read_only: true   # never writes boot/, live_root/, or image artifacts
+    purpose: Boot the initrd-swapped image on a real harness and prove the dashboard answers over HTTP, or fail closed.
+    harness_detection: [qemu-system-x86_64, qemu-system-i386, "/dev/kvm (accel)"]
+    dashboard_proof: booted_guest_http_200_via_qemu_user_net_hostfwd   # NOT chroot/structural
+    outcomes: [dashboard_reachable, boot_without_dashboard, no_boot_markers, blocked, stage1_regression]
+    result_here:
+      harness: none
+      runtime_boot_tested: false
+      dashboard_reachable_on_boot: false
+      status: blocked
+      chain_modified: false
+      blockers:
+        - no_vm_harness (qemu-system-x86_64/i386 absent)
+        - no_kvm (/dev/kvm absent)
+        - no_hardware_harness
+    outputs:
+      - path: distro/install-media/build/RUNTIME_VERIFY.txt
+        format: provenance_record
+      - path: distro/install-media/build/runtime-verify-serial.log
+        format: serial_capture
+        emitted_when: a harness actually booted the image
+    missing_for_dashboard_on_boot_proof:
+      - vm_or_hardware_boot_harness
+      - booted_guest_http_200_from_vyntrio_api
 
 initialization_flow:
-  current_slice: "9.9"
+  current_slice: "10.2"
   steps:
     - id: stage_payload
       status: implemented
@@ -90,24 +493,81 @@ initialization_flow:
       slice: "9.8"
       action: Assemble local envelope at distro/install-media/envelope/
     - id: initialize_boot_layer
-      status: deferred
-      action: Populate boot/ with bootloader, kernel, and initrd references
+      status: stub_implemented
+      slice: "9.11"
+      action: Populate boot/ with bootloader/kernel/initrd stubs
     - id: initialize_live_root
-      status: deferred
-      action: Populate live_root/ with minimal live filesystem
+      status: stub_implemented
+      slice: "9.11"
+      action: Populate live_root/ with directory skeleton and live-init stub
     - id: validate_bootable_layout
-      status: deferred
-      action: Verify boot/live_root/payload layout before image emission
+      status: stub_implemented
+      slice: "9.11"
+      action: Verify boot/live_root/payload layout before image stub emission
     - id: emit_bootable_image
-      status: deferred
-      action: Produce bootable ISO or raw USB image file from initialized envelope
+      status: stub_implemented
+      slice: "9.11"
+      action: Emit non-bootable tar stub under distro/install-media/build/
+      note: Real ISO/raw USB image deferred
+    - id: populate_real_boot_chain
+      status: implemented
+      slice: "9.12"
+      action: Replace boot/*.stub with real kernel/initrd/GRUB core + grub.cfg
+      note: Honest stub fallback when build host lacks kernel/initrd/grub tooling
+    - id: emit_best_available_image
+      status: implemented
+      slice: "9.12"
+      action: Emit bootable ISO when an ISO9660 writer exists, else real-bootchain tar
+      note: firmware_bootable stays false until an ISO/raw writer is available
+    - id: wrap_firmware_bootable_image
+      status: implemented
+      slice: "9.13"
+      action: Wrap boot chain into a firmware-bootable image (ISO or raw BIOS disk) or fall back honestly
+      note: Raw BIOS image emitted + structurally verified here; ISO/UEFI/runtime-boot deferred
+    - id: runtime_boot_and_first_boot_path
+      status: implemented
+      slice: "9.14"
+      action: Runtime-boot the image in a VM when present; wire first-boot dashboard entrypoint + service
+      note: Runtime boot skipped honestly here (no qemu); dashboard_reachable stays false until userland+boot
+    - id: compose_live_rootfs_userland
+      status: implemented
+      slice: "9.15"
+      action: Compose minimal userland (loader+libc closure, busybox, vyntrio-api, /init) and emit live initramfs
+      note: Verified by chroot exec + dashboard HTTP 200 probe; not a boot. Image initrd not swapped yet.
+    - id: enable_live_initramfs_hardware
+      status: implemented
+      slice: "9.16"
+      action: Stage storage/network kernel modules (dep-resolved) + DHCP bring-up into live_root; re-emit initramfs
+      note: Modules staged + dep-regenerated + modinfo-validated (not loaded on build host). Image initrd still not swapped; boot unverified.
+    - id: swap_image_initrd_to_live_initramfs
+      status: implemented
+      slice: "9.17"
+      action: Replace boot/initrd.img with the Vyntrio live initramfs and rebuild the firmware image
+      note: Swap proven by sha256 of the initrd extracted from the image; structural verify passes; runtime boot still unverified (no qemu). Fail-closed restore preserves the host-initrd image.
+    - id: runtime_boot_verification_stage2
+      status: implemented_blocked_here
+      slice: "10.1"
+      action: Read-only boot the image on a harness; prove dashboard HTTP 200 or fail closed with blockers
+      note: No qemu/VM on this host -> status=blocked, chain unchanged (read-only). Real proof runs where a harness exists.
+    - id: local_dashboard_stability_stage2
+      status: implemented
+      slice: "10.2"
+      action: Make the local WebGUI a supervised, actually-startable appliance service on the live runtime
+      note: firstboot.sh now busybox-sh (was bash, un-execable) + bounded respawn; /readyz local proof. LAN bind blocked on TLS; boot/image chain unchanged.
+    - id: first_boot_onboarding_clarity_stage2
+      status: implemented
+      slice: "10.3"
+      action: First-boot local onboarding clarity + landing-page '#first-boot-setup' section tied to the same product flow
+      note: firstboot.sh prints a clear local setup banner; records onboarding_steps; landing page mirrors the same 4 local steps honestly (no remote/license).
 
 deferred_executable_slices:
-  - boot_loader_uefi_bios_configuration
-  - live_root_filesystem_composition
-  - iso_or_usb_image_generation
-  - bootable_initialization_makefile_target
-  - vyntrio_installer_execution
+  - uefi_x86_64_efi_boot_support                 # BIOS-only; needs grub-efi-amd64-bin
+  - iso9660_image_on_hosts_without_xorriso       # raw BIOS image is the current path
+  - runtime_boot_on_hosts_without_qemu           # harness implemented; no VM here
+  - dashboard_reachable_on_first_boot            # image now boots live initramfs; boot execution unverified here
+  - module_autoload_coverage_for_arbitrary_hardware  # curated set + DHCP, not full udev coldplug
+  - host_usb_creator_tool
+  - vyntrio_installer_live_session_wizard
 
 excluded_from_bootable_image:
   - appliance_sqlite_state
@@ -130,18 +590,71 @@ metadata_files:
 
   - id: bootability-record
     path: BOOTABILITY.txt
-    location: deferred
+    location: distro/install-media/envelope/
+    slice: "9.11"
     shipped_on_image: false
-    purpose: Future local bootability initialization provenance
+    purpose: Bootability foundation provenance (firmware_bootable: false)
 
-  - id: bootability-record-yaml
-    path: bootability-record.yaml
-    location: deferred
-    shipped_on_image: deferred
-    purpose: Future build record for bootable image emission
+  - id: image-stub-record
+    path: IMAGE_STUB.txt
+    location: distro/install-media/build/
+    slice: "9.11"
+    shipped_on_image: false
+    purpose: Image stub emission provenance
+
+  - id: image-record
+    path: IMAGE.txt
+    location: distro/install-media/build/
+    slice: "9.12"
+    shipped_on_image: false
+    purpose: Real boot chain + image emission provenance (boot_chain, firmware_bootable, blockers)
+
+  - id: wrapper-record
+    path: WRAPPER.txt
+    location: distro/install-media/build/
+    slice: "9.13"
+    shipped_on_image: false
+    purpose: Firmware-wrapper provenance (firmware_bootable, image_wrapper, boot_method, structural_verification, blockers)
+
+  - id: runtime-record
+    path: RUNTIME_BOOT.txt
+    location: distro/install-media/build/
+    slice: "9.14"
+    shipped_on_image: false
+    purpose: Runtime-boot provenance (runtime_boot_tested, result/reason) + first-boot dashboard path status
+
+  - id: live-rootfs-record
+    path: LIVE_ROOTFS.txt
+    location: distro/install-media/build/
+    slice: "9.15"
+    shipped_on_image: false
+    purpose: Live userland provenance (composition, chroot exec + dashboard probe, initramfs, remaining boot gaps)
+
+  - id: hardware-enable-record
+    path: HARDWARE_ENABLE.txt
+    location: distro/install-media/build/
+    slice: "9.16"
+    shipped_on_image: false
+    purpose: Live-initramfs hardware provenance (module set + dep resolution, DHCP bring-up, initramfs re-emit, honest boot limits)
+
+  - id: initrd-swap-record
+    path: INITRD_SWAP.txt
+    location: distro/install-media/build/
+    slice: "9.17"
+    shipped_on_image: false
+    purpose: Initrd-swap provenance (host->live initramfs, sha256 proof from image, structural verify, honest runtime limits, fail-closed restore)
+
+  - id: runtime-verify-record
+    path: RUNTIME_VERIFY.txt
+    location: distro/install-media/build/
+    slice: "10.1"
+    shipped_on_image: false
+    purpose: Stage-2 runtime boot verification provenance (harness, boot markers, booted-guest dashboard HTTP proof or exact blockers; read-only, no chain mutation)
 
 post_bootability_handoff:
-  installer_execution: deferred
+  usb_creator: deferred
+  firmware_bootable_image: deferred
+  installer_execution: secondary_internal_infrastructure
   payload_copy_to_target_disk: deferred
   bootstrap: ADR-0004
   persistent_state: target_disk_only

@@ -8,11 +8,13 @@ import (
 
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/health"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
+	appstorage "github.com/crankurbex2025-source/vyntrio-os/internal/application/storage"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/domain/setting"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/storagepool"
 )
 
 type mockRepository struct {
@@ -97,6 +99,37 @@ func (s stubReadiness) Check(context.Context) health.Result {
 	return s.result
 }
 
+type stubStorageInventoryLoader struct {
+	inventory appstorage.DisksResponse
+}
+
+func (s stubStorageInventoryLoader) Load(context.Context) (appstorage.DisksResponse, error) {
+	if s.inventory.Status != "" {
+		return s.inventory, nil
+	}
+	return appstorage.DisksResponse{Status: appstorage.InventoryStatusOK, Disks: []appstorage.DiskDevice{}}, nil
+}
+
+type stubStoragePlanCounter struct {
+	pools  []storagepool.Pool
+	shares []storagepool.Share
+	err    error
+}
+
+func (s stubStoragePlanCounter) ListPools() ([]storagepool.Pool, error) {
+	if s.err != nil {
+		return nil, s.err
+	}
+	return s.pools, nil
+}
+
+func (s stubStoragePlanCounter) ListShares() ([]storagepool.Share, error) {
+	if s.err != nil {
+		return nil, s.err
+	}
+	return s.shares, nil
+}
+
 func TestMapReadinessReady(t *testing.T) {
 	got := overview.MapReadiness(health.Result{ProcessOK: true, DatabaseOK: true})
 	if got.Status != "ready" || got.Database != "ok" {
@@ -128,6 +161,8 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 		stubHostCollector{},
 		stubBackupLoader{status: backupstatus.NeverRun()},
 		stubNetworkCollector{network: netpresence.Network{Status: netpresence.StatusUnknown}},
+		stubStorageInventoryLoader{},
+		stubStoragePlanCounter{},
 		"0.2.0-dev",
 		"abc123",
 		"development",
@@ -175,6 +210,12 @@ func TestLoaderAssemblesDeterministicOverview(t *testing.T) {
 	if got.Health.Status != overview.HealthStatusHealthy {
 		t.Fatalf("health = %+v", got.Health)
 	}
+	if got.Storage.Status != appstorage.SummaryStatusOK || !got.Storage.MutationAvailable {
+		t.Fatalf("storage = %+v", got.Storage)
+	}
+	if got.Storage.PoolCount != 0 || got.Storage.ShareCount != 0 {
+		t.Fatalf("storage counts = pool=%d share=%d, want 0/0", got.Storage.PoolCount, got.Storage.ShareCount)
+	}
 	if got.CollectedAt == "" {
 		t.Fatal("expected collected_at")
 	}
@@ -200,6 +241,8 @@ func TestLoaderMapsDatabaseFailureToNotReady(t *testing.T) {
 		stubHostCollector{},
 		stubBackupLoader{status: backupstatus.NeverRun()},
 		stubNetworkCollector{network: netpresence.Unavailable()},
+		stubStorageInventoryLoader{},
+		stubStoragePlanCounter{},
 		"0.2.0-dev",
 		"abc123",
 		"development",
@@ -246,6 +289,8 @@ func TestLoaderAssemblesNetworkAvailable(t *testing.T) {
 		stubHostCollector{},
 		stubBackupLoader{status: backupstatus.NeverRun()},
 		stubNetworkCollector{network: netpresence.Network{Status: netpresence.StatusAvailable}},
+		stubStorageInventoryLoader{},
+		stubStoragePlanCounter{},
 		"0.2.0-dev",
 		"abc123",
 		"development",
@@ -257,5 +302,41 @@ func TestLoaderAssemblesNetworkAvailable(t *testing.T) {
 	}
 	if got.Network.Status != netpresence.StatusAvailable {
 		t.Fatalf("network.status = %q, want available", got.Network.Status)
+	}
+}
+
+func TestLoaderIncludesDeclaredPoolAndShareCounts(t *testing.T) {
+	repo := &mockRepository{
+		byKey: map[string]setting.Setting{
+			setting.KeyHostname: {
+				Namespace: setting.NamespaceSystem,
+				Key:       setting.KeyHostname,
+				Value:     "Vyntrio Home",
+				ValueType: setting.ValueTypeString,
+			},
+		},
+	}
+	loader := overview.NewLoader(
+		repo,
+		stubReadiness{result: health.Result{ProcessOK: true, DatabaseOK: true}},
+		stubHostCollector{},
+		stubBackupLoader{status: backupstatus.NeverRun()},
+		stubNetworkCollector{network: netpresence.Network{Status: netpresence.StatusUnknown}},
+		stubStorageInventoryLoader{},
+		stubStoragePlanCounter{
+			pools:  []storagepool.Pool{{ID: "pool-1"}, {ID: "pool-2"}},
+			shares: []storagepool.Share{{ID: "share-1"}},
+		},
+		"0.2.0-dev",
+		"abc123",
+		"development",
+	)
+
+	got, err := loader.Load(context.Background())
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if got.Storage.PoolCount != 2 || got.Storage.ShareCount != 1 {
+		t.Fatalf("storage counts = pool=%d share=%d, want 2/1", got.Storage.PoolCount, got.Storage.ShareCount)
 	}
 }

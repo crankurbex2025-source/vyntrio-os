@@ -96,16 +96,27 @@ describe("App", () => {
       health: {
         status: "healthy",
       },
+      storage: {
+        status: "ok",
+        disk_count: 0,
+        eligible_count: 0,
+        excluded_count: 0,
+        unknown_count: 0,
+        pool_count: 0,
+        share_count: 0,
+        mutation_available: true,
+      },
     };
   }
 
   async function openInstanceSettings() {
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Instance settings" })).toBeInTheDocument();
+      expect(screen.getAllByRole("link", { name: "Settings" }).length).toBeGreaterThan(0);
     });
-    fireEvent.click(screen.getByRole("button", { name: "Instance settings" }));
+    fireEvent.click(screen.getAllByRole("link", { name: "Settings" })[0]!);
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Instance settings" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "System" })).toBeInTheDocument();
     });
   }
 
@@ -117,7 +128,8 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password-1" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
+      expect(screen.getAllByText("Vyntrio Home").length).toBeGreaterThanOrEqual(1);
     });
   }
 
@@ -156,9 +168,10 @@ describe("App", () => {
     renderApplianceApp(apiClient);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
     });
-    expect(screen.getByText("Vyntrio Control Center")).toBeInTheDocument();
+    expect(screen.getByText(/Read-only overview/)).toBeInTheDocument();
+    expect(screen.getAllByText("Vyntrio Home").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
     expect(screen.getByText(/Build abc123 · development channel/)).toBeInTheDocument();
     expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
@@ -179,7 +192,7 @@ describe("App", () => {
     renderApplianceApp(apiClient);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
     });
     expect(requestJson.mock.calls[0]?.[1]).toBeUndefined();
   });
@@ -196,8 +209,9 @@ describe("App", () => {
 
       const view = renderApplianceApp(apiClient);
       await waitFor(() => {
-        expect(screen.getByText("Vyntrio Control Center")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
       });
+      expect(screen.getByText(/Read-only overview/)).toBeInTheDocument();
       expect(screen.getAllByText("Ready").length).toBeGreaterThanOrEqual(1);
       expect(
         screen.queryByText("You do not have access to this appliance view.")
@@ -226,9 +240,10 @@ describe("App", () => {
     await waitFor(() => {
       expect(screen.getAllByText("Degraded").length).toBeGreaterThanOrEqual(1);
     });
-    expect(screen.getAllByText(/Database dependency is not ready/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Database not ready/)).toBeInTheDocument();
+    expect(screen.getByText(/database dependency is not ready/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/does not perform recovery actions/i)
+      screen.getByText(/does not perform recovery/i)
     ).toBeInTheDocument();
   });
 
@@ -254,14 +269,14 @@ describe("App", () => {
 
     renderApplianceApp(apiClient);
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Instance settings" })).toBeInTheDocument();
+      expect(screen.getAllByRole("link", { name: "Settings" }).length).toBeGreaterThan(0);
     });
-    fireEvent.click(screen.getByRole("button", { name: "Instance settings" }));
+    fireEvent.click(screen.getAllByRole("link", { name: "Settings" })[0]!);
 
     await waitFor(() => {
       expect(screen.getByText("You do not have access to instance settings.")).toBeInTheDocument();
     });
-    expect(screen.queryByRole("heading", { name: "Instance settings" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "System" })).not.toBeInTheDocument();
     expect(requestJson.mock.calls[1]).toEqual(["/api/v1/settings"]);
     expect(requestJson.mock.calls[1]?.[1]).toBeUndefined();
   });
@@ -422,7 +437,7 @@ describe("App", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
     });
     expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
 
@@ -803,7 +818,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(screen.queryByLabelText("Instance name")).not.toBeInTheDocument();
-    expect(screen.getByText("Vyntrio Home")).toBeInTheDocument();
+    expect(screen.getAllByText("Vyntrio Home").length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
     expect(requestJson).toHaveBeenCalledTimes(2);
     expect(requestNoContent).toHaveBeenCalledTimes(0);
@@ -890,7 +905,7 @@ describe("App", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Renamed Home")).toBeInTheDocument();
+      expect(screen.getAllByText("Renamed Home").length).toBeGreaterThanOrEqual(1);
     });
     expect(requestJson).toHaveBeenCalledTimes(6);
   });
@@ -953,7 +968,7 @@ describe("App", () => {
     expect(screen.queryByText("Name From Re-read")).not.toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText("Name From Re-read")).toBeInTheDocument();
+      expect(screen.getAllByText("Name From Re-read").length).toBeGreaterThanOrEqual(1);
     });
     expect(screen.queryByText("Patched Value")).not.toBeInTheDocument();
 
@@ -1422,7 +1437,7 @@ describe("App", () => {
     expect(
       screen.getByText("Sign-out could not be completed. Please try again.")
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
   });
 
   it("logout 401 and 403 keep authorized state with generic error and allow manual retry", async () => {
@@ -1489,7 +1504,7 @@ describe("App", () => {
           screen.getByText("Sign-out could not be completed. Please try again.")
         ).toBeInTheDocument();
       });
-      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
       expect(requestNoContent).toHaveBeenCalledTimes(1);
 
@@ -1623,7 +1638,7 @@ describe("App", () => {
           screen.getByText("Sign-out could not be completed. Please try again.")
         ).toBeInTheDocument();
       });
-      expect(screen.getByRole("heading", { name: "Vyntrio Home" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
       expect(screen.queryByText("inert-test-csrf-token")).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
       expect(requestNoContent).toHaveBeenCalledTimes(1);

@@ -16,6 +16,7 @@ import (
 	appidentity "github.com/crankurbex2025-source/vyntrio-os/internal/application/identity"
 	appoverview "github.com/crankurbex2025-source/vyntrio-os/internal/application/overview"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/application/ports"
+	appstorage "github.com/crankurbex2025-source/vyntrio-os/internal/application/storage"
 	appsettings "github.com/crankurbex2025-source/vyntrio-os/internal/application/settings"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/infrastructure/persistence/sqlite"
 	httpapi "github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http"
@@ -26,7 +27,13 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/storageinventory"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/storagepool"
 )
+
+func releaseStagingDirFromEnv() string {
+	return strings.TrimSpace(os.Getenv("VYNTRIO_RELEASE_STAGING_DIR"))
+}
 
 func main() {
 	configPath, err := config.ParseFlags(os.Args[1:])
@@ -104,12 +111,21 @@ func main() {
 	sessionResolver := appidentity.NewSessionResolver(sessionAuthRepo)
 	authorizer := ports.NewRBACAuthorizer()
 	settingsLoader := appsettings.NewPublicSettingsLoader(settingsRepo, cfg.Version, cfg.Env)
+	storageLoader := appstorage.NewInventoryLoader(storageinventory.NewCollector(cfg.StateDir, storageinventory.CollectorDeps{}))
+	poolStore := storagepool.NewStore(cfg.StateDir)
+	poolsLoader := appstorage.NewPoolsLoader(storageLoader, poolStore)
+	sharesLoader := appstorage.NewSharesLoader(storageLoader, poolStore)
+	createPoolService := appstorage.NewCreatePoolService(storageLoader, poolStore)
+	addDatasetService := appstorage.NewAddDatasetService(poolStore)
+	createShareService := appstorage.NewCreateShareService(poolStore)
 	overviewLoader := appoverview.NewLoader(
 		settingsRepo,
 		readiness,
 		hostmetrics.NewCollector(cfg.StateDir, hostmetrics.CollectorDeps{}),
 		backupstatus.NewReader(cfg.StateDir, backupstatus.ReaderDeps{}),
 		netpresence.NewCollector(netpresence.CollectorDeps{}),
+		storageLoader,
+		poolStore,
 		cfg.Version,
 		cfg.BuildCommit,
 		cfg.Env,
@@ -120,6 +136,14 @@ func main() {
 	updateInstanceService := appsettings.NewUpdateInstanceDisplayNameService(instanceDisplayNameRepo)
 	updateInstanceHandler := handlers.NewUpdateInstanceSettings(handlers.UpdateInstanceSettingsDeps{
 		Service: updateInstanceService,
+	})
+	storageHandler := handlers.NewStorage(handlers.StorageDeps{
+		Loader:             storageLoader,
+		PoolsLoader:        poolsLoader,
+		SharesLoader:       sharesLoader,
+		CreatePoolService:  &createPoolService,
+		AddDatasetService:  &addDatasetService,
+		CreateShareService: &createShareService,
 	})
 
 	uiHandler, err := ui.NewHandler()
@@ -139,11 +163,13 @@ func main() {
 		overviewHandler,
 		settingsHandler,
 		updateInstanceHandler,
+		storageHandler,
 		&httpapi.SessionAuth{
 			Resolver:   sessionResolver,
 			Authorizer: authorizer,
 		},
 		httpapi.WithUI(uiHandler),
+		httpapi.WithReleaseStaging(releaseStagingDirFromEnv()),
 	)
 
 	errCh := make(chan error, 1)

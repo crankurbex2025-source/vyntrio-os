@@ -49,14 +49,19 @@ Session-Rollen mit `system:health` (Owner, Operator, Read-only).
 - Read-only Health-Summary-Karte: `healthy`, `warning`, `unknown`; optionale `note: database|backup`
 - Abgeleitet aus bestehendem `runtime` und `backup`; kein neuer Health-Check
 
-**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7/8.9/8.10/8.11):**
+**Enthalten in Stage 3 / Slice 11.1 (Storage UI foundation):**
+- Read-only Storage-Inventar-Ansicht (`StorageShell`) über Navigation von der Overview
+- `GET /api/v1/storage/disks` — Blockgeräte, Eligibility, Ausschlussgründe
+- Ehrliche Grenze: keine Pools, Shares, SMART oder destruktive Storage-Aktionen
+
+**Explizit zukünftig (nicht in 8.1/8.3/8.5/8.7/8.9/8.10/8.11/11.1):**
 - CPU-Auslastung in Prozent, 5m/15m-Load, Temperatur
 - Netzwerk-Metriken (Durchsatz, Pakete, Carrier, Wi-Fi, IP-Adressen)
 - Zusätzliche Filesystem-/Mount-IDs, Backup-Aktionen und Restore-Aktionen
 - Warnungen, Alerts, Management-Aktionen
 - WebSocket-Live-Streams und Polling
 - Modul-Navigation / Router-Framework
-- Storage-, Container-, VM-, User-Management-UI
+- Storage-Mutation (Format, Pool, Share), Container-, VM-, User-Management-UI
 
 ## Bereiche (Produkt-Roadmap)
 - Overview
