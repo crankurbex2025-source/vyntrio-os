@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { AppliancePageHeader } from "../../surfaces/appliance/ui/AppliancePageHeader";
+import { AppliancePanel } from "../../surfaces/appliance/ui/AppliancePanel";
 import type { OverviewDto } from "./overviewDto";
 import {
   formatBackupFailureDetail,
@@ -7,22 +10,20 @@ import {
 
 type OverviewShellProps = {
   overview: OverviewDto;
-  isSigningOut: boolean;
   signOutError: boolean;
   settingsAccessError: boolean;
+  storageAccessError: boolean;
   settingsLoading: boolean;
-  onOpenSettings: () => void;
-  onSignOut: () => void;
+  storageLoading: boolean;
 };
 
 export function OverviewShell({
   overview,
-  isSigningOut,
   signOutError,
   settingsAccessError,
+  storageAccessError,
   settingsLoading,
-  onOpenSettings,
-  onSignOut,
+  storageLoading,
 }: OverviewShellProps) {
   const stateFilesystem = overview.host.filesystems[0];
   const runtimeLabel =
@@ -32,353 +33,270 @@ export function OverviewShell({
         ? "Degraded"
         : "Unknown";
 
+  const cpuSummary =
+    overview.host.cpu.status === "ok"
+      ? `${overview.host.cpu.logical_cores} cores · load ${overview.host.cpu.load_1m?.toFixed(2)}`
+      : "Unavailable";
+  const memSummary =
+    overview.host.memory.status === "ok"
+      ? `${formatMetricBytes(overview.host.memory.used_bytes ?? 0)} / ${formatMetricBytes(overview.host.memory.total_bytes ?? 0)}`
+      : "Unavailable";
+  const storageSummary =
+    overview.storage.status === "ok"
+      ? `${overview.storage.disk_count} disks · ${overview.storage.pool_count} pools · ${overview.storage.share_count} plans`
+      : "Unavailable";
+  const backupSummary =
+    overview.backup.status === "never_run"
+      ? "Never run"
+      : overview.backup.status === "succeeded"
+        ? "Last succeeded"
+        : overview.backup.status === "failed"
+          ? "Last failed"
+          : "Unavailable";
+  const networkSummary =
+    overview.network.status === "available"
+      ? "Interface present"
+      : overview.network.status === "unknown"
+        ? "Unclear"
+        : "Unavailable";
+  const healthSummary =
+    overview.health.status === "healthy"
+      ? "Healthy"
+      : overview.health.status === "warning"
+        ? "Warning"
+        : "Unknown";
+  const softwareSummary =
+    overview.software.status === "ok"
+      ? overview.software.version
+      : "Unavailable";
+
   return (
-    <div className="dashboard-layout">
-      <header className="dashboard-header">
-        <div>
-          <p className="dashboard-eyebrow">Vyntrio Control Center</p>
-          <h1>{overview.instance.name}</h1>
-          <p className="dashboard-subtitle">Read-only appliance overview</p>
+    <div className="vyn-ops-page">
+      <AppliancePageHeader
+        title="Dashboard"
+        status={`Read-only overview · collected ${formatOverviewCollectedAt(overview.collected_at)}`}
+      />
+
+      <section className="vyn-ops-metric-strip" aria-label="System snapshot">
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">Runtime</p>
+          <p className="vyn-ops-metric-value">{runtimeLabel}</p>
+          <p className="vyn-ops-metric-detail">
+            {overview.runtime.status === "degraded" && overview.runtime.note === "database"
+              ? "Database not ready"
+              : "Point-in-time"}
+          </p>
         </div>
-        <div className="dashboard-header-actions">
-          <button
-            type="button"
-            className="dashboard-button dashboard-button-secondary"
-            onClick={onOpenSettings}
-            disabled={isSigningOut || settingsLoading}
-          >
-            {settingsLoading ? "Opening settings..." : "Instance settings"}
-          </button>
-          <button
-            type="button"
-            className="dashboard-button dashboard-button-primary"
-            onClick={onSignOut}
-            disabled={isSigningOut || settingsLoading}
-          >
-            {isSigningOut ? "Signing out..." : "Sign out"}
-          </button>
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">Instance</p>
+          <p className="vyn-ops-metric-value">{overview.instance.name}</p>
         </div>
-      </header>
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">CPU</p>
+          <p className="vyn-ops-metric-value">{cpuSummary}</p>
+        </div>
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">Memory</p>
+          <p className="vyn-ops-metric-value">{memSummary}</p>
+        </div>
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">Storage</p>
+          <p className="vyn-ops-metric-value">{storageSummary}</p>
+          <p className="vyn-ops-metric-detail">Format not applied · shares not published</p>
+        </div>
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">Backup</p>
+          <p className="vyn-ops-metric-value">{backupSummary}</p>
+        </div>
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">Network</p>
+          <p className="vyn-ops-metric-value">{networkSummary}</p>
+          <p className="vyn-ops-metric-detail">No WAN/DNS claim</p>
+        </div>
+        <div className="vyn-ops-metric">
+          <p className="vyn-ops-metric-label">Health</p>
+          <p className="vyn-ops-metric-value">{healthSummary}</p>
+        </div>
+      </section>
 
-      <main className="dashboard-main">
-        <section className="dashboard-status-grid">
-          <article
-            className={`dashboard-status-card ${
-              overview.runtime.status === "ready"
-                ? "dashboard-status-card-ready"
-                : "dashboard-status-card-not-ready"
-            }`}
-          >
-            <p className="dashboard-card-label">Application readiness</p>
-            <p className="dashboard-card-value">{runtimeLabel}</p>
-            <p className="dashboard-card-detail">
-              {overview.runtime.status === "degraded" && overview.runtime.note === "database"
-                ? "Database dependency is not ready."
-                : overview.runtime.status === "ready"
-                  ? "Core dependencies reported ready at collection time."
-                  : "Runtime readiness could not be classified from current state."}
-            </p>
-          </article>
+      <section className="vyn-ops-setup-banner" aria-label="Setup progress">
+        <strong>Setup</strong>
+        <ol>
+          <li>
+            <Link to="/app/storage">
+              {storageLoading ? "Storage (loading…)" : "Review disks / declare pool"}
+            </Link>
+          </li>
+          <li>
+            <Link to="/app/shares">Prepare share plan</Link>
+          </li>
+          <li>
+            <Link to="/app/settings">
+              {settingsLoading ? "Settings (loading…)" : "Instance name"}
+            </Link>
+          </li>
+        </ol>
+      </section>
 
-          <article className="dashboard-info-card">
-            <p className="dashboard-card-label">Service</p>
-            <p className="dashboard-card-value">Running</p>
-            <p className="dashboard-card-detail">API process is serving this overview</p>
-          </article>
+      {overview.readiness.status !== "ready" ? (
+        <section className="vyn-ops-alert" role="status">
+          Database is not ready. This overview reports status only and does not perform recovery.
         </section>
-
-        <section className="dashboard-panel">
-          <h2>Runtime readiness</h2>
-          <p className="dashboard-panel-note">
-            Derived from existing overview readiness and service state only. This does not run new
-            health probes or claim full appliance health.
-          </p>
-          <article className="dashboard-info-card">
-            <p className="dashboard-card-label">Runtime status</p>
-            {overview.runtime.status === "ready" ? (
-              <>
-                <p className="dashboard-card-value">Ready</p>
-                <p className="dashboard-card-detail">
-                  As of {formatOverviewCollectedAt(overview.collected_at)}.
-                </p>
-              </>
-            ) : null}
-            {overview.runtime.status === "degraded" ? (
-              <>
-                <p className="dashboard-card-value">Degraded</p>
-                <p className="dashboard-card-detail">
-                  {overview.runtime.note === "database"
-                    ? "Database dependency is not ready."
-                    : "A local dependency is not ready."}
-                  {" As of "}
-                  {formatOverviewCollectedAt(overview.collected_at)}.
-                </p>
-              </>
-            ) : null}
-            {overview.runtime.status === "unknown" ? (
-              <>
-                <p className="dashboard-card-value">Unknown</p>
-                <p className="dashboard-card-detail">
-                  Runtime readiness could not be classified from current state.
-                </p>
-              </>
-            ) : null}
-          </article>
+      ) : null}
+      {settingsAccessError ? (
+        <section className="vyn-ops-alert" role="alert">
+          You do not have access to instance settings.
         </section>
-
-        <section className="dashboard-panel">
-          <h2>Health summary</h2>
-          <p className="dashboard-panel-note">
-            Derived from existing overview slices only. This is not a health probe and does not
-            claim full appliance wellness.
-          </p>
-          <article className="dashboard-info-card">
-            <p className="dashboard-card-label">Overall status</p>
-            {overview.health.status === "healthy" ? (
-              <>
-                <p className="dashboard-card-value">Healthy</p>
-                <p className="dashboard-card-detail">
-                  As of {formatOverviewCollectedAt(overview.collected_at)}.
-                </p>
-              </>
-            ) : null}
-            {overview.health.status === "warning" ? (
-              <>
-                <p className="dashboard-card-value">Warning</p>
-                <p className="dashboard-card-detail">
-                  {overview.health.note === "database"
-                    ? "Runtime readiness is degraded because the database dependency is not ready."
-                    : overview.health.note === "backup"
-                      ? "The last recorded local backup attempt failed."
-                      : "A recorded overview signal needs attention."}
-                  {" As of "}
-                  {formatOverviewCollectedAt(overview.collected_at)}.
-                </p>
-              </>
-            ) : null}
-            {overview.health.status === "unknown" ? (
-              <>
-                <p className="dashboard-card-value">Unknown</p>
-                <p className="dashboard-card-detail">
-                  Health summary could not be classified from current overview state.
-                </p>
-              </>
-            ) : null}
-          </article>
+      ) : null}
+      {storageAccessError ? (
+        <section className="vyn-ops-alert" role="alert">
+          You do not have access to the storage inventory.
         </section>
-
-        <section className="dashboard-panel">
-          <h2>Software release</h2>
-          <p className="dashboard-panel-note">
-            Read-only metadata from the running API process. This does not check for updates or
-            verify installed packages.
-          </p>
-          <article className="dashboard-info-card">
-            <p className="dashboard-card-label">Release status</p>
-            {overview.software.status === "ok" ? (
-              <>
-                <p className="dashboard-card-value">{overview.software.version}</p>
-                <p className="dashboard-card-detail">
-                  {overview.software.commit
-                    ? `Build ${overview.software.commit}`
-                    : "Build revision not recorded"}
-                  {overview.software.channel === "development"
-                    ? " · development channel"
-                    : null}
-                  {overview.software.channel === "production" ? " · production channel" : null}
-                  {overview.software.channel === "unknown" ? " · channel unknown" : null}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="dashboard-card-value">Unavailable</p>
-                <p className="dashboard-card-detail">
-                  Software release metadata could not be determined.
-                </p>
-              </>
-            )}
-          </article>
+      ) : null}
+      {signOutError ? (
+        <section className="vyn-ops-alert" role="alert">
+          Sign-out could not be completed. Please try again.
         </section>
+      ) : null}
 
-        <section className="dashboard-panel">
-          <h2>Local backup</h2>
-          <p className="dashboard-panel-note">
-            Status reflects the last recorded backup attempt only. It does not verify that a
-            backup artifact still exists.
-          </p>
-          <article className="dashboard-info-card">
-            <p className="dashboard-card-label">Backup status</p>
-            {overview.backup.status === "never_run" ? (
-              <>
-                <p className="dashboard-card-value">No backup recorded</p>
-                <p className="dashboard-card-detail">
-                  No completed local backup has been recorded yet.
-                </p>
-              </>
-            ) : null}
-            {overview.backup.status === "succeeded" ? (
-              <>
-                <p className="dashboard-card-value">Last backup succeeded</p>
-                <p className="dashboard-card-detail">
-                  Completed {formatOverviewCollectedAt(overview.backup.completed_at ?? "")}
-                </p>
-              </>
-            ) : null}
-            {overview.backup.status === "failed" ? (
-              <>
-                <p className="dashboard-card-value">Last backup failed</p>
-                <p className="dashboard-card-detail">
-                  Completed {formatOverviewCollectedAt(overview.backup.completed_at ?? "")}
-                  {overview.backup.failure
-                    ? ` · ${formatBackupFailureDetail(overview.backup.failure)}`
-                    : null}
-                </p>
-                {overview.backup.ever_succeeded ? (
-                  <p className="dashboard-card-detail">An earlier backup completed successfully.</p>
-                ) : null}
-              </>
-            ) : null}
-            {overview.backup.status === "unavailable" ? (
-              <>
-                <p className="dashboard-card-value">Unavailable</p>
-                <p className="dashboard-card-detail">Backup status could not be read.</p>
-              </>
-            ) : null}
-          </article>
-        </section>
-
-        <section className="dashboard-panel">
-          <h2>Network</h2>
-          <article className="dashboard-info-card">
-            <p className="dashboard-card-label">Network presence</p>
-            {overview.network.status === "available" ? (
-              <>
-                <p className="dashboard-card-value">Local network interface present</p>
-                <p className="dashboard-card-detail">
-                  This process observes at least one non-loopback interface that appears up. This
-                  does not verify internet access, DNS, or reachability.
-                </p>
-              </>
-            ) : null}
-            {overview.network.status === "unknown" ? (
-              <>
-                <p className="dashboard-card-value">Local network presence unclear</p>
-                <p className="dashboard-card-detail">
-                  No eligible interface was observed from this process. This does not prove that
-                  hardware is missing or misconfigured.
-                </p>
-              </>
-            ) : null}
-            {overview.network.status === "unavailable" ? (
-              <>
-                <p className="dashboard-card-value">Unavailable</p>
-                <p className="dashboard-card-detail">
-                  Network presence could not be determined.
-                </p>
-              </>
-            ) : null}
-          </article>
-        </section>
-
-        <section className="dashboard-panel">
-          <h2>Host metrics</h2>
-          <p className="dashboard-panel-note">
-            Load average is not CPU utilization. Metrics are a point-in-time snapshot only.
-          </p>
-          <div className="dashboard-status-grid">
-            <article className="dashboard-info-card">
-              <p className="dashboard-card-label">CPU</p>
-              {overview.host.cpu.status === "ok" ? (
-                <>
-                  <p className="dashboard-card-value">{overview.host.cpu.logical_cores} cores</p>
-                  <p className="dashboard-card-detail">
-                    1-minute load {overview.host.cpu.load_1m?.toFixed(2)}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="dashboard-card-value">Unavailable</p>
-                  <p className="dashboard-card-detail">CPU metrics could not be collected</p>
-                </>
-              )}
-            </article>
-
-            <article className="dashboard-info-card">
-              <p className="dashboard-card-label">Memory</p>
-              {overview.host.memory.status === "ok" ? (
-                <>
-                  <p className="dashboard-card-value">
-                    {formatMetricBytes(overview.host.memory.used_bytes ?? 0)} used
-                  </p>
-                  <p className="dashboard-card-detail">
-                    {formatMetricBytes(overview.host.memory.available_bytes ?? 0)} available of{" "}
-                    {formatMetricBytes(overview.host.memory.total_bytes ?? 0)}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="dashboard-card-value">Unavailable</p>
-                  <p className="dashboard-card-detail">Memory metrics could not be collected</p>
-                </>
-              )}
-            </article>
-
-            <article className="dashboard-info-card">
-              <p className="dashboard-card-label">State storage</p>
-              {stateFilesystem.status === "ok" ? (
-                <>
-                  <p className="dashboard-card-value">
-                    {formatMetricBytes(stateFilesystem.used_bytes ?? 0)} used
-                  </p>
-                  <p className="dashboard-card-detail">
-                    {formatMetricBytes(stateFilesystem.available_bytes ?? 0)} available of{" "}
-                    {formatMetricBytes(stateFilesystem.total_bytes ?? 0)}
-                    {stateFilesystem.fs_type ? ` · ${stateFilesystem.fs_type}` : null}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="dashboard-card-value">Unavailable</p>
-                  <p className="dashboard-card-detail">Storage metrics could not be collected</p>
-                </>
-              )}
-            </article>
-          </div>
-        </section>
-
-        <section className="dashboard-panel">
-          <h2>System information</h2>
-          <dl className="dashboard-info-grid">
-            <div className="dashboard-info-row">
-              <dt>Instance</dt>
-              <dd>{overview.instance.name}</dd>
+      <div className="vyn-ops-grid-2">
+        <AppliancePanel
+          title="Host"
+          note="Point-in-time snapshot. Load average is not CPU utilization."
+        >
+          <dl className="vyn-ops-dl">
+            <div className="vyn-ops-dl-row">
+              <dt>CPU</dt>
+              <dd>
+                {overview.host.cpu.status === "ok"
+                  ? `${overview.host.cpu.logical_cores} cores · 1-minute load ${overview.host.cpu.load_1m?.toFixed(2)}`
+                  : "CPU metrics could not be collected"}
+              </dd>
             </div>
-            <div className="dashboard-info-row">
-              <dt>Collected</dt>
-              <dd>{formatOverviewCollectedAt(overview.collected_at)}</dd>
+            <div className="vyn-ops-dl-row">
+              <dt>Memory</dt>
+              <dd>
+                {overview.host.memory.status === "ok"
+                  ? `${formatMetricBytes(overview.host.memory.used_bytes ?? 0)} used · ${formatMetricBytes(overview.host.memory.available_bytes ?? 0)} available of ${formatMetricBytes(overview.host.memory.total_bytes ?? 0)}`
+                  : "Memory metrics could not be collected"}
+              </dd>
+            </div>
+            <div className="vyn-ops-dl-row">
+              <dt>State FS</dt>
+              <dd>
+                {stateFilesystem.status === "ok"
+                  ? `${formatMetricBytes(stateFilesystem.used_bytes ?? 0)} used · ${formatMetricBytes(stateFilesystem.available_bytes ?? 0)} available${stateFilesystem.fs_type ? ` · ${stateFilesystem.fs_type}` : ""}`
+                  : "Storage metrics could not be collected"}
+              </dd>
             </div>
           </dl>
-        </section>
+        </AppliancePanel>
 
-        {overview.readiness.status !== "ready" ? (
-          <section className="dashboard-alert" role="status">
-            The database is not ready. This overview reports current status only and does not
-            perform recovery actions.
-          </section>
-        ) : null}
+        <AppliancePanel
+          title="Storage layout"
+          note="Inventory counts only. Declared pools and share plans are state — format and SMB/NFS are not live."
+        >
+          <dl className="vyn-ops-dl">
+            <div className="vyn-ops-dl-row">
+              <dt>Block devices</dt>
+              <dd>
+                {overview.storage.status === "ok"
+                  ? `${overview.storage.disk_count} reported · ${overview.storage.eligible_count} eligible · ${overview.storage.excluded_count} excluded`
+                  : "Storage inventory could not be summarized for this overview."}
+              </dd>
+            </div>
+            <div className="vyn-ops-dl-row">
+              <dt>Pools</dt>
+              <dd>{overview.storage.pool_count} declared · on-disk format not applied</dd>
+            </div>
+            <div className="vyn-ops-dl-row">
+              <dt>Shares</dt>
+              <dd>{overview.storage.share_count} planned · protocols not published</dd>
+            </div>
+          </dl>
+        </AppliancePanel>
 
-        {settingsAccessError ? (
-          <section className="dashboard-alert" role="alert">
-            You do not have access to instance settings.
-          </section>
-        ) : null}
+        <AppliancePanel
+          title="Software"
+          note="Metadata from the running API. Does not check for updates."
+        >
+          <dl className="vyn-ops-dl">
+            <div className="vyn-ops-dl-row">
+              <dt>Version</dt>
+              <dd>{softwareSummary}</dd>
+            </div>
+            <div className="vyn-ops-dl-row">
+              <dt>Build</dt>
+              <dd>
+                {overview.software.status === "ok"
+                  ? [
+                      overview.software.commit
+                        ? `Build ${overview.software.commit}`
+                        : "Build revision not recorded",
+                      overview.software.channel === "development"
+                        ? "development channel"
+                        : overview.software.channel === "production"
+                          ? "production channel"
+                          : overview.software.channel === "unknown"
+                            ? "channel unknown"
+                            : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")
+                  : "Software release metadata could not be determined."}
+              </dd>
+            </div>
+            <div className="vyn-ops-dl-row">
+              <dt>Environment</dt>
+              <dd>{overview.api.environment}</dd>
+            </div>
+          </dl>
+        </AppliancePanel>
 
-        {signOutError ? (
-          <section className="dashboard-alert" role="alert">
-            Sign-out could not be completed. Please try again.
-          </section>
-        ) : null}
-      </main>
+        <AppliancePanel
+          title="Health and backup"
+          note="Derived from overview slices only — not a full appliance health probe."
+        >
+          <dl className="vyn-ops-dl">
+            <div className="vyn-ops-dl-row">
+              <dt>Health</dt>
+              <dd>
+                {overview.health.status === "healthy"
+                  ? `Healthy · ${formatOverviewCollectedAt(overview.collected_at)}`
+                  : overview.health.status === "warning"
+                    ? overview.health.note === "database"
+                      ? "Warning · database dependency is not ready."
+                      : overview.health.note === "backup"
+                        ? "Warning · last recorded local backup attempt failed."
+                        : "Warning · a recorded overview signal needs attention."
+                    : "Health summary could not be classified from current overview state."}
+              </dd>
+            </div>
+            <div className="vyn-ops-dl-row">
+              <dt>Backup</dt>
+              <dd>
+                {overview.backup.status === "never_run"
+                  ? "No completed local backup has been recorded yet."
+                  : overview.backup.status === "succeeded"
+                    ? `Last succeeded · ${formatOverviewCollectedAt(overview.backup.completed_at ?? "")}`
+                    : overview.backup.status === "failed"
+                      ? `Last failed · ${formatOverviewCollectedAt(overview.backup.completed_at ?? "")}${overview.backup.failure ? ` · ${formatBackupFailureDetail(overview.backup.failure)}` : ""}`
+                      : "Backup status could not be read."}
+              </dd>
+            </div>
+            <div className="vyn-ops-dl-row">
+              <dt>Network</dt>
+              <dd>
+                {overview.network.status === "available"
+                  ? "Local non-loopback interface present. Does not verify internet, DNS, or reachability."
+                  : overview.network.status === "unknown"
+                    ? "No eligible interface observed from this process. Does not prove hardware is missing."
+                    : "Network presence could not be determined."}
+              </dd>
+            </div>
+          </dl>
+        </AppliancePanel>
+      </div>
     </div>
   );
 }

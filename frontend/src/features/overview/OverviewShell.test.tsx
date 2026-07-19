@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it } from "vitest";
 import { OverviewShell } from "./OverviewShell";
 import type { OverviewDto } from "./overviewDto";
 
@@ -65,40 +66,61 @@ describe("OverviewShell", () => {
     health: {
       status: "healthy",
     },
+    storage: {
+      status: "ok",
+      disk_count: 2,
+      eligible_count: 1,
+      excluded_count: 1,
+      unknown_count: 0,
+      pool_count: 0,
+      share_count: 0,
+      mutation_available: true,
+    },
   };
 
   function renderShell(overrides: Partial<ComponentProps<typeof OverviewShell>> = {}) {
-    const onOpenSettings = vi.fn();
-    const onSignOut = vi.fn();
     render(
-      <OverviewShell
-        overview={overview}
-        isSigningOut={false}
-        signOutError={false}
-        settingsAccessError={false}
-        settingsLoading={false}
-        onOpenSettings={onOpenSettings}
-        onSignOut={onSignOut}
-        {...overrides}
-      />
+      <MemoryRouter>
+        <OverviewShell
+          overview={overview}
+          signOutError={false}
+          settingsAccessError={false}
+          storageAccessError={false}
+          settingsLoading={false}
+          storageLoading={false}
+          {...overrides}
+        />
+      </MemoryRouter>
     );
-    return { onOpenSettings, onSignOut };
   }
 
-  it("renders host metric cards when metrics are available", () => {
+  it("renders operational metric strip and panels", () => {
     renderShell();
 
-    expect(screen.getByText("Host metrics")).toBeInTheDocument();
-    expect(screen.getByText("4 cores")).toBeInTheDocument();
-    expect(screen.getByText(/1-minute load 0.42/)).toBeInTheDocument();
-    expect(screen.getByText(/4 GB used/)).toBeInTheDocument();
-    expect(screen.getByText(/State storage/)).toBeInTheDocument();
-    expect(screen.getByText("No backup recorded")).toBeInTheDocument();
-    expect(screen.getByText("Local network interface present")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
+    expect(screen.getByLabelText("System snapshot")).toBeInTheDocument();
+    expect(screen.getByLabelText("Setup progress")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Host" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Storage layout" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Software" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Health and backup" })).toBeInTheDocument();
+    expect(screen.getByText(/4 cores · load 0\.42/)).toBeInTheDocument();
+    expect(screen.getByText(/Never run/)).toBeInTheDocument();
+    expect(screen.getByText(/Interface present/)).toBeInTheDocument();
     expect(screen.getByText("0.2.0-dev")).toBeInTheDocument();
     expect(screen.getByText(/Build abc123 · development channel/)).toBeInTheDocument();
-    expect(screen.getByText("Runtime readiness")).toBeInTheDocument();
-    expect(screen.getByText("Health summary")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Review disks / declare pool" })).toHaveAttribute(
+      "href",
+      "/app/storage"
+    );
+    expect(screen.getByRole("link", { name: "Prepare share plan" })).toHaveAttribute(
+      "href",
+      "/app/shares"
+    );
+    expect(screen.getByRole("link", { name: "Instance name" })).toHaveAttribute(
+      "href",
+      "/app/settings"
+    );
     expect(screen.queryByText("csrf_token")).not.toBeInTheDocument();
     expect(screen.queryByText(/eth0|192\.168|mac/i)).not.toBeInTheDocument();
   });
@@ -110,9 +132,9 @@ describe("OverviewShell", () => {
         network: { status: "unknown" },
       },
     });
-    expect(screen.getByText("Local network presence unclear")).toBeInTheDocument();
+    expect(screen.getByText("Unclear")).toBeInTheDocument();
     expect(
-      screen.getByText(/No eligible interface was observed from this process/)
+      screen.getByText(/No eligible interface observed from this process/)
     ).toBeInTheDocument();
   });
 
@@ -145,7 +167,7 @@ describe("OverviewShell", () => {
       },
     });
     expect(screen.getAllByText("Degraded").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Database dependency is not ready/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Database not ready/)).toBeInTheDocument();
   });
 
   it("renders unavailable software release metadata", () => {
@@ -180,19 +202,8 @@ describe("OverviewShell", () => {
       },
     });
 
-    expect(screen.getAllByText("Unavailable").length).toBeGreaterThanOrEqual(3);
     expect(screen.getByText("CPU metrics could not be collected")).toBeInTheDocument();
     expect(screen.getByText("Memory metrics could not be collected")).toBeInTheDocument();
     expect(screen.getByText("Storage metrics could not be collected")).toBeInTheDocument();
-  });
-
-  it("invokes settings and sign out actions", () => {
-    const { onOpenSettings, onSignOut } = renderShell();
-
-    fireEvent.click(screen.getByRole("button", { name: "Instance settings" }));
-    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
-
-    expect(onOpenSettings).toHaveBeenCalledTimes(1);
-    expect(onSignOut).toHaveBeenCalledTimes(1);
   });
 });

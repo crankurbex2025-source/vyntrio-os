@@ -1,0 +1,22 @@
+# StyleSeed — Design Lock
+<!-- Selections persist here. This file cannot waive StyleSeed core invariants. -->
+- App domain: infrastructure-ops
+- Surface: desktop-web
+- Surface adapter: product-ui
+- Page type: dashboard
+- Output grammar: operations-console
+- Grammar path: built-in:engine/RULESETS.md#operations-console
+- Grammar fallback: technical-instrument
+- Reference confidence: n/a
+- Aesthetic profile: none
+- Skin: custom
+- Primary action: #e85d2b (token --vyn-accent; dark surface uses --vyn-accent #c45a28)
+- Font: Source Sans 3 (body) · Space Grotesk (display) · IBM Plex Mono (ids/metrics)
+- Radius: soft
+- Elevation: light=hairline + muted panel tone · dark=tonal ramp + hairline (no floating marketing shadows)
+- Density: compact
+- Motion: restrained (instant filters/mutations; no cinematic scroll)
+- Imagery/data role: live host/storage evidence first; tables for inventory; no decorative charts
+- Signature move: compact system metric strip as the operational focal panel above secondary setup/detail
+- Notes: Unraid docs are IA/behavior reference only — not compiled via ss-reference (no visual cloning). Public marketing site stays outside this lock (expressive-marketing grammar if restyled later).
+- Locked: 2026-07-18

@@ -1,0 +1,211 @@
+/* Full Unraid-class appliance DEMO — StyleSeed operations-console density
+ * Mock data only. No Unraid assets/CSS copied.
+ */
+
+.vyn-demo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--vyn-status-warn-border);
+  background: var(--vyn-status-warn-soft);
+  color: var(--vyn-text);
+  font-size: 0.85rem;
+}
+
+.vyn-demo-banner strong {
+  color: var(--vyn-status-warn);
+}
+
+.vyn-demo-topnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--vyn-border);
+  background: var(--vyn-bg-elevated);
+}
+
+.vyn-demo-topnav button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--vyn-text-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.55rem 0.75rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+  border-radius: var(--vyn-radius-sm);
+}
+
+.vyn-demo-topnav button:hover,
+.vyn-demo-topnav button:focus-visible {
+  color: var(--vyn-text);
+  background: var(--vyn-accent-soft);
+  outline: none;
+}
+
+.vyn-demo-topnav button.active {
+  color: var(--vyn-text);
+  box-shadow: inset 0 -2px 0 var(--vyn-accent);
+}
+
+.vyn-demo-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.9rem;
+  border-top: 1px solid var(--vyn-border);
+  background: var(--vyn-panel-muted);
+  font-size: 0.78rem;
+  color: var(--vyn-text-muted);
+}
+
+.vyn-demo-footer .ok {
+  color: var(--vyn-status-ok);
+}
+
+.vyn-demo-footer .warn {
+  color: var(--vyn-status-warn);
+}
+
+.vyn-demo-widgets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.vyn-demo-widget {
+  border: 1px solid var(--vyn-border);
+  border-radius: var(--vyn-radius-md);
+  background: var(--vyn-panel);
+  min-width: 0;
+}
+
+.vyn-demo-widget-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--vyn-border);
+}
+
+.vyn-demo-widget-head h2 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vyn-demo-widget-body {
+  padding: 0.65rem 0.75rem 0.85rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.vyn-demo-bar {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--vyn-panel-muted);
+  overflow: hidden;
+}
+
+.vyn-demo-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--vyn-accent);
+}
+
+.vyn-demo-bar.ok > span {
+  background: var(--vyn-status-ok);
+}
+
+.vyn-demo-bar.warn > span {
+  background: var(--vyn-status-warn);
+}
+
+.vyn-demo-status-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--vyn-text-subtle);
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.vyn-demo-status-dot.ok {
+  background: var(--vyn-status-ok);
+}
+
+.vyn-demo-status-dot.stopped {
+  background: var(--vyn-status-danger);
+}
+
+.vyn-demo-status-dot.warn {
+  background: var(--vyn-status-warn);
+}
+
+.vyn-demo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.vyn-demo-row-meta {
+  color: var(--vyn-text-muted);
+  font-size: 0.75rem;
+  font-family: var(--vyn-font-mono);
+}
+
+.vyn-demo-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.75rem;
+}
+
+.vyn-demo-catalog-card {
+  border: 1px solid var(--vyn-border);
+  border-radius: var(--vyn-radius-md);
+  background: var(--vyn-panel);
+  padding: 0.85rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.vyn-demo-catalog-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.vyn-demo-catalog-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--vyn-text-muted);
+  line-height: 1.4;
+}
+
+.vyn-demo-split {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 1100px) {
+  .vyn-demo-widgets,
+  .vyn-demo-split {
+    grid-template-columns: 1fr;
+  }
+}
