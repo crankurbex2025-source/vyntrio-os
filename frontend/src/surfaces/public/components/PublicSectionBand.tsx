@@ -2,8 +2,18 @@ import type { ReactNode } from "react";
 
 export type PublicSectionBandProps = {
   children: ReactNode;
-  tone?: "default" | "elevated" | "inset";
-  surface?: "default" | "hero" | "statement" | "finale" | "capabilities" | "journey" | "route-hero" | "artifact";
+  tone?: "default" | "elevated" | "inset" | "trust" | "panel";
+  surface?:
+    | "default"
+    | "hero"
+    | "statement"
+    | "finale"
+    | "capabilities"
+    | "journey"
+    | "route-hero"
+    | "artifact"
+    | "trust"
+    | "enterprise";
   id?: string;
 };
 
@@ -18,7 +28,11 @@ export function PublicSectionBand({
       ? "vyn-public-section-band vyn-public-section-band-elevated"
       : tone === "inset"
         ? "vyn-public-section-band vyn-public-section-band-inset"
-        : "vyn-public-section-band";
+        : tone === "trust"
+          ? "vyn-public-section-band vyn-public-section-band-trust"
+          : tone === "panel"
+            ? "vyn-public-section-band vyn-public-section-band-panel"
+            : "vyn-public-section-band";
 
   const surfaceClass =
     surface === "default" ? "" : ` vyn-public-section-band-surface-${surface}`;
@@ -29,3 +43,4 @@ export function PublicSectionBand({
     </div>
   );
 }
+

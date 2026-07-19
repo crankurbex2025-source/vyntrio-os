@@ -94,8 +94,21 @@ gegen lokale Schreiber im State-Verzeichnis nach der Validierung.
 (statisches `vyntrio`-Konto, `vyntrio-api.service`, tmpfiles für
 `/etc/vyntrio`). Installation: `distro/systemd/README.md`. **Implementiert (Slice 7.9):**
 root-only Backup-Befehl `vyntrio-backup` gemäß ADR-0005. **Slice 7.11:**
-Restore-Sicherheitsvertrag (`docs/ops/restore-safety-contract.md`) — noch ohne
-Restore-CLI. **Noch nicht implementiert:** Restore-CLI, Upgrade-Packaging.
+Restore-Sicherheitsvertrag (`docs/ops/restore-safety-contract.md`). **Slice 7.12:**
+root-only Restore-CLI `vyntrio-restore` — SQLite-State + Config aus lokalen
+Backup-Artefakten; erfordert `--force` für destruktive Wiederherstellung.
+**Noch nicht implementiert:** Upgrade-Packaging, Ed25519-Release-Signaturprüfung.
+**Implementiert (Slice 9.10):** Lokale Release-Artefakt-Verifikation via
+`vyntrio-verify-artifact` gegen `vyntrio-release-manifest-v1` (SHA-256 +
+Manifest-Struktur; keine Signaturprüfung). Vertrag:
+`docs/ops/release-artifact-verification.md`.
+
+**Implementiert (Slice 13.1):** Install-Media-Staging für lokalen Download —
+`make install-media` (BIOS-Raw-Image), `make release-install-media-stage`
+(kopiert nach `distro/release/staging/` + Manifest), öffentliche Metadaten
+`GET /api/v1/public/install-media`, optional `/release/*` wenn
+`VYNTRIO_RELEASE_STAGING_DIR` gesetzt. Kein Produktions-CDN. Siehe
+`docs/24_INSTALL_MEDIA.md` und `docs/ops/install-media-audit.md`.
 Autoritativ: `docs/ADR/0005-appliance-runtime-operations.md`.
 
 ## Release-Arten
@@ -115,7 +128,8 @@ Autoritativ: `docs/ADR/0005-appliance-runtime-operations.md`.
 ## Artefakte
 - ISO
 - Checksums
-- Signaturen
+- Signaturen (geplant; Verifikation noch nicht implementiert)
+- Release-Manifest (`vyntrio-release-manifest-v1`) + `vyntrio-verify-artifact` (Slice 9.10)
 - API Specs
 - Changelog
 - Known Issues

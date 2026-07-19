@@ -24,7 +24,7 @@ Turn the repository into a clean, professional, implementation-ready monorepo fo
 
 ### Code boundaries
 
-- `cmd/*/main.go` — compile-only stubs (no demo `fmt.Println` output)
+- `cmd/*/main.go` — entrypoints; `vyntrio-api` and `vyntrio-backup` are functional (Blocks 7–8); others remain stubs or sandbox scope
 - Layer READMEs document what belongs where and dependency rules
 - ADR-0001 documents Clean Architecture decision
 
@@ -65,12 +65,29 @@ Turn the repository into a clean, professional, implementation-ready monorepo fo
 |------|-------|--------|
 | LICENSE finalization | Legal / owner | External contribution |
 | GitHub branch protection | Owner | Merge safety |
-| `go.sum` / Go dependencies | Phase 2 | Production backend |
-| Frontend toolchain (Vite, React, ESLint) | Phase 2 | Dashboard work |
-| `golangci-lint` config | Phase 2 | Strict lint gate |
-| `package-lock.json` | Phase 2 | Reproducible frontend CI |
+| `golangci-lint` config | Phase 2+ | Strict lint gate |
 | Concrete T0001–T1000 task definitions | Planning | Backlog hygiene |
-| ISO/installer (`distro/`, `build/`) | Phase 0.2 | OS delivery |
+| ISO/installer (`distro/`, `build/`) | Phase 0.2 | OS delivery — contracts/sandbox only today |
+| PWA manifest / installability (11R.7) | — | **Done** (web shortcut only; no SW) |
+| Appliance/login token convergence (11R.6) | — | **Done** |
+| Full appliance dashboard (beyond overview/settings) | Block 11+ | Product UI |
+
+---
+
+## Post-Phase-1 progress (audit 2026-07-15)
+
+Phase 1 exit criteria are met for repository foundation. The following shipped **after** Phase 1 and are **not** retroactive changes to the Phase 1 scope:
+
+| Area | Status |
+|------|--------|
+| `vyntrio-api` | Real HTTP server with auth, settings, overview (Block 8); embedded SPA delivery |
+| Frontend toolchain | Vite + React + TypeScript in production (`frontend/`, `package-lock.json`, CI) |
+| `go.sum` | Present; Go dependencies in use |
+| Public website | Live on `vyntrio.xyz`: `/`, `/download`, `/docs` (Block 11R.10–11R.12) |
+| Appliance UI | `/login`, `/app` — session probe, read-only overview, Owner settings (not full dashboard) |
+| Installer/media (Blocks 9–10) | Makefile sandbox scripts and contracts only — no real hardware install |
+
+For current product surface status see `docs/22_WEBSITE.md`, `docs/08_FRONTEND.md`, and `docs/23_WEBSITE_DESIGN_DIRECTION.md`.
 
 ---
 
@@ -92,6 +109,8 @@ ls -la bin/    # vyntrio-api, vyntrio-worker, vyntrio-installer, vyntrio-update-
 
 **Prerequisites:** Phase 1 exit criteria met; LICENSE decided.
 
+**Note (2026-07-15):** Several Phase 2 items are **partially or fully implemented** (health/version endpoints, real `vyntrio-api`, auth/settings, embedded frontend, public website). Treat the list below as historical planning guidance; verify against `docs/20_TASKS.md` and the audit-aligned docs before starting work.
+
 ### Scope (in order)
 
 1. **ADR-0002:** HTTP router choice (chi vs gin per `docs/04_TECH_STACK.md`)
@@ -100,7 +119,7 @@ ls -la bin/    # vyntrio-api, vyntrio-worker, vyntrio-installer, vyntrio-update-
 4. **`internal/application/`** — health use case
 5. **`internal/interfaces/http/`** — `GET /healthz`, `GET /readyz`, `GET /api/v1/version`
 6. **`cmd/api/`** — real server with structured logging and env config
-7. **Frontend Phase 2 prep** — initialize Vite + React + TypeScript (no dashboard widgets)
+7. **Frontend** — extend beyond overview/settings; full dashboard widgets remain out of scope
 8. **`make dev`** — run API + frontend together
 9. **Tests** — unit tests for domain; httptest for health endpoints
 10. **CI** — enable golangci-lint; fail on lint errors
@@ -108,15 +127,15 @@ ls -la bin/    # vyntrio-api, vyntrio-worker, vyntrio-installer, vyntrio-update-
 ### Explicitly out of scope for Phase 2
 
 - Storage, Docker, VM, marketplace, licensing
-- Full auth/RBAC (stub only if needed for middleware structure)
-- ISO/installer builds
-- Production TLS deployment
+- Full RBAC beyond current Owner role
+- ISO/installer builds (real hardware install)
+- Production TLS deployment automation
 
 ### Phase 2 exit criteria
 
-- [ ] `make dev` starts API locally; `/healthz` returns 200
-- [ ] Frontend toolchain builds (empty shell page)
-- [ ] CI green with lint + tests
+- [x] `vyntrio-api` serves health/version and Block 8 contract locally
+- [x] Frontend toolchain builds and ships via `go:embed`
+- [ ] CI green with golangci-lint + expanded test gates
 - [ ] ADR-0002 and ADR-0003 accepted
 
 ---

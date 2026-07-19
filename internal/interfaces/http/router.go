@@ -13,6 +13,7 @@ import (
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/response"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/interfaces/http/ui"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/config"
+	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/installmediapublic"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
@@ -27,7 +28,15 @@ type SessionAuth struct {
 type RouterOption func(*routerOptions)
 
 type routerOptions struct {
-	ui *ui.Handler
+	ui                *ui.Handler
+	releaseStagingDir string
+}
+
+// WithReleaseStaging enables public install-media metadata and allowlisted /release/* downloads.
+func WithReleaseStaging(stagingDir string) RouterOption {
+	return func(o *routerOptions) {
+		o.releaseStagingDir = strings.TrimSpace(stagingDir)
+	}
 }
 
 // WithUI enables embedded production frontend serving: /assets/* static
@@ -49,6 +58,7 @@ func NewRouter(
 	overview *handlers.Overview,
 	settings *handlers.Settings,
 	updateInstance *handlers.UpdateInstanceSettings,
+	storage *handlers.Storage,
 	sessionAuth *SessionAuth,
 	opts ...RouterOption,
 ) http.Handler {
@@ -67,6 +77,23 @@ func NewRouter(
 	healthHandler := handlers.NewHealth(readiness)
 	r.Get("/healthz", healthHandler.Live)
 	r.Get("/readyz", healthHandler.Ready)
+
+	publicInstallMedia := handlers.NewPublicInstallMedia(handlers.PublicInstallMediaDeps{
+		Reader: installmediapublic.Reader{
+			StagingDir: options.releaseStagingDir,
+			Version:    cfg.Version,
+			Commit:     cfg.BuildCommit,
+		},
+	})
+	r.Get("/api/v1/public/install-media", publicInstallMedia.ServeHTTP)
+
+	if strings.TrimSpace(options.releaseStagingDir) != "" {
+		releaseFiles := handlers.NewReleaseFiles(options.releaseStagingDir)
+		r.Get("/release/{filename}", releaseFiles.ServeHTTP)
+		r.Head("/release/{filename}", releaseFiles.ServeHTTP)
+		r.Get("/release/writer/{filename}", releaseFiles.ServeWriter)
+		r.Head("/release/writer/{filename}", releaseFiles.ServeWriter)
+	}
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/version", handlers.NewVersion(cfg.Version, cfg.BuildCommit).ServeHTTP)
@@ -104,6 +131,36 @@ func NewRouter(
 				middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionSettingsAdminWrite),
 				middleware.RequireCSRF,
 			).Patch("/settings/instance", updateInstance.ServeHTTP)
+		}
+		if storage != nil && sessionAuth != nil && sessionAuth.Resolver != nil && sessionAuth.Authorizer != nil {
+			storageRoutes := func(route chi.Router) {
+				route.Use(
+					middleware.OptionalAuthentication(sessionAuth.Resolver),
+					middleware.RequireAuthentication,
+				)
+				route.With(
+					middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionStorageRead),
+				).Get("/disks", storage.ServeDisks)
+				route.With(
+					middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionStorageRead),
+				).Get("/pools", storage.ServePools)
+				route.With(
+					middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionStorageRead),
+				).Get("/shares", storage.ServeShares)
+				route.With(
+					middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionStorageWrite),
+					middleware.RequireCSRF,
+				).Post("/pools", storage.ServeCreatePool)
+				route.With(
+					middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionStorageWrite),
+					middleware.RequireCSRF,
+				).Post("/pools/{poolID}/datasets", storage.ServeAddDataset)
+				route.With(
+					middleware.RequirePermission(sessionAuth.Authorizer, domainidentity.PermissionStorageWrite),
+					middleware.RequireCSRF,
+				).Post("/shares", storage.ServeCreateShare)
+			}
+			r.Route("/storage", storageRoutes)
 		}
 	})
 
@@ -144,6 +201,9 @@ func isUIFallbackRequest(r *http.Request) bool {
 		return false
 	}
 	if p == "/healthz" || p == "/readyz" {
+		return false
+	}
+	if p == "/release" || strings.HasPrefix(p, "/release/") {
 		return false
 	}
 	return true

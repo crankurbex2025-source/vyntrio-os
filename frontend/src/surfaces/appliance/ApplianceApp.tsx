@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-import "../../App.css";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { LoginScreen } from "../../features/auth/LoginScreen";
 import { OverviewShell } from "../../features/overview/OverviewShell";
 import { parseOverviewDto, type OverviewDto } from "../../features/overview/overviewDto";
 import { SettingsShell } from "../../features/settings/SettingsShell";
 import { parsePublicSettingsDto, type PublicSettingsDto } from "../../features/settings/settingsDto";
+import { SharesShell } from "../../features/shares/SharesShell";
+import { StorageShell } from "../../features/storage/StorageShell";
+import { parseStorageLayoutDto, type StorageLayoutDto } from "../../features/storage/storageDto";
+import { ToolsShell } from "../../features/tools/ToolsShell";
+import { UsersShell } from "../../features/users/UsersShell";
 import { createApiClient, type ApiClient } from "../../lib/api";
+import { ApplianceShell } from "./ApplianceShell";
+import { applianceSectionFromPath } from "./nav/applianceNavConfig";
 
 const UPDATE_INSTANCE_ERROR_MESSAGE = "The instance name could not be updated. Please try again.";
 const UPDATE_INSTANCE_VALIDATION_MESSAGE = "Enter a valid instance name.";
@@ -15,12 +21,16 @@ type AuthorizedState = {
   kind: "authorized";
   overview: OverviewDto;
   csrfToken: string | null;
-  view: "overview" | "settings";
   settings: PublicSettingsDto | null;
+  storage: StorageLayoutDto | null;
   logoutPending: boolean;
   logoutError: boolean;
   settingsLoading: boolean;
   settingsAccessError: boolean;
+  storageLoading: boolean;
+  storageAccessError: boolean;
+  storageMutationPending: boolean;
+  storageMutationError: string | null;
   editMode: boolean;
   draftDisplayName: string;
   updatePending: boolean;
@@ -46,32 +56,59 @@ type ApplianceAppProps = {
 
 function SessionProbeView() {
   return (
-    <main className="status-wrap">
-      <section className="status-card">
-        <h1>Vyntrio OS</h1>
-        <p>Checking session...</p>
-      </section>
-    </main>
+    <ApplianceShell>
+      <main className="status-wrap">
+        <section className="status-card">
+          <h1>Vyntrio OS</h1>
+          <p>Checking session...</p>
+        </section>
+      </main>
+    </ApplianceShell>
   );
 }
 
 function ForbiddenView() {
   return (
-    <main className="status-wrap">
-      <section className="status-card">
-        <h1>Vyntrio OS</h1>
-        <p>You do not have access to this appliance view.</p>
-      </section>
-    </main>
+    <ApplianceShell>
+      <main className="status-wrap">
+        <section className="status-card">
+          <h1>Vyntrio OS</h1>
+          <p>You do not have access to this appliance view.</p>
+        </section>
+      </main>
+    </ApplianceShell>
   );
 }
 
 function UnavailableView() {
   return (
+    <ApplianceShell>
+      <main className="status-wrap">
+        <section className="status-card">
+          <h1>Vyntrio OS</h1>
+          <p>The appliance overview is temporarily unavailable.</p>
+        </section>
+      </main>
+    </ApplianceShell>
+  );
+}
+
+function SectionLoading({ label }: { label: string }) {
+  return (
     <main className="status-wrap">
       <section className="status-card">
-        <h1>Vyntrio OS</h1>
-        <p>The appliance overview is temporarily unavailable.</p>
+        <h1>{label}</h1>
+        <p>Loading...</p>
+      </section>
+    </main>
+  );
+}
+
+function SectionAccessError({ message }: { message: string }) {
+  return (
+    <main className="status-wrap">
+      <section className="status-card">
+        <p role="alert">{message}</p>
       </section>
     </main>
   );
@@ -91,6 +128,7 @@ function readLoginHandoff(locationState: unknown): string | null {
 export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
   const client = useMemo(() => apiClient ?? createApiClient(), [apiClient]);
   const location = useLocation();
+  const section = applianceSectionFromPath(location.pathname);
   const loginHandoffCsrf = useMemo(
     () => readLoginHandoff(location.state),
     [location.state]
@@ -99,6 +137,8 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
   const probeSequence = useRef(0);
   const logoutSequence = useRef(0);
   const updateSequence = useRef(0);
+  const settingsLoadSequence = useRef(0);
+  const storageLoadSequence = useRef(0);
   const [appState, setAppState] = useState<AppState>({ kind: "bootstrapping" });
 
   const buildAuthorizedState = useCallback(
@@ -106,12 +146,16 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
       kind: "authorized",
       overview,
       csrfToken,
-      view: "overview",
       settings: null,
+      storage: null,
       logoutPending: false,
       logoutError: false,
       settingsLoading: false,
       settingsAccessError: false,
+      storageLoading: false,
+      storageAccessError: false,
+      storageMutationPending: false,
+      storageMutationError: null,
       editMode: false,
       draftDisplayName: overview.instance.name,
       updatePending: false,
@@ -176,22 +220,33 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
     [probeOverview]
   );
 
-  const handleOpenSettings = useCallback(async () => {
+  const loadSettings = useCallback(async () => {
     if (appState.kind !== "authorized") {
       return;
     }
-    if (appState.logoutPending || appState.settingsLoading || appState.updatePending) {
+    if (
+      appState.settings ||
+      appState.settingsLoading ||
+      appState.settingsAccessError ||
+      appState.logoutPending
+    ) {
       return;
     }
 
-    setAppState({
-      ...appState,
-      settingsLoading: true,
-      settingsAccessError: false,
+    const sequence = ++settingsLoadSequence.current;
+    setAppState((previous) => {
+      if (previous.kind !== "authorized") {
+        return previous;
+      }
+      return {
+        ...previous,
+        settingsLoading: true,
+        settingsAccessError: false,
+      };
     });
 
     const result = await client.requestJson<unknown>("/api/v1/settings");
-    if (!isMounted.current) {
+    if (!isMounted.current || sequence !== settingsLoadSequence.current) {
       return;
     }
 
@@ -209,7 +264,7 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
             ...previous,
             settingsLoading: false,
             settingsAccessError: true,
-            view: "overview",
+            settings: null,
           };
         });
         return;
@@ -230,7 +285,6 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
       }
       return {
         ...previous,
-        view: "settings",
         settings,
         settingsLoading: false,
         settingsAccessError: false,
@@ -243,23 +297,252 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
     });
   }, [appState, client]);
 
-  const handleBackToOverview = useCallback(() => {
+  const loadStorage = useCallback(async () => {
+    if (appState.kind !== "authorized") {
+      return;
+    }
+    if (
+      appState.storage ||
+      appState.storageLoading ||
+      appState.storageAccessError ||
+      appState.logoutPending
+    ) {
+      return;
+    }
+
+    const sequence = ++storageLoadSequence.current;
     setAppState((previous) => {
       if (previous.kind !== "authorized") {
         return previous;
       }
       return {
         ...previous,
-        view: "overview",
-        settings: null,
-        editMode: false,
-        draftDisplayName: previous.overview.instance.name,
-        updatePending: false,
-        updateError: false,
-        updateValidationError: false,
+        storageLoading: true,
+        storageAccessError: false,
       };
     });
-  }, []);
+
+    const [disksResult, poolsResult, sharesResult] = await Promise.all([
+      client.requestJson<unknown>("/api/v1/storage/disks"),
+      client.requestJson<unknown>("/api/v1/storage/pools"),
+      client.requestJson<unknown>("/api/v1/storage/shares"),
+    ]);
+    if (!isMounted.current || sequence !== storageLoadSequence.current) {
+      return;
+    }
+
+    const firstError = [disksResult, poolsResult, sharesResult].find((result) => !result.ok);
+    if (firstError && !firstError.ok) {
+      if (firstError.error.kind === "unauthorized") {
+        setAppState({ kind: "unauthenticated" });
+        return;
+      }
+      if (firstError.error.kind === "forbidden") {
+        setAppState((previous) => {
+          if (previous.kind !== "authorized") {
+            return previous;
+          }
+          return {
+            ...previous,
+            storageLoading: false,
+            storageAccessError: true,
+            storage: null,
+          };
+        });
+        return;
+      }
+      setAppState({ kind: "unavailable" });
+      return;
+    }
+
+    const storage = parseStorageLayoutDto({
+      disks: disksResult.ok ? disksResult.data : null,
+      pools: poolsResult.ok ? poolsResult.data : null,
+      shares: sharesResult.ok ? sharesResult.data : null,
+    });
+    if (!storage) {
+      setAppState({ kind: "unavailable" });
+      return;
+    }
+
+    setAppState((previous) => {
+      if (previous.kind !== "authorized") {
+        return previous;
+      }
+      return {
+        ...previous,
+        storage,
+        storageLoading: false,
+        storageAccessError: false,
+      };
+    });
+  }, [appState, client]);
+
+  useEffect(() => {
+    if (appState.kind !== "authorized") {
+      return;
+    }
+    if (section === "settings") {
+      void loadSettings();
+    }
+    if (section === "storage" || section === "shares") {
+      void loadStorage();
+    }
+  }, [appState.kind, section, loadSettings, loadStorage]);
+
+  const refreshStorageLayout = useCallback(async (): Promise<StorageLayoutDto | null> => {
+    const [disksResult, poolsResult, sharesResult] = await Promise.all([
+      client.requestJson<unknown>("/api/v1/storage/disks"),
+      client.requestJson<unknown>("/api/v1/storage/pools"),
+      client.requestJson<unknown>("/api/v1/storage/shares"),
+    ]);
+    if (![disksResult, poolsResult, sharesResult].every((result) => result.ok)) {
+      return null;
+    }
+    return parseStorageLayoutDto({
+      disks: disksResult.ok ? disksResult.data : null,
+      pools: poolsResult.ok ? poolsResult.data : null,
+      shares: sharesResult.ok ? sharesResult.data : null,
+    });
+  }, [client]);
+
+  const handleCreatePool = useCallback(
+    async (name: string, diskIds: string[]) => {
+      if (appState.kind !== "authorized" || !appState.csrfToken || !appState.storage) {
+        return;
+      }
+      setAppState({ ...appState, storageMutationPending: true, storageMutationError: null });
+      const result = await client.requestJson<unknown>("/api/v1/storage/pools", {
+        method: "POST",
+        jsonBody: { name, disk_ids: diskIds, confirm: true },
+        csrfToken: appState.csrfToken,
+      });
+      if (!isMounted.current) {
+        return;
+      }
+      if (!result.ok) {
+        setAppState((previous) => {
+          if (previous.kind !== "authorized") {
+            return previous;
+          }
+          return {
+            ...previous,
+            storageMutationPending: false,
+            storageMutationError:
+              result.error.kind === "api_error"
+                ? result.error.message
+                : "Pool could not be declared.",
+          };
+        });
+        return;
+      }
+      const layout = await refreshStorageLayout();
+      setAppState((previous) => {
+        if (previous.kind !== "authorized") {
+          return previous;
+        }
+        return {
+          ...previous,
+          storage: layout ?? previous.storage,
+          storageMutationPending: false,
+          storageMutationError: layout ? null : "Pool declared but layout refresh failed.",
+        };
+      });
+    },
+    [appState, client, refreshStorageLayout]
+  );
+
+  const handleAddDataset = useCallback(
+    async (poolId: string, name: string) => {
+      if (appState.kind !== "authorized" || !appState.csrfToken) {
+        return;
+      }
+      setAppState({ ...appState, storageMutationPending: true, storageMutationError: null });
+      const result = await client.requestJson<unknown>(`/api/v1/storage/pools/${poolId}/datasets`, {
+        method: "POST",
+        jsonBody: { name },
+        csrfToken: appState.csrfToken,
+      });
+      if (!isMounted.current) {
+        return;
+      }
+      if (!result.ok) {
+        setAppState((previous) => {
+          if (previous.kind !== "authorized") {
+            return previous;
+          }
+          return {
+            ...previous,
+            storageMutationPending: false,
+            storageMutationError:
+              result.error.kind === "api_error"
+                ? result.error.message
+                : "Dataset could not be prepared.",
+          };
+        });
+        return;
+      }
+      const layout = await refreshStorageLayout();
+      setAppState((previous) => {
+        if (previous.kind !== "authorized") {
+          return previous;
+        }
+        return {
+          ...previous,
+          storage: layout ?? previous.storage,
+          storageMutationPending: false,
+          storageMutationError: layout ? null : "Dataset prepared but layout refresh failed.",
+        };
+      });
+    },
+    [appState, client, refreshStorageLayout]
+  );
+
+  const handleCreateShare = useCallback(
+    async (name: string, poolId: string, datasetId?: string) => {
+      if (appState.kind !== "authorized" || !appState.csrfToken) {
+        return;
+      }
+      setAppState({ ...appState, storageMutationPending: true, storageMutationError: null });
+      const result = await client.requestJson<unknown>("/api/v1/storage/shares", {
+        method: "POST",
+        jsonBody: { name, pool_id: poolId, dataset_id: datasetId, protocol: "planned" },
+        csrfToken: appState.csrfToken,
+      });
+      if (!isMounted.current) {
+        return;
+      }
+      if (!result.ok) {
+        setAppState((previous) => {
+          if (previous.kind !== "authorized") {
+            return previous;
+          }
+          return {
+            ...previous,
+            storageMutationPending: false,
+            storageMutationError:
+              result.error.kind === "api_error"
+                ? result.error.message
+                : "Share plan could not be prepared.",
+          };
+        });
+        return;
+      }
+      const layout = await refreshStorageLayout();
+      setAppState((previous) => {
+        if (previous.kind !== "authorized") {
+          return previous;
+        }
+        return {
+          ...previous,
+          storage: layout ?? previous.storage,
+          storageMutationPending: false,
+          storageMutationError: layout ? null : "Share prepared but layout refresh failed.",
+        };
+      });
+    },
+    [appState, client, refreshStorageLayout]
+  );
 
   const handleSignOut = useCallback(async () => {
     if (appState.kind !== "authorized") {
@@ -306,7 +589,7 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
 
   const handleStartEdit = useCallback(() => {
     setAppState((previous) => {
-      if (previous.kind !== "authorized" || previous.view !== "settings" || !previous.settings) {
+      if (previous.kind !== "authorized" || !previous.settings) {
         return previous;
       }
       if (previous.logoutPending || previous.updatePending) {
@@ -354,7 +637,7 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
   }, []);
 
   const handleSaveDisplayName = useCallback(async () => {
-    if (appState.kind !== "authorized" || appState.view !== "settings" || !appState.settings) {
+    if (appState.kind !== "authorized" || !appState.settings) {
       return;
     }
     if (!appState.editMode || appState.logoutPending || appState.updatePending) {
@@ -461,44 +744,113 @@ export default function ApplianceApp({ apiClient }: ApplianceAppProps) {
     case "probing_after_login":
       return <SessionProbeView />;
     case "unauthenticated":
-      return <LoginScreen apiClient={client} onLoginSuccess={handleLoginSuccess} />;
+      return (
+        <ApplianceShell>
+          <LoginScreen apiClient={client} onLoginSuccess={handleLoginSuccess} />
+        </ApplianceShell>
+      );
     case "forbidden":
       return <ForbiddenView />;
     case "unavailable":
       return <UnavailableView />;
     case "authorized":
-      if (appState.view === "settings" && appState.settings) {
-        return (
-          <SettingsShell
-            settings={appState.settings}
-            editMode={appState.editMode}
-            draftDisplayName={appState.draftDisplayName}
-            isUpdating={appState.updatePending}
-            updateErrorMessage={appState.updateError ? UPDATE_INSTANCE_ERROR_MESSAGE : null}
-            updateValidationMessage={
-              appState.updateValidationError ? UPDATE_INSTANCE_VALIDATION_MESSAGE : null
-            }
-            onStartEdit={handleStartEdit}
-            onCancelEdit={handleCancelEdit}
-            onSaveDisplayName={handleSaveDisplayName}
-            onDraftDisplayNameChange={handleDraftDisplayNameChange}
-            isSigningOut={appState.logoutPending}
-            signOutError={appState.logoutError}
-            onSignOut={handleSignOut}
-            onBackToOverview={handleBackToOverview}
-          />
-        );
-      }
       return (
-        <OverviewShell
-          overview={appState.overview}
+        <ApplianceShell
+          withNav
+          instanceName={appState.overview.instance.name}
           isSigningOut={appState.logoutPending}
-          signOutError={appState.logoutError}
-          settingsAccessError={appState.settingsAccessError}
-          settingsLoading={appState.settingsLoading}
-          onOpenSettings={handleOpenSettings}
+          signOutDisabled={appState.updatePending || appState.storageMutationPending}
           onSignOut={handleSignOut}
-        />
+        >
+          {appState.logoutError ? (
+            <section className="dashboard-alert" role="alert">
+              Sign-out could not be completed. Please try again.
+            </section>
+          ) : null}
+          <Routes>
+            <Route
+              index
+              element={
+                <OverviewShell
+                  overview={appState.overview}
+                  signOutError={false}
+                  settingsAccessError={appState.settingsAccessError}
+                  storageAccessError={appState.storageAccessError}
+                  settingsLoading={appState.settingsLoading}
+                  storageLoading={appState.storageLoading}
+                />
+              }
+            />
+            <Route
+              path="storage"
+              element={
+                appState.storageAccessError ? (
+                  <SectionAccessError message="You do not have access to the storage inventory." />
+                ) : appState.storage ? (
+                  <StorageShell
+                    layout={appState.storage}
+                    mutationPending={appState.storageMutationPending}
+                    mutationError={appState.storageMutationError}
+                    onCreatePool={handleCreatePool}
+                    onAddDataset={handleAddDataset}
+                  />
+                ) : (
+                  <SectionLoading label="Storage" />
+                )
+              }
+            />
+            <Route
+              path="shares"
+              element={
+                appState.storageAccessError ? (
+                  <SectionAccessError message="You do not have access to share plans." />
+                ) : appState.storage ? (
+                  <SharesShell
+                    layout={appState.storage}
+                    mutationPending={appState.storageMutationPending}
+                    mutationError={appState.storageMutationError}
+                    onCreateShare={handleCreateShare}
+                  />
+                ) : (
+                  <SectionLoading label="Shares" />
+                )
+              }
+            />
+            <Route path="users" element={<UsersShell />} />
+            <Route
+              path="settings"
+              element={
+                appState.settingsAccessError ? (
+                  <SectionAccessError message="You do not have access to instance settings." />
+                ) : appState.settings ? (
+                  <SettingsShell
+                    settings={appState.settings}
+                    editMode={appState.editMode}
+                    draftDisplayName={appState.draftDisplayName}
+                    isUpdating={appState.updatePending}
+                    updateErrorMessage={
+                      appState.updateError ? UPDATE_INSTANCE_ERROR_MESSAGE : null
+                    }
+                    updateValidationMessage={
+                      appState.updateValidationError
+                        ? UPDATE_INSTANCE_VALIDATION_MESSAGE
+                        : null
+                    }
+                    onStartEdit={handleStartEdit}
+                    onCancelEdit={handleCancelEdit}
+                    onSaveDisplayName={handleSaveDisplayName}
+                    onDraftDisplayNameChange={handleDraftDisplayNameChange}
+                    controlsLocked={appState.logoutPending}
+                  />
+                ) : (
+                  <SectionLoading label="Settings" />
+                )
+              }
+            />
+            <Route path="tools" element={<ToolsShell />} />
+            <Route path="*" element={<Navigate to="/app" replace />} />
+          </Routes>
+        </ApplianceShell>
       );
     default:
       return <UnavailableView />;

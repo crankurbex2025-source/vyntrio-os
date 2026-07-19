@@ -1,7 +1,6 @@
 import { I18nProvider, useI18n } from "../../../shared/i18n/I18nProvider";
 import { PublicPreviewShell } from "../components";
 import { PublicDocsView } from "../docs/PublicDocsView";
-import { buildPreviewContextLinks } from "./previewContextConfig";
 import { buildPreviewShellProps } from "./previewShellConfig";
 import { usePreviewDocumentLang } from "./usePreviewDocumentLang";
 
@@ -15,7 +14,7 @@ function DocsPreviewContent() {
         surface={{
           mode: "preview",
           contextCurrentKey: "docs",
-          contextLinks: buildPreviewContextLinks(messages),
+          contextLinks: [],
           inlineCtaPrimaryTo: "/design-preview/download",
           inlineCtaSecondaryTo: "/design-preview/landing",
           idPrefix: "preview",

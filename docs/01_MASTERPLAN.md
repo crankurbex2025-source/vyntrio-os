@@ -12,7 +12,7 @@ Die Entwicklung von Vyntrio OS erfolgt in klar abgegrenzten Produkt- und Plattfo
 6. Container: Docker-Engine, Compose, Templates, Logs, Backups.
 7. Virtualisierung: KVM/QEMU/libvirt, VM-Lifecycle, Media, Passthrough.
 8. Hub & Plugins: Marketplace, Signaturen, SDK, Rechte.
-9. Commercial Core: Lizenzierung, Aktivierung, Edition-Gates, Update-Server.
+9. Commercial Core: Lizenzierung, Aktivierung, Geräte-/Server-Tiers, Update-Server.
 10. Beta & GA: Hardening, QA, Migrations, Release Engineering.
 
 ## Lieferprinzip

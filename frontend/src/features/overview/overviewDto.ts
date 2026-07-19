@@ -74,6 +74,19 @@ export type HealthDto = {
   note?: HealthNote;
 };
 
+export type StorageSummaryStatus = "ok" | "unavailable";
+
+export type StorageSummaryDto = {
+  status: StorageSummaryStatus;
+  disk_count: number;
+  eligible_count: number;
+  excluded_count: number;
+  unknown_count: number;
+  pool_count: number;
+  share_count: number;
+  mutation_available: boolean;
+};
+
 export type OverviewDto = {
   instance: {
     name: string;
@@ -96,6 +109,7 @@ export type OverviewDto = {
   software: SoftwareDto;
   runtime: RuntimeDto;
   health: HealthDto;
+  storage: StorageSummaryDto;
   collected_at: string;
 };
 
@@ -399,6 +413,48 @@ function parseHealth(value: unknown): HealthDto | null {
   return { status, note: value.note };
 }
 
+function parseStorageSummary(value: unknown): StorageSummaryDto | null {
+  if (
+    !isPlainRecord(value) ||
+    !hasExactKeys(value, [
+      "status",
+      "disk_count",
+      "eligible_count",
+      "excluded_count",
+      "unknown_count",
+      "pool_count",
+      "share_count",
+      "mutation_available",
+    ])
+  ) {
+    return null;
+  }
+  if (value.status !== "ok" && value.status !== "unavailable") {
+    return null;
+  }
+  if (
+    !isNonNegativeInteger(value.disk_count) ||
+    !isNonNegativeInteger(value.eligible_count) ||
+    !isNonNegativeInteger(value.excluded_count) ||
+    !isNonNegativeInteger(value.unknown_count) ||
+    !isNonNegativeInteger(value.pool_count) ||
+    !isNonNegativeInteger(value.share_count) ||
+    typeof value.mutation_available !== "boolean"
+  ) {
+    return null;
+  }
+  return {
+    status: value.status,
+    disk_count: value.disk_count,
+    eligible_count: value.eligible_count,
+    excluded_count: value.excluded_count,
+    unknown_count: value.unknown_count,
+    pool_count: value.pool_count,
+    share_count: value.share_count,
+    mutation_available: value.mutation_available,
+  };
+}
+
 export function parseOverviewDto(payload: unknown): OverviewDto | null {
   if (
     !isPlainRecord(payload) ||
@@ -413,6 +469,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
       "software",
       "runtime",
       "health",
+      "storage",
       "collected_at",
     ])
   ) {
@@ -429,6 +486,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
   const software = parseSoftware(payload.software);
   const runtime = parseRuntime(payload.runtime);
   const health = parseHealth(payload.health);
+  const storage = parseStorageSummary(payload.storage);
   const collectedAt = payload.collected_at;
 
   if (!isPlainRecord(instance) || !hasExactKeys(instance, ["name", "version", "commit"])) {
@@ -459,6 +517,9 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     return null;
   }
   if (!health) {
+    return null;
+  }
+  if (!storage) {
     return null;
   }
 
@@ -497,6 +558,7 @@ export function parseOverviewDto(payload: unknown): OverviewDto | null {
     software,
     runtime,
     health,
+    storage,
     collected_at: collectedAt,
   };
 }

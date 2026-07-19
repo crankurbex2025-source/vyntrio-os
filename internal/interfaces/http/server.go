@@ -28,10 +28,11 @@ func NewServer(
 	overview *handlers.Overview,
 	settings *handlers.Settings,
 	updateInstance *handlers.UpdateInstanceSettings,
+	storage *handlers.Storage,
 	sessionAuth *SessionAuth,
 	opts ...RouterOption,
 ) *Server {
-	handler := NewRouter(cfg, logger, readiness, bootstrap, login, logout, overview, settings, updateInstance, sessionAuth, opts...)
+	handler := NewRouter(cfg, logger, readiness, bootstrap, login, logout, overview, settings, updateInstance, storage, sessionAuth, opts...)
 	return &Server{
 		cfg:    cfg,
 		logger: logger,
@@ -45,9 +46,13 @@ func NewServer(
 	}
 }
 
-// ListenAndServe starts the HTTP server.
+// ListenAndServe starts the HTTP or HTTPS server.
 func (s *Server) ListenAndServe() error {
-	s.logger.Info("api server listening", "addr", s.cfg.Addr(), "env", s.cfg.Env)
+	if s.cfg.TLSEnabled() {
+		s.logger.Info("api server listening", "addr", s.cfg.Addr(), "env", s.cfg.Env, "tls", true)
+		return s.http.ListenAndServeTLS(s.cfg.TLSCertFile, s.cfg.TLSKeyFile)
+	}
+	s.logger.Info("api server listening", "addr", s.cfg.Addr(), "env", s.cfg.Env, "tls", false)
 	return s.http.ListenAndServe()
 }
 

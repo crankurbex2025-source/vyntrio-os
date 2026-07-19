@@ -38,6 +38,8 @@ type Config struct {
 	StateDir     string
 	LogLevel     string
 	CookieSecure bool
+	TLSCertFile  string
+	TLSKeyFile   string
 
 	// Env is derived from cookie and bind settings for logging and settings DTO.
 	Env             string
@@ -71,4 +73,9 @@ func (c Config) DatabasePath() string {
 // Addr returns the host:port listen address.
 func (c Config) Addr() string {
 	return net.JoinHostPort(c.BindAddress, fmt.Sprintf("%d", c.ListenPort))
+}
+
+// TLSEnabled reports whether the server should listen with HTTPS.
+func (c Config) TLSEnabled() bool {
+	return c.TLSCertFile != "" && c.TLSKeyFile != ""
 }

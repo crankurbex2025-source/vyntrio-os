@@ -171,8 +171,8 @@ func TestValidateBindAddress(t *testing.T) {
 
 	body := strings.ReplaceAll(validConfigBody("__STATE_DIR__"), "127.0.0.1", "192.168.1.10")
 	body = strings.Replace(body, "cookie_secure = false", "cookie_secure = true", 1)
-	if _, err := loadTestConfig(t, body); err != nil {
-		t.Fatalf("valid non-loopback bind_address failed: %v", err)
+	if _, err := loadTestConfig(t, body); err == nil {
+		t.Fatal("non-loopback bind_address without TLS should fail")
 	}
 
 	invalid := []string{"localhost", "0.0.0.0", "::", "", " 127.0.0.1", "127.0.0.1/32", "http://127.0.0.1"}
@@ -218,6 +218,43 @@ func TestCookieSecureTrueOnLoopback(t *testing.T) {
 	}
 	if !cfg.CookieSecure || cfg.Env != "production" {
 		t.Fatalf("unexpected secure config: %+v", cfg)
+	}
+}
+
+func TestNonLoopbackBindRequiresTLS(t *testing.T) {
+	body := strings.ReplaceAll(validConfigBody("__STATE_DIR__"), "127.0.0.1", "192.168.1.10")
+	body = strings.Replace(body, "cookie_secure = false", "cookie_secure = true", 1)
+	_, err := loadTestConfig(t, body)
+	if err == nil {
+		t.Fatal("expected non-loopback bind without TLS to fail")
+	}
+}
+
+func TestNonLoopbackBindAcceptsTLS(t *testing.T) {
+	stateDir := testStateDir(t)
+	certPath, keyPath := writeTestTLSFiles(t, filepath.Dir(stateDir), "192.168.1.10")
+	body := strings.ReplaceAll(validConfigBody(stateDir), "127.0.0.1", "192.168.1.10")
+	body = strings.Replace(body, "cookie_secure = false", "cookie_secure = true", 1)
+	body += "tls_cert_file = \"" + certPath + "\"\n"
+	body += "tls_key_file = \"" + keyPath + "\"\n"
+	path := writeConfigFile(t, t.TempDir(), "config.toml", body)
+
+	cfg, err := config.LoadWithOptions(path, config.LoadOptions{AllowedStateDir: stateDir})
+	if err != nil {
+		t.Fatalf("LoadWithOptions() error: %v", err)
+	}
+	if !cfg.TLSEnabled() || cfg.BindAddress != "192.168.1.10" {
+		t.Fatalf("unexpected TLS LAN config: %+v", cfg)
+	}
+}
+
+func TestTLSKeyPairMustBePaired(t *testing.T) {
+	stateDir := testStateDir(t)
+	certPath, _ := writeTestTLSFiles(t, filepath.Dir(stateDir), "127.0.0.1")
+	body := validConfigBody(stateDir) + "tls_cert_file = \"" + certPath + "\"\n"
+	_, err := loadTestConfig(t, body)
+	if err == nil {
+		t.Fatal("expected tls_cert_file without tls_key_file to fail")
 	}
 }
 

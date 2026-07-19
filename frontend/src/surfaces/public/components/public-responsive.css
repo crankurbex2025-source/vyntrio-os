@@ -261,31 +261,9 @@
   }
 }
 
-/* Viewport adjustments for shell chrome only */
-@media (max-width: 52rem) {
-  .vyn-public-header-inner {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .vyn-public-nav {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.5rem), 1fr));
-    gap: 0.35rem;
-    width: 100%;
-  }
-
-  .vyn-public-nav a,
-  .vyn-public-locale-switcher button {
-    min-height: var(--vyn-touch-target);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .vyn-public-locale-switcher {
-    justify-self: start;
-  }
+/* Shell chrome mobile layout is owned by public-chrome.css (burger drawer). */
+.vyn-public-locale-switcher button {
+  min-height: var(--vyn-touch-target);
 }
 
 @media (prefers-reduced-motion: reduce) {

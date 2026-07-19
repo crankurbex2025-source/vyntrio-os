@@ -1,6 +1,7 @@
 package overview
 
 import (
+	appstorage "github.com/crankurbex2025-source/vyntrio-os/internal/application/storage"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/backupstatus"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/hostmetrics"
 	"github.com/crankurbex2025-source/vyntrio-os/internal/platform/netpresence"
@@ -18,6 +19,7 @@ type Response struct {
 	Software    SoftwareSection     `json:"software"`
 	Runtime     RuntimeSection      `json:"runtime"`
 	Health      HealthSection       `json:"health"`
+	Storage     appstorage.Summary  `json:"storage"`
 	CollectedAt string              `json:"collected_at"`
 }
 

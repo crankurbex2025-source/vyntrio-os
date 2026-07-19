@@ -41,8 +41,12 @@ kein Zielplatten-Schreiben.
 
 **Block 9 / Slice 9.9:** Bootability-Initialisierungs-Gerüst in
 `distro/install-media/bootability-contract.md` und `bootability-manifest.yaml` —
-deklarative Grenze für bootfähige ISO/USB nach Envelope-Assembly; kein Bootloader,
-kein Live-Root, kein Installer-Lauf.
+deklarative Grenze für bootfähige ISO/USB nach Envelope-Assembly.
+
+**Block 9 / Slice 9.11:** Bootability-Foundation via `make install-media-bootability`
+— boot/live_root-Stubs, Layout-Validierung, `BOOTABILITY.txt`, Image-Stub
+`distro/install-media/build/*-NOT-BOOTABLE.stub.tar` (nicht firmware-bootfähig);
+USB-Creator deferred. Siehe `docs/ops/install-media-bootability.md`.
 
 **Block 10 / Slice 10.3:** Read-only Installer-Preflight unter `distro/installer/`
 via `make installer-preflight`; validiert Envelope/Payload gegen ADR-0007; kein

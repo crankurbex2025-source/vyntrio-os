@@ -1,7 +1,6 @@
 import { I18nProvider, useI18n } from "../../../shared/i18n/I18nProvider";
 import { PublicPreviewShell } from "../components";
 import { PublicLandingView } from "../landing/PublicLandingView";
-import { buildPreviewContextLinks } from "./previewContextConfig";
 import { buildPreviewShellProps } from "./previewShellConfig";
 import { usePreviewDocumentLang } from "./usePreviewDocumentLang";
 
@@ -10,20 +9,12 @@ function LandingPreviewContent() {
   usePreviewDocumentLang();
 
   return (
-    <PublicPreviewShell
-      {...buildPreviewShellProps(messages, {
-        anchorLinks: [
-          { label: messages.nav.home, to: "#product" },
-          { label: messages.nav.capabilities, to: "#capabilities" },
-        ],
-      })}
-      shellVariant="landing"
-    >
+    <PublicPreviewShell {...buildPreviewShellProps(messages)} shellVariant="landing">
       <PublicLandingView
         surface={{
           mode: "preview",
           contextCurrentKey: "landing",
-          contextLinks: buildPreviewContextLinks(messages),
+          contextLinks: [],
           ctaDownloadTo: "/design-preview/download",
           ctaSignInTo: "/login",
           finalCtaDownloadTo: "/design-preview/download",

@@ -26,23 +26,22 @@
 
 .vyn-public-banner {
   border-bottom: 1px solid var(--vyn-border);
-  background: rgba(240, 180, 41, 0.08);
-  color: #f6d98b;
+  background: var(--vyn-accent-soft);
+  color: var(--vyn-accent-strong);
   padding: 0.75rem 1rem;
   font-size: 0.85rem;
   text-align: center;
 }
 
 .vyn-public-header {
-  border-bottom: 1px solid var(--vyn-border);
-  background: var(--vyn-bg-elevated);
+  border-bottom: 1px solid transparent;
+  background: transparent;
   transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .vyn-public-header-scrolled {
-  background: rgba(12, 16, 24, 0.92);
-  border-bottom-color: var(--vyn-border-strong);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  /* Floating pill handles scrolled state on landing; keep subtle for other shells */
+  background: transparent;
 }
 
 .vyn-public-header-inner,
@@ -56,21 +55,28 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 0.7rem 1rem;
   flex-wrap: wrap;
+  border-radius: var(--vyn-radius-pill);
+  border: 1px solid var(--vyn-border);
+  background: var(--vyn-nav-pill);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--vyn-shadow-soft);
 }
 
 .vyn-public-brand {
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-weight: 750;
+  letter-spacing: 0.02em;
   color: var(--vyn-text);
   text-decoration: none;
+  font-size: 1.05rem;
 }
 
 .vyn-public-nav {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
 }
 
@@ -79,20 +85,42 @@
 .vyn-public-nav a[class*="vyn-public-brand"] {
   color: var(--vyn-text-muted);
   text-decoration: none;
-  font-size: 0.92rem;
-  padding: 0.35rem 0.55rem;
-  border-radius: var(--vyn-radius-sm);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--vyn-radius-pill);
 }
 
 .vyn-public-nav a:hover {
   color: var(--vyn-text);
-  background: rgba(148, 163, 184, 0.08);
+  background: var(--vyn-accent-soft);
+}
+
+.vyn-public-nav-cta {
+  background: linear-gradient(145deg, var(--vyn-accent) 0%, var(--vyn-accent-strong) 100%) !important;
+  color: #fff !important;
+  font-weight: 650;
+  border-radius: var(--vyn-radius-pill) !important;
+  padding: 0.45rem 0.95rem !important;
+}
+
+.vyn-public-nav-cta:hover {
+  filter: brightness(1.05);
+  background: linear-gradient(145deg, var(--vyn-accent) 0%, var(--vyn-accent-strong) 100%) !important;
+  color: #fff !important;
+}
+
+.vyn-public-nav-secondary {
+  border: 1px solid var(--vyn-border-strong) !important;
+  background: var(--vyn-panel) !important;
+  color: var(--vyn-text) !important;
+  border-radius: var(--vyn-radius-pill) !important;
+  padding: 0.4rem 0.85rem !important;
 }
 
 .vyn-public-locale-switcher {
   display: inline-flex;
   border: 1px solid var(--vyn-border);
-  border-radius: var(--vyn-radius-sm);
+  border-radius: var(--vyn-radius-pill);
   overflow: hidden;
 }
 
@@ -130,7 +158,7 @@
 
 .vyn-public-section-band-elevated {
   background: linear-gradient(180deg, var(--vyn-bg-elevated) 0%, var(--vyn-bg) 100%);
-  border-block: 1px solid var(--vyn-border);
+  border-block: 1px solid transparent;
   position: relative;
 }
 
@@ -139,13 +167,35 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(232, 93, 43, 0.04), transparent 70%);
+  background: radial-gradient(ellipse 70% 55% at 50% 18%, var(--vyn-hero-glow), transparent 68%);
 }
 
 .vyn-public-section-band-inset {
   background: var(--vyn-panel-muted);
-  border-block: 1px solid var(--vyn-border);
+  border-block: 1px solid transparent;
 }
+
+.vyn-public-section-band-trust {
+  background: var(--vyn-trust-bg);
+  border-block: 1px solid transparent;
+  padding-block: clamp(2.25rem, 4vw, 3.5rem);
+}
+
+.vyn-public-section-band-panel {
+  background: var(--vyn-enterprise-bg);
+  border-block: 1px solid transparent;
+  padding-block: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.vyn-public-section-band-panel > .vyn-public-section-band-inner {
+  background: var(--vyn-panel);
+  border: 1px solid var(--vyn-border);
+  border-radius: var(--vyn-radius-2xl) var(--vyn-radius-2xl) var(--vyn-radius-xl) var(--vyn-radius-xl);
+  box-shadow: var(--vyn-shadow-float);
+  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  width: min(100% - (var(--vyn-gutter) * 2), var(--vyn-max-width));
+}
+
 
 .vyn-public-hero-layout {
   display: grid;
@@ -599,6 +649,64 @@
   color: var(--vyn-text-subtle);
   font-size: 0.85rem;
   line-height: 1.45;
+}
+
+.vyn-public-media-creator {
+  border: 1px solid var(--vyn-border);
+  border-radius: var(--vyn-radius-md);
+  padding: 1.25rem;
+  background: var(--vyn-panel);
+  max-width: 46rem;
+}
+
+.vyn-public-media-creator h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.vyn-public-media-creator-note {
+  margin: 0.75rem 0 1.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--vyn-radius-sm);
+  border: 1px solid var(--vyn-border);
+  background: color-mix(in srgb, var(--vyn-panel) 88%, var(--vyn-accent) 12%);
+  color: var(--vyn-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.vyn-public-media-creator-artifact,
+.vyn-public-media-creator-path,
+.vyn-public-media-creator-after-boot {
+  margin-top: 1.5rem;
+}
+
+.vyn-public-media-creator-checksum {
+  font-family: var(--vyn-font-mono);
+  font-size: 0.72rem;
+  word-break: break-all;
+  text-align: left !important;
+  max-width: 18rem;
+}
+
+.vyn-public-media-creator-helper-label {
+  margin: 1rem 0 0.35rem;
+  color: var(--vyn-text-muted);
+  font-size: 0.85rem;
+}
+
+.vyn-public-media-creator-command {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--vyn-radius-sm);
+  border: 1px solid var(--vyn-border);
+  background: var(--vyn-bg);
+  color: var(--vyn-text-subtle);
+  font-family: var(--vyn-font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-x: auto;
 }
 
 .vyn-public-docs-section + .vyn-public-docs-section {

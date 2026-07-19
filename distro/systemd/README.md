@@ -33,6 +33,12 @@ local actor who can mutate `/var/lib/vyntrio` after startup validation.
 
 ## Manual installation (administrator)
 
+**Interim developer/lab path only** — not the primary Vyntrio product install journey.
+The intended operator path is bootable install USB/ISO (Block 9) → boot → local
+dashboard → install from live session (Block 9 + Block 10). Use this procedure for
+development, CI, and appliances already running Linux until bootable install media
+ships. See `docs/00_PROJECT.md` and `docs/ADR/0006-appliance-install-recovery-media.md`.
+
 Prerequisites: built `vyntrio-api` binary and a valid
 `/etc/vyntrio/config.toml` (see `docs/API_CONVENTIONS.md`).
 
@@ -105,18 +111,24 @@ Root operators run **`vyntrio-backup`** on the appliance host. The command:
 - restarts the service and proves loopback `/healthz` and `/readyz` with a
   finite local retry policy after restart (no public HTTPS check);
 
-Restore remains **not implemented**. See `docs/ADR/0005-appliance-runtime-operations.md`
-section G and `docs/ops/restore-safety-contract.md`.
+Restore is implemented via **`vyntrio-restore`**. See `docs/ADR/0005-appliance-runtime-operations.md`
+section G and H and `docs/ops/restore-safety-contract.md`.
 
-## Future offline restore (not implemented)
+## Offline restore (`vyntrio-restore`)
 
-Block 7 Slice 7.8 defines the restore architecture contract (ADR-0005 section H).
-Slice 7.11 adds the fail-closed restore safety contract. Current deployment has
-**no** restore command or timer.
+Root operators restore from completed local backup artifacts with
+**`vyntrio-restore`** (Block 7 Slice 7.12):
 
-When restore is implemented, it will be a **root-operator, offline** action
-governed by the approved restore safety contract and a future restore command.
-No restore operator command exists in the current deployment.
+```bash
+vyntrio-restore validate vyntrio-backup-v1_<UTC-timestamp>.tar
+vyntrio-restore vyntrio-backup-v1_<UTC-timestamp>.tar --dry-run
+vyntrio-restore vyntrio-backup-v1_<UTC-timestamp>.tar --force
+```
+
+Destructive restore requires `--force`. Scope is SQLite state + config only — not
+binaries, systemd units, or install media. If post-restore startup or health checks
+fail, the command attempts rollback from the preservation copy and reports whether
+rollback succeeded (`rollback=succeeded`) or also failed (`rollback=failed`).
 
 See `docs/ADR/0005-appliance-runtime-operations.md` sections G and H and
 `docs/ops/restore-safety-contract.md`.

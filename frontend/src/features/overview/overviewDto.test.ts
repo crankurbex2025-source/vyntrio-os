@@ -62,6 +62,25 @@ describe("parseOverviewDto", () => {
     };
   }
 
+  function validHealth() {
+    return {
+      status: "healthy" as const,
+    };
+  }
+
+  function validStorage() {
+    return {
+      status: "ok" as const,
+      disk_count: 0,
+      eligible_count: 0,
+      excluded_count: 0,
+      unknown_count: 0,
+      pool_count: 0,
+      share_count: 0,
+      mutation_available: true as const,
+    };
+  }
+
   function validPayload() {
     return {
       instance: {
@@ -85,6 +104,7 @@ describe("parseOverviewDto", () => {
       software: validSoftware(),
       runtime: validRuntime(),
       health: validHealth(),
+      storage: validStorage(),
       collected_at: "2026-07-14T12:00:00.000000000Z",
     };
   }

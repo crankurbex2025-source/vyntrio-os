@@ -12,6 +12,8 @@ import {
   PreviewRouteFallback,
 } from "../surfaces/public/preview/previewRoutes";
 import { DocsPage, DownloadPage, LandingPage } from "../surfaces/public/publicRoutes";
+import { ApplianceOpsPreview } from "../surfaces/appliance/ui/ApplianceOpsPreview";
+import { ApplianceFullDemo } from "../surfaces/appliance/ui/ApplianceFullDemo";
 import type { ApiClient } from "../lib/api";
 
 type AppRouterProps = {
@@ -75,6 +77,8 @@ export function AppRouter({ apiClient }: AppRouterProps) {
           </Suspense>
         }
       />
+      <Route path="/design-preview/appliance-ops" element={<ApplianceOpsPreview />} />
+      <Route path="/design-preview/appliance-full" element={<ApplianceFullDemo />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

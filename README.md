@@ -4,7 +4,7 @@ Commercial Linux-based home-server and private-cloud operating system.
 
 Vyntrio OS combines storage, containers, virtualization, networking, backup, monitoring, automation, app marketplace, and commercial licensing in a unified appliance platform with a modern web dashboard.
 
-**Repository status:** Phase 1 — Foundation Hardening (implementation-ready monorepo skeleton).
+**Repository status:** Foundation complete; platform core and public website partially shipped (see `docs/PHASE_1_FOUNDATION_STATUS.md`).
 
 ## Quick start
 
@@ -27,7 +27,7 @@ Setup details: **[docs/21_CURSOR_REPO_SETUP.md](docs/21_CURSOR_REPO_SETUP.md)**
 vyntrio-os/
 ├── cmd/              # Service entrypoints (api, worker, installer, update-agent)
 ├── internal/         # Clean Architecture layers (domain, application, …)
-├── frontend/         # React dashboard (toolchain: Phase 2)
+├── frontend/         # React SPA (public site + appliance UI; embedded via vyntrio-api)
 ├── packages/         # Shared TS libraries (ui, sdk, config)
 ├── build/            # Build scripts (Phase 0.2+)
 ├── distro/           # ISO / image construction (Phase 0.2+)
@@ -59,7 +59,7 @@ make help          # List commands
 make bootstrap     # Toolchain check + workspace prep
 make verify        # Layout + docs validation
 make test          # Go + frontend tests
-make build         # Compile Go binaries (stubs)
+make build         # Compile Go binaries (API embeds production UI)
 make docs-check    # Required documentation present
 ```
 

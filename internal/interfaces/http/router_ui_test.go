@@ -34,7 +34,7 @@ func testUIRouter(t *testing.T) http.Handler {
 		ReadTimeout: 15 * time.Second,
 	}
 	readiness := health.NewReadiness(stubDB{})
-	return NewRouter(cfg, slog.Default(), readiness, nil, nil, nil, nil, nil, nil, nil, WithUI(uiHandler))
+	return NewRouter(cfg, slog.Default(), readiness, nil, nil, nil, nil, nil, nil, nil, nil, WithUI(uiHandler))
 }
 
 func assertUIHTMLHeaders(t *testing.T, rec *httptest.ResponseRecorder) {

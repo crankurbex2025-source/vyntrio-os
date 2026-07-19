@@ -2,17 +2,18 @@ import { useI18n } from "../../../shared/i18n/I18nProvider";
 import {
   PublicApplianceChassisArt,
   PublicApplianceJourney,
-  PublicApplianceSignalPath,
-  PublicControlSurfaceFrame,
+  PublicAppsVmsSection,
   PublicControlSurfaceShowcase,
   PublicFinalCtaBand,
   PublicHeroLayout,
   PublicHeroSection,
+  PublicLiveReleaseBand,
   PublicPillarSection,
-  PublicPreviewPageContext,
+  PublicProcedureOutline,
   PublicProductStatusBlock,
-  PublicReleaseStrip,
   PublicSectionBand,
+  PublicTrustBand,
+  PublicUseCaseSection,
 } from "../components";
 import { PreviewPageMotion } from "../preview/motion";
 import "../preview/motion/preview-motion.css";
@@ -27,24 +28,12 @@ export type PublicLandingViewProps = {
 export function PublicLandingView({ surface }: PublicLandingViewProps) {
   const { messages } = useI18n();
   const { idPrefix } = surface;
-  const contextAriaLabel =
-    surface.mode === "production"
-      ? messages.productContext.ariaLabel
-      : messages.previewContext.ariaLabel;
 
   return (
     <div className="vyn-public-landing-page vyn-public-preview-page">
       <PreviewPageMotion variant="landing">
+        {/* 1–2. Hero: brand-first composition */}
         <PublicSectionBand tone="elevated" surface="hero" id="product">
-          <PublicPreviewPageContext
-            ariaLabel={contextAriaLabel}
-            links={surface.contextLinks}
-            currentKey={surface.contextCurrentKey}
-          />
-          <PublicApplianceSignalPath
-            steps={[...messages.heroStory.steps]}
-            ariaLabel={messages.heroStory.ariaLabel}
-          />
           <PublicHeroLayout
             premium
             art={<PublicApplianceChassisArt />}
@@ -64,31 +53,23 @@ export function PublicLandingView({ surface }: PublicLandingViewProps) {
                 accentLine
               />
             }
-            companion={
-              <PublicControlSurfaceFrame
-                heading={messages.surfacePreview.heading}
-                subheading={messages.surfacePreview.subheading}
-                panelLabel={messages.surfacePreview.panelLabel}
-                panelNote={messages.surfacePreview.panelNote}
-                rows={messages.surfacePreview.rows}
-                headingId={`${idPrefix}-surface-companion-heading`}
-                chassis
-                bezel={messages.surfacePreview.bezel}
-              />
-            }
             ariaLabelledBy={`${idPrefix}-hero-title`}
           />
         </PublicSectionBand>
 
-        <PublicSectionBand surface="statement">
-          <PublicReleaseStrip
-            label={messages.release.label}
-            title={messages.release.title}
-            body={messages.release.body}
-            titleId={`${idPrefix}-release-title`}
+        {/* 3. Download / live release */}
+        <PublicSectionBand tone="inset" surface="artifact" id="download">
+          <PublicLiveReleaseBand
+            eyebrow={messages.liveRelease.eyebrow}
+            heading={messages.liveRelease.heading}
+            intro={messages.liveRelease.intro}
+            downloadCta={messages.liveRelease.downloadCta}
+            downloadTo={surface.ctaDownloadTo}
+            headingId={`${idPrefix}-live-release-heading`}
           />
         </PublicSectionBand>
 
+        {/* 4. USB Creator / install path */}
         <PublicSectionBand tone="inset" surface="journey" id="install-journey">
           <PublicApplianceJourney
             eyebrow={messages.installJourney.eyebrow}
@@ -100,7 +81,8 @@ export function PublicLandingView({ surface }: PublicLandingViewProps) {
           />
         </PublicSectionBand>
 
-        <PublicSectionBand tone="inset" surface="capabilities" id="capabilities">
+        {/* 5. Core platform pillars */}
+        <PublicSectionBand tone="panel" surface="enterprise" id="storage">
           <PublicPillarSection
             eyebrow={messages.pillars.eyebrow}
             heading={messages.pillars.heading}
@@ -131,7 +113,77 @@ export function PublicLandingView({ surface }: PublicLandingViewProps) {
           />
         </PublicSectionBand>
 
-        <PublicSectionBand tone="elevated" id="control-surface">
+        <PublicSectionBand tone="trust" surface="trust" id="trust">
+          <PublicTrustBand
+            heading={messages.trustBand.heading}
+            headingEmphasis={messages.trustBand.headingEmphasis}
+            intro={messages.trustBand.intro}
+            marks={[...messages.trustBand.marks]}
+            headingId={`${idPrefix}-trust-band-heading`}
+          />
+        </PublicSectionBand>
+
+        <PublicSectionBand tone="inset" surface="capabilities" id="apps-vms">
+          <PublicAppsVmsSection
+            eyebrow={messages.appsVms.eyebrow}
+            heading={messages.appsVms.heading}
+            intro={messages.appsVms.intro}
+            appsTitle={messages.appsVms.appsTitle}
+            appsBody={messages.appsVms.appsBody}
+            appsStatus={messages.appsVms.appsStatus}
+            vmsTitle={messages.appsVms.vmsTitle}
+            vmsBody={messages.appsVms.vmsBody}
+            vmsStatus={messages.appsVms.vmsStatus}
+            headingId={`${idPrefix}-apps-vms-heading`}
+          />
+        </PublicSectionBand>
+
+        <PublicSectionBand tone="inset" surface="capabilities" id="use-cases">
+          <PublicUseCaseSection
+            eyebrow={messages.useCases.eyebrow}
+            heading={messages.useCases.heading}
+            intro={messages.useCases.intro}
+            ariaLabel={messages.useCases.ariaLabel}
+            cases={[...messages.useCases.cases]}
+            headingId={`${idPrefix}-use-cases-heading`}
+          />
+        </PublicSectionBand>
+
+        {/* 6. Product truth / status */}
+        <PublicSectionBand tone="inset" id="product-status">
+          <PublicProductStatusBlock
+            variant="terminal"
+            eyebrow={messages.productStatus.eyebrow}
+            heading={messages.productStatus.heading}
+            body={messages.productStatus.body}
+            points={[...messages.productStatus.points]}
+            headingId={`${idPrefix}-product-status-heading`}
+          />
+        </PublicSectionBand>
+
+        <PublicSectionBand tone="inset" id="local-today">
+          <PublicProcedureOutline
+            eyebrow={messages.localToday.eyebrow}
+            heading={messages.localToday.heading}
+            intro={messages.localToday.intro}
+            ariaLabel={messages.localToday.ariaLabel}
+            steps={[...messages.localToday.steps]}
+            headingId={`${idPrefix}-local-today-heading`}
+          />
+        </PublicSectionBand>
+
+        <PublicSectionBand tone="inset" id="first-boot-setup">
+          <PublicProcedureOutline
+            eyebrow={messages.firstBootSetup.eyebrow}
+            heading={messages.firstBootSetup.heading}
+            intro={messages.firstBootSetup.intro}
+            ariaLabel={messages.firstBootSetup.ariaLabel}
+            steps={[...messages.firstBootSetup.steps]}
+            headingId={`${idPrefix}-first-boot-setup-heading`}
+          />
+        </PublicSectionBand>
+
+        <PublicSectionBand tone="panel" surface="enterprise" id="control-surface">
           <PublicControlSurfaceShowcase
             framed
             chassis
@@ -149,18 +201,8 @@ export function PublicLandingView({ surface }: PublicLandingViewProps) {
           />
         </PublicSectionBand>
 
-        <PublicSectionBand tone="inset" id="product-status">
-          <PublicProductStatusBlock
-            variant="terminal"
-            eyebrow={messages.productStatus.eyebrow}
-            heading={messages.productStatus.heading}
-            body={messages.productStatus.body}
-            points={[...messages.productStatus.points]}
-            headingId={`${idPrefix}-product-status-heading`}
-          />
-        </PublicSectionBand>
-
-        <PublicSectionBand tone="elevated" surface="finale">
+        {/* 7–8. Docs / ecosystem CTA + footer handled by shell */}
+        <PublicSectionBand tone="elevated" surface="finale" id="docs-support">
           <PublicFinalCtaBand
             heading={messages.finalCta.heading}
             body={messages.finalCta.body}

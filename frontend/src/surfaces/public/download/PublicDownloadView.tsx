@@ -2,12 +2,12 @@ import { useI18n } from "../../../shared/i18n/I18nProvider";
 import {
   PublicApplianceJourney,
   PublicDocsSection,
-  PublicDownloadPanel,
-  PublicHeroSection,
   PublicInlineCtaBand,
-  PublicPreviewPageContext,
-  PublicProcedureOutline,
-  PublicReleaseStrip,
+  PublicInstallMediaCreatorGuide,
+  PublicInstallMediaSection,
+  PublicInstallMediaWriterSection,
+  PublicMediaCreatorPreview,
+  PublicPlatformCreatorHero,
   PublicSectionBand,
 } from "../components";
 import { PreviewPageMotion } from "../preview/motion";
@@ -26,36 +26,32 @@ export function PublicDownloadView({ surface }: PublicDownloadViewProps) {
     surface.mode === "production"
       ? messages.downloadPage.productionInlineCta
       : messages.downloadPage.inlineCta;
-  const contextAriaLabel =
-    surface.mode === "production"
-      ? messages.productContext.ariaLabel
-      : messages.previewContext.ariaLabel;
+  const platform = messages.downloadPage.platformHero;
 
   return (
     <div className="vyn-public-preview-page">
       <PreviewPageMotion>
         <PublicSectionBand tone="elevated" surface="route-hero">
-          <PublicPreviewPageContext
-            ariaLabel={contextAriaLabel}
-            links={surface.contextLinks}
-            currentKey={surface.contextCurrentKey}
-          />
-          <PublicHeroSection
-            eyebrow={messages.downloadPage.hero.eyebrow}
-            title={messages.downloadPage.hero.title}
-            description={messages.downloadPage.hero.description}
+          <PublicPlatformCreatorHero
+            eyebrow={platform.eyebrow}
+            title={platform.title}
+            description={platform.description}
+            windowsCta={platform.windowsCta}
+            macosCta={platform.macosCta}
+            linuxCta={platform.linuxCta}
+            macosBlockedNote={platform.macosBlockedNote}
+            cardsHeading={platform.cardsHeading}
+            cardsIntro={platform.cardsIntro}
+            downloadUnavailable={messages.downloadPage.mediaWriter.downloadUnavailable}
             titleId={`${idPrefix}-download-hero-title`}
-            variant="compact"
-            accentLine
           />
         </PublicSectionBand>
 
-        <PublicSectionBand surface="statement">
-          <PublicReleaseStrip
-            label={messages.release.label}
-            title={messages.release.title}
-            body={messages.release.body}
-            titleId={`${idPrefix}-download-release-title`}
+        <PublicSectionBand tone="inset" surface="creator-preview">
+          <PublicMediaCreatorPreview
+            heading={messages.downloadPage.creatorPreview.heading}
+            intro={messages.downloadPage.creatorPreview.intro}
+            headingId={`${idPrefix}-download-creator-preview-heading`}
           />
         </PublicSectionBand>
 
@@ -70,44 +66,67 @@ export function PublicDownloadView({ surface }: PublicDownloadViewProps) {
           />
         </PublicSectionBand>
 
-        <PublicSectionBand tone="inset" surface="readiness">
-          <PublicDocsSection
-            eyebrow={messages.downloadPage.readiness.eyebrow}
-            heading={messages.downloadPage.readiness.heading}
-            intro={messages.downloadPage.readiness.intro}
-            items={messages.downloadPage.readiness.items}
-            headingId={`${idPrefix}-download-readiness-heading`}
-          />
-        </PublicSectionBand>
-
         <PublicSectionBand tone="inset" surface="artifact">
-          <PublicDownloadPanel
-            heading={messages.downloadPage.panel.heading}
-            intro={messages.downloadPage.panel.intro}
-            rows={messages.downloadPage.panel.rows}
-            note={messages.downloadPage.panel.note}
+          <PublicInstallMediaSection
+            heading={messages.downloadPage.installMedia.heading}
+            intro={messages.downloadPage.installMedia.intro}
+            buildHeading={messages.downloadPage.installMedia.buildHeading}
+            buildIntro={messages.downloadPage.installMedia.buildIntro}
+            downloadHeading={messages.downloadPage.installMedia.downloadHeading}
+            limitationsHeading={messages.downloadPage.installMedia.limitationsHeading}
+            statusLabels={messages.downloadPage.installMedia.statusLabels}
+            rowLabels={messages.downloadPage.installMedia.rowLabels}
             headingId={`${idPrefix}-download-panel-heading`}
           />
         </PublicSectionBand>
 
-        <PublicSectionBand tone="inset">
-          <PublicProcedureOutline
-            eyebrow={messages.downloadPage.installOutline.eyebrow}
-            heading={messages.downloadPage.installOutline.heading}
-            intro={messages.downloadPage.installOutline.intro}
-            steps={[...messages.downloadPage.installOutline.steps]}
-            ariaLabel={messages.downloadPage.installOutline.ariaLabel}
-            headingId={`${idPrefix}-download-install-outline-heading`}
+        <PublicSectionBand tone="inset" surface="media-writer">
+          <PublicInstallMediaWriterSection
+            heading={messages.downloadPage.mediaWriter.heading}
+            intro={messages.downloadPage.mediaWriter.intro}
+            honestNote={messages.downloadPage.mediaWriter.honestNote}
+            flowHeading={messages.downloadPage.mediaWriter.flowHeading}
+            flowSteps={[...messages.downloadPage.mediaWriter.flowSteps]}
+            commandHeading={messages.downloadPage.mediaWriter.commandHeading}
+            listCommand={messages.downloadPage.mediaWriter.listCommand}
+            writeCommand={messages.downloadPage.mediaWriter.writeCommand}
+            verifyHeading={messages.downloadPage.mediaWriter.verifyHeading}
+            verifyWindows={messages.downloadPage.mediaWriter.verifyWindows}
+            verifyMacOS={messages.downloadPage.mediaWriter.verifyMacOS}
+            verifyLinux={messages.downloadPage.mediaWriter.verifyLinux}
+            buildNote={messages.downloadPage.mediaWriter.buildNote}
+            downloadsHeading={messages.downloadPage.mediaWriter.downloadsHeading}
+            downloadsIntro={messages.downloadPage.mediaWriter.downloadsIntro}
+            downloadUnavailable={messages.downloadPage.mediaWriter.downloadUnavailable}
+            guiDownloadsHeading={messages.downloadPage.mediaWriter.guiDownloadsHeading}
+            cliDownloadsHeading={messages.downloadPage.mediaWriter.cliDownloadsHeading}
+            headingId={`${idPrefix}-download-media-writer-heading`}
           />
         </PublicSectionBand>
 
-        <PublicSectionBand>
-          <PublicDocsSection
-            eyebrow={messages.downloadPage.mediaPrep.eyebrow}
-            heading={messages.downloadPage.mediaPrep.heading}
-            intro={messages.downloadPage.mediaPrep.intro}
-            items={messages.downloadPage.mediaPrep.items}
-            headingId={`${idPrefix}-download-media-prep-heading`}
+        <PublicSectionBand tone="inset" surface="media-creator">
+          <PublicInstallMediaCreatorGuide
+            heading={messages.downloadPage.mediaCreator.heading}
+            intro={messages.downloadPage.mediaCreator.intro}
+            earlyAccessNote={messages.downloadPage.mediaCreator.earlyAccessNote}
+            artifactHeading={messages.downloadPage.mediaCreator.artifactHeading}
+            warningsHeading={messages.downloadPage.mediaCreator.warningsHeading}
+            warnings={[...messages.downloadPage.mediaCreator.warnings]}
+            usbHeading={messages.downloadPage.mediaCreator.usbHeading}
+            usbIntro={messages.downloadPage.mediaCreator.usbIntro}
+            usbSteps={[...messages.downloadPage.mediaCreator.usbSteps]}
+            usbHelperLabel={messages.downloadPage.mediaCreator.usbHelperLabel}
+            usbHelperCommand={messages.downloadPage.mediaCreator.usbHelperCommand}
+            vmHeading={messages.downloadPage.mediaCreator.vmHeading}
+            vmIntro={messages.downloadPage.mediaCreator.vmIntro}
+            vmSteps={[...messages.downloadPage.mediaCreator.vmSteps]}
+            vmHelperLabel={messages.downloadPage.mediaCreator.vmHelperLabel}
+            vmHelperCommand={messages.downloadPage.mediaCreator.vmHelperCommand}
+            afterBootHeading={messages.downloadPage.mediaCreator.afterBootHeading}
+            afterBootBody={messages.downloadPage.mediaCreator.afterBootBody}
+            checksumPending={messages.downloadPage.mediaCreator.checksumPending}
+            downloadPending={messages.downloadPage.mediaCreator.downloadPending}
+            headingId={`${idPrefix}-download-media-creator-heading`}
           />
         </PublicSectionBand>
 

@@ -1,0 +1,416 @@
+/* Public site chrome — header, burger drawer, theme, footer */
+
+.vyn-public-shell[data-theme="light"] {
+  color-scheme: light;
+
+  --vyn-bg: #e6e2d8;
+  --vyn-bg-elevated: #f0ece3;
+  --vyn-panel: #f7f4ee;
+  --vyn-panel-muted: #ddd6c8;
+  --vyn-border: rgba(28, 31, 36, 0.12);
+  --vyn-border-strong: rgba(28, 31, 36, 0.22);
+
+  --vyn-text: #1c1f24;
+  --vyn-text-muted: #4f5661;
+  --vyn-text-subtle: #6f7782;
+
+  --vyn-accent: #e2570d;
+  --vyn-accent-strong: #c44708;
+  --vyn-accent-soft: rgba(226, 87, 13, 0.12);
+
+  --vyn-shadow-soft: 0 12px 32px rgba(28, 31, 36, 0.08);
+  --vyn-shadow-float: 0 18px 48px rgba(28, 31, 36, 0.12);
+  --vyn-hero-glow: rgba(226, 87, 13, 0.14);
+  --vyn-trust-bg: #d8d1c3;
+  --vyn-enterprise-bg: #cdc4b4;
+  --vyn-nav-pill: rgba(247, 244, 238, 0.86);
+
+  --public-bg: var(--vyn-bg);
+  --public-bg-elevated: var(--vyn-bg-elevated);
+  --public-panel: rgba(247, 244, 238, 0.96);
+  --public-border: var(--vyn-border);
+  --public-text: var(--vyn-text);
+  --public-muted: var(--vyn-text-muted);
+  --public-accent: var(--vyn-accent);
+  --public-accent-strong: var(--vyn-accent-strong);
+  --public-accent-soft: var(--vyn-accent-soft);
+  --public-hero-glow: var(--vyn-hero-glow);
+}
+
+.vyn-public-shell[data-theme="dark"] {
+  color-scheme: dark;
+
+  --vyn-bg: #0a0c10;
+  --vyn-bg-elevated: #10141c;
+  --vyn-panel: #151b26;
+  --vyn-panel-muted: #0c1018;
+  --vyn-border: rgba(196, 205, 220, 0.12);
+  --vyn-border-strong: rgba(196, 205, 220, 0.22);
+
+  --vyn-text: #eef2f7;
+  --vyn-text-muted: #9aa6b8;
+  --vyn-text-subtle: #738094;
+
+  --vyn-accent: #ff6a24;
+  --vyn-accent-strong: #e85d2b;
+  --vyn-accent-soft: rgba(255, 106, 36, 0.14);
+
+  --vyn-shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --vyn-shadow-float: 0 20px 52px rgba(0, 0, 0, 0.45);
+  --vyn-hero-glow: rgba(255, 106, 36, 0.2);
+  --vyn-trust-bg: #111722;
+  --vyn-enterprise-bg: #161d2a;
+  --vyn-nav-pill: rgba(16, 20, 28, 0.9);
+
+  --public-bg: var(--vyn-bg);
+  --public-bg-elevated: var(--vyn-bg-elevated);
+  --public-panel: rgba(21, 27, 38, 0.94);
+  --public-border: var(--vyn-border);
+  --public-text: var(--vyn-text);
+  --public-muted: var(--vyn-text-muted);
+  --public-accent: var(--vyn-accent);
+  --public-accent-strong: var(--vyn-accent-strong);
+  --public-accent-soft: var(--vyn-accent-soft);
+  --public-hero-glow: var(--vyn-hero-glow);
+}
+
+.vyn-public-shell {
+  --vyn-font-display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --vyn-font-body: "Source Sans 3", "Source Sans Pro", "Segoe UI", sans-serif;
+  --vyn-font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+  --vyn-radius-chrome: 1.15rem;
+  --vyn-header-offset: 5.25rem;
+  background:
+    radial-gradient(1200px 520px at 8% -10%, var(--vyn-hero-glow), transparent 55%),
+    radial-gradient(900px 420px at 92% 0%, rgba(120, 110, 90, 0.08), transparent 50%),
+    linear-gradient(180deg, var(--vyn-bg-elevated) 0%, var(--vyn-bg) 42%, var(--vyn-bg) 100%);
+  font-family: var(--vyn-font-body);
+}
+
+.vyn-public-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 0.85rem 0 0.55rem;
+  background: transparent;
+}
+
+.vyn-public-header-inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  width: min(100% - (var(--vyn-gutter) * 2), var(--vyn-max-width));
+  margin-inline: auto;
+  padding: 0.55rem 0.7rem 0.55rem 0.95rem;
+  border-radius: var(--vyn-radius-chrome);
+  border: 1px solid var(--vyn-border);
+  background: var(--vyn-nav-pill);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  box-shadow: none;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.vyn-public-header-scrolled .vyn-public-header-inner {
+  box-shadow: var(--vyn-shadow-soft);
+  border-color: var(--vyn-border-strong);
+}
+
+.vyn-public-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: var(--vyn-touch-target);
+  font-family: var(--vyn-font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-size: 1.2rem;
+  color: var(--vyn-text);
+  text-decoration: none;
+}
+
+.vyn-public-brand-mark {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 0.2rem;
+  background: linear-gradient(145deg, var(--vyn-accent), var(--vyn-accent-strong));
+  box-shadow: 0 0 0 3px var(--vyn-accent-soft);
+}
+
+.vyn-public-nav-desktop {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+}
+
+.vyn-public-nav-desktop a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  color: var(--vyn-text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+}
+
+.vyn-public-nav-desktop a:hover,
+.vyn-public-nav-desktop a:focus-visible {
+  color: var(--vyn-text);
+  background: var(--vyn-accent-soft);
+  outline: none;
+}
+
+.vyn-public-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Intentionally empty — visibility controlled in the max-width block below
+   after CTA/secondary display rules so !important order stays correct. */
+
+.vyn-public-theme-toggle,
+.vyn-public-burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--vyn-touch-target);
+  height: var(--vyn-touch-target);
+  min-width: var(--vyn-touch-target);
+  min-height: var(--vyn-touch-target);
+  border-radius: 0.85rem;
+  border: 1px solid var(--vyn-border);
+  background: var(--vyn-panel);
+  color: var(--vyn-text);
+  cursor: pointer;
+}
+
+.vyn-public-theme-toggle:hover,
+.vyn-public-burger:hover,
+.vyn-public-theme-toggle:focus-visible,
+.vyn-public-burger:focus-visible {
+  border-color: var(--vyn-border-strong);
+  background: var(--vyn-accent-soft);
+  outline: none;
+}
+
+.vyn-public-burger-lines {
+  display: grid;
+  gap: 0.28rem;
+  width: 1.05rem;
+}
+
+.vyn-public-burger-lines span {
+  display: block;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  transform-origin: center;
+}
+
+.vyn-public-header-menu-open .vyn-public-burger-lines span:nth-child(1) {
+  transform: translateY(0.34rem) rotate(45deg);
+}
+
+.vyn-public-header-menu-open .vyn-public-burger-lines span:nth-child(2) {
+  opacity: 0;
+}
+
+.vyn-public-header-menu-open .vyn-public-burger-lines span:nth-child(3) {
+  transform: translateY(-0.34rem) rotate(-45deg);
+}
+
+.vyn-public-nav-cta,
+a.vyn-public-nav-cta {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--vyn-touch-target);
+  padding: 0.55rem 1.05rem !important;
+  border-radius: 0.9rem !important;
+  background: linear-gradient(145deg, var(--vyn-accent), var(--vyn-accent-strong)) !important;
+  color: #fff !important;
+  font-weight: 650 !important;
+  text-decoration: none !important;
+  border: 0 !important;
+}
+
+.vyn-public-nav-secondary,
+a.vyn-public-nav-secondary {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--vyn-touch-target);
+  padding: 0.5rem 0.95rem !important;
+  border-radius: 0.9rem !important;
+  border: 1px solid var(--vyn-border-strong) !important;
+  background: var(--vyn-panel) !important;
+  color: var(--vyn-text) !important;
+  text-decoration: none !important;
+  font-weight: 550 !important;
+}
+
+.vyn-public-nav-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgba(12, 14, 18, 0.42);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.vyn-public-nav-scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vyn-public-nav-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  width: min(22rem, 100vw);
+  height: 100dvh;
+  padding: calc(var(--vyn-header-offset) + 0.5rem) 1.25rem 1.5rem;
+  background: var(--vyn-bg-elevated);
+  border-left: 1px solid var(--vyn-border);
+  box-shadow: var(--vyn-shadow-float);
+  transform: translateX(104%);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vyn-public-nav-drawer.is-open {
+  transform: translateX(0);
+}
+
+.vyn-public-nav-mobile {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.vyn-public-nav-mobile a {
+  display: flex;
+  align-items: center;
+  min-height: var(--vyn-touch-target);
+  padding: 0.85rem 1rem;
+  border-radius: 0.95rem;
+  color: var(--vyn-text);
+  text-decoration: none;
+  font-family: var(--vyn-font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: transparent;
+}
+
+.vyn-public-nav-mobile a:hover,
+.vyn-public-nav-mobile a:focus-visible {
+  background: var(--vyn-accent-soft);
+  outline: none;
+}
+
+.vyn-public-nav-mobile .vyn-public-nav-cta,
+.vyn-public-nav-mobile .vyn-public-nav-secondary {
+  margin-top: 0.35rem;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.vyn-public-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--vyn-border);
+  background: color-mix(in srgb, var(--vyn-bg) 82%, var(--vyn-panel-muted));
+}
+
+.vyn-public-footer-inner {
+  width: min(100% - (var(--vyn-gutter) * 2), var(--vyn-max-width));
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 3.25rem) 0 clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.vyn-public-footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  align-items: flex-start;
+}
+
+.vyn-public-footer-tagline {
+  max-width: 28rem;
+  margin: 0;
+  font-family: var(--vyn-font-display);
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.vyn-public-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+}
+
+.vyn-public-footer-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--vyn-touch-target);
+  color: var(--vyn-text-muted);
+  text-decoration: none;
+  font-weight: 550;
+}
+
+.vyn-public-footer-nav a:hover,
+.vyn-public-footer-nav a:focus-visible {
+  color: var(--vyn-accent);
+  outline: none;
+}
+
+.vyn-public-footer-note {
+  margin: 1.25rem 0 0;
+  color: var(--vyn-text-subtle);
+  font-size: 0.9rem;
+  max-width: 42rem;
+}
+
+@media (max-width: 767.98px) {
+  a.vyn-public-nav-desktop-only,
+  .vyn-public-nav-desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .vyn-public-nav-desktop {
+    display: flex;
+  }
+
+  a.vyn-public-nav-desktop-only,
+  .vyn-public-nav-desktop-only {
+    display: inline-flex !important;
+  }
+
+  .vyn-public-burger,
+  .vyn-public-nav-scrim,
+  .vyn-public-nav-drawer {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vyn-public-nav-drawer,
+  .vyn-public-nav-scrim,
+  .vyn-public-burger-lines span,
+  .vyn-public-header-inner {
+    transition: none !important;
+  }
+}

@@ -29,4 +29,4 @@ infrastructure → application (via interfaces/ports)
 
 ## Status
 
-Empty — packages are created in Phase 2 (Platform Core).
+Populated — domain, application, infrastructure, and HTTP interfaces are in active use (`vyntrio-api`, `vyntrio-backup`). See `docs/07_BACKEND.md` and `docs/02_ARCHITECTURE.md`.

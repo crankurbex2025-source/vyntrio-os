@@ -19,11 +19,14 @@ without expanding the running API, dashboard, or in-service restore.
 
 Current repository truth:
 
-- `cmd/installer/main.go` is an **empty stub** (Phase 0.2 placeholder).
-- `distro/` contains **Block 7.3 systemd deployment artifacts** only
-  (`distro/systemd/`); no ISO, initramfs, or image-build pipeline.
-- Production install today is **manual** per `distro/systemd/README.md`
-  (administrator installs binary, sysusers, tmpfiles, config, unit).
+- **Intended primary product path:** bootable install USB/ISO (Block 9) → boot on target
+  hardware → local browser dashboard → install execution from live environment (Block 10).
+- **Interim developer/lab path:** manual binary + systemd per `distro/systemd/README.md`
+  — not the operator product journey; use until bootable install media ships.
+- `distro/` contains Block 7.3 systemd deployment artifacts and Block 9 media scaffolds;
+  **no bootable ISO/USB image builder** is implemented yet.
+- Block 10 staged installer CLI (`vyntrio-installer`) exists as **internal infrastructure**
+  for future live-session install — not the primary delivery mechanism.
 - Persistent application state, runtime configuration, and backup layout are
   **already fixed** by ADR-0005 section D; this ADR must not redefine them.
 
@@ -197,8 +200,8 @@ approved slices:
 ### Negative / trade-offs
 
 - Separate install and recovery images increase packaging surface area.
-- Manual install (`distro/systemd/README.md`) remains the only supported path
-  until later Block 9 implementation slices.
+- Bootable install media and USB creator are **not yet implemented**; manual systemd
+  install (`distro/systemd/README.md`) is an **interim developer/lab path only**.
 - Bootstrap handoff after install is documented at boundary level only.
 
 ### Follow-up

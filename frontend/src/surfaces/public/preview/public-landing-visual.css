@@ -1,15 +1,33 @@
-/* Preview landing visual layer — Block 11R.7–11R.8, landing route only */
+/* Preview landing visual layer — Block 11R.7–11R.8 + enterprise marketing rhythm */
 
-.vyn-public-shell-landing .vyn-public-header {
+.vyn-public-shell-landing .vyn-public-header,
+.vyn-public-shell-product .vyn-public-header {
   position: sticky;
-  top: 0;
-  z-index: 30;
+  top: 0.85rem;
+  z-index: 40;
+  padding-inline: var(--vyn-gutter);
+  background: transparent;
+  border: 0;
 }
 
-.vyn-public-shell-landing .vyn-public-header-scrolled {
-  background: rgba(8, 11, 17, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.vyn-public-shell-landing .vyn-public-header-scrolled .vyn-public-header-inner,
+.vyn-public-shell-product .vyn-public-header-scrolled .vyn-public-header-inner {
+  box-shadow: var(--vyn-shadow-float);
+  border-color: var(--vyn-border-strong);
+}
+
+.vyn-public-shell-landing .vyn-public-main,
+.vyn-public-shell-product .vyn-public-main {
+  padding-top: 0.35rem;
+}
+
+/* Premium whitespace between major landing sections */
+.vyn-public-landing-page .vyn-public-section-band + .vyn-public-section-band {
+  border-top: 0;
+}
+
+.vyn-public-landing-page .vyn-public-section-band-surface-hero {
+  padding-top: clamp(1.25rem, 3vw, 2rem);
 }
 
 /* Signal path — honest hardware → OS → control storytelling */
@@ -29,10 +47,10 @@
   gap: 0.65rem;
   align-items: start;
   border: 1px solid var(--vyn-border);
-  border-radius: var(--vyn-radius-md);
-  padding: 0.75rem 0.85rem;
-  background: linear-gradient(165deg, rgba(17, 23, 34, 0.92) 0%, rgba(10, 14, 22, 0.88) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  border-radius: var(--vyn-radius-xl);
+  padding: 0.85rem 0.95rem;
+  background: var(--vyn-panel);
+  box-shadow: var(--vyn-shadow-soft);
 }
 
 .vyn-public-signal-path-index {
@@ -48,6 +66,7 @@
   display: grid;
   gap: 0.15rem;
 }
+
 
 .vyn-public-signal-path-label {
   font-weight: 600;
@@ -89,18 +108,22 @@
   padding-bottom: clamp(2.75rem, 5vw, 4.5rem);
   border-bottom: 1px solid var(--vyn-border);
   background:
-    linear-gradient(180deg, rgba(12, 16, 24, 0.98) 0%, rgba(6, 8, 13, 0.92) 100%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--vyn-bg-elevated) 96%, var(--vyn-accent)) 0%,
+      var(--vyn-bg) 100%
+    ),
     repeating-linear-gradient(
       90deg,
-      rgba(148, 163, 184, 0.03) 0,
-      rgba(148, 163, 184, 0.03) 1px,
+      color-mix(in srgb, var(--vyn-text) 4%, transparent) 0,
+      color-mix(in srgb, var(--vyn-text) 4%, transparent) 1px,
       transparent 1px,
       transparent 72px
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(148, 163, 184, 0.025) 0,
-      rgba(148, 163, 184, 0.025) 1px,
+      color-mix(in srgb, var(--vyn-text) 3%, transparent) 0,
+      color-mix(in srgb, var(--vyn-text) 3%, transparent) 1px,
       transparent 1px,
       transparent 72px
     );
@@ -111,7 +134,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse 70% 55% at 18% 0%, rgba(232, 93, 43, 0.09), transparent 68%);
+  background: radial-gradient(ellipse 70% 55% at 18% 0%, var(--vyn-hero-glow), transparent 68%);
 }
 
 .vyn-public-landing-page .vyn-public-section-band-surface-hero::after {
@@ -140,6 +163,33 @@
 
 .vyn-public-hero-layout-premium {
   position: relative;
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 3rem);
+  align-items: end;
+  min-height: min(72vh, 42rem);
+}
+
+.vyn-public-hero-layout-solo {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.vyn-public-hero-layout-solo .vyn-public-hero-layout-copy {
+  max-width: 36rem;
+  text-align: left;
+}
+
+.vyn-public-hero-layout-solo .vyn-public-hero-lead h1,
+.vyn-public-hero-layout-solo .vyn-public-hero h1 {
+  font-family: var(--vyn-font-display);
+  font-size: clamp(3.4rem, 10vw, 6.5rem);
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+  max-width: 8ch;
+}
+
+.vyn-public-hero-layout-solo .vyn-public-hero-description {
+  max-width: 34ch;
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
 }
 
 .vyn-public-hero-layout-device {
@@ -147,6 +197,22 @@
   display: grid;
   gap: 0.75rem;
   align-content: end;
+  min-height: 16rem;
+}
+
+@media (max-width: 52rem) {
+  .vyn-public-hero-layout-solo {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .vyn-public-chassis-art {
+    position: relative !important;
+    inset: auto !important;
+    width: min(100%, 18rem);
+    opacity: 0.55;
+    margin-block: 0.5rem 0;
+  }
 }
 
 .vyn-public-hero-layout-device-frame {
@@ -157,12 +223,17 @@
 .vyn-public-chassis-art {
   position: absolute;
   inset: auto -0.75rem 2rem -1.25rem;
-  width: min(100%, 20rem);
+  width: min(100%, 22rem);
   margin-inline: auto;
   color: var(--vyn-text-muted);
-  opacity: 0.48;
+  opacity: 0.72;
   pointer-events: none;
   z-index: 0;
+}
+
+.vyn-public-shell[data-theme="light"] .vyn-public-chassis-art {
+  opacity: 0.82;
+  color: color-mix(in srgb, var(--vyn-text) 55%, var(--vyn-accent));
 }
 
 /* Surface bezel — appliance status lamps, honest disconnected state */
@@ -214,7 +285,7 @@
 }
 
 .vyn-public-surface-chassis .vyn-public-surface-panel {
-  background: linear-gradient(180deg, rgba(17, 23, 34, 0.98) 0%, rgba(12, 16, 24, 0.96) 100%);
+  background: linear-gradient(180deg, var(--vyn-panel) 0%, var(--vyn-bg-elevated) 100%);
 }
 
 .vyn-public-landing-page .vyn-public-section-band-surface-statement {
@@ -274,7 +345,7 @@
 .vyn-public-landing-page .vyn-public-pillar-featured {
   border-left: 3px solid var(--vyn-accent);
   padding-left: calc(1.25rem - 3px);
-  background: linear-gradient(165deg, var(--vyn-panel) 0%, rgba(17, 23, 34, 0.88) 100%);
+  background: linear-gradient(165deg, var(--vyn-panel) 0%, var(--vyn-bg-elevated) 100%);
 }
 
 /* Showcase framed mount */

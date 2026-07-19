@@ -80,13 +80,13 @@ checks:
 
   - id: target_disk
     adr_reference: ADR-0007 section D
-    status: deferred
-    note: Target block device and operator intent checks deferred to later slice.
+    status: implemented
+    slice: "10.10"
+    note: Read-only target suitability via vyntrio-installer preflight --target-disk-id.
 
 layout_plan_authority: distro/installer/target-layout-manifest.yaml
 
 deferred_slices:
-  - target_disk_accessibility
   - operator_reprovision_confirmation
   - partition_filesystem_layout
   - install_payload_copy

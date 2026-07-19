@@ -1,5 +1,10 @@
 # Installer scaffold (Block 10)
 
+**Secondary to USB-first delivery.** Block 9 (bootable install medium + USB creator) is
+the primary operator path. Block 10 tooling here is **reusable internal infrastructure**
+for install execution from a **live boot session** — not the product install journey by
+itself.
+
 Declarative and read-only installer tooling for greenfield install **execution**
 on target hardware. Media creation remains **Block 9** (`distro/install-media/`).
 
@@ -19,6 +24,12 @@ on target hardware. Media creation remains **Block 9** (`distro/install-media/`)
 | Payload copy (`make installer-copy-payloads`) | **Implemented (Slice 10.7)** — manifest payloads to target-sandbox |
 | Service prep (`make installer-prepare-service`) | **Implemented (Slice 10.8)** — enablement prep in target-sandbox |
 | Service enable (`make installer-enable-service`) | **Implemented (Slice 10.9)** — controlled enable in target-sandbox |
+| Target/media preflight CLI (`vyntrio-installer preflight`) | **Implemented (Slice 10.10)** — read-only target + optional media |
+| Payload install write (`vyntrio-installer install`) | **Implemented (Slice 10.11)** — sandbox payload copy after gates |
+| Postflight handover (`HANDOVER_RECORD.txt`, `postflight` subcommand) | **Implemented (Slice 10.12)** |
+| Target mutation (`install --apply-target`) | **Implemented (Slice 10.13)** |
+| Partition apply (`vyntrio-installer apply`) | **Implemented (Slice 10.14)** |
+| Staged pipeline policy (`vyntrio-installer workflow`) | **Implemented (Slice 10.15)** — `docs/ops/installer-policy.md` |
 | Service start / bootstrap | **Not started** — future slice |
 
 ## Preflight (Slice 10.3)
@@ -34,6 +45,35 @@ on target hardware. Media creation remains **Block 9** (`distro/install-media/`)
 
 Local development uses `distro/install-media/envelope/` as media-context stand-in
 after `make install-media-envelope`.
+
+## Target and media preflight CLI (Slice 10.10)
+
+`vyntrio-installer preflight` performs read-only validation of an **explicitly
+selected** install target disk (opaque `--target-disk-id`) and optional install
+media (`--envelope-root`, `--release-manifest`). See `docs/ops/install-target-preflight.md`.
+
+**Does not:** auto-select a target, partition, format, write, flash, or install.
+
+## Payload install write (Slice 10.11)
+
+`vyntrio-installer install` copies the six manifest payloads to
+`target-sandbox/<disk-id>/` after `--force`, preflight, and artifact verification.
+See `docs/ops/install-payload-write.md`.
+
+**Does not:** write raw block devices, enable services, or run bootstrap.
+
+## Postflight handover (Slice 10.12)
+
+`vyntrio-installer install` writes `HANDOVER_RECORD.txt` with verification results,
+deferred items, and mutation scope. Replay with `vyntrio-installer postflight
+--target-root <sandbox-path>`. See `docs/ops/install-staged-workflow.md`.
+
+## Staged pipeline policy (Slice 10.15)
+
+The Go installer is a **staged pipeline**, not one monolithic install command.
+Run `vyntrio-installer workflow` for operator policy, or see
+`docs/ops/installer-policy.md` for command boundaries between
+`vyntrio-verify-artifact`, `preflight`, `install`, `apply`, and `postflight`.
 
 ## Target layout plan (Slice 10.4)
 
@@ -119,4 +159,4 @@ Writes `target-sandbox/PAYLOAD_COPY.txt` with `bootstrap_handoff: deferred`.
 - `scripts/installer-copy-payloads.sh`
 - `scripts/installer-prepare-service.sh`
 - `scripts/installer-enable-service.sh`
-- `cmd/installer/main.go` — stub entrypoint
+- `cmd/installer/main.go` — `preflight`, `install`, `apply`, `postflight`, `workflow`
